@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-rootProject.name = 'aws-core-plugin'
+apply plugin: 'com.github.rodm.teamcity-agent'
 
-include 'aws-core-common'
-include 'aws-core-agent'
-include 'aws-core-server'
+dependencies {
+    compile project(':aws-core-common')
+}
+
+teamcity {
+    agent {
+        descriptor = project(':aws-core-agent').file('teamcity-plugin.xml')
+    }
+
+    version = teamcityVersion
+}

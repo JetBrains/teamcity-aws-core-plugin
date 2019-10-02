@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 JetBrains s.r.o.
+ * Copyright 2000-2019 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,19 +55,6 @@ import static jetbrains.buildServer.util.amazon.AWSCommonParams.*;
 public class S3UtilTest extends BaseTestCase {
 
   public static final String BUCKET_NAME = "amazon.util.s3.util.test";
-  private Mockery m;
-  private SProject myProject;
-
-  @BeforeMethod(alwaysRun = true)
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    m = new Mockery();
-    myProject = m.mock(SProject.class);
-    m.checking(new Expectations(){{
-      allowing(myProject).getParameterValue(AWSCommonParams.ENABLE_DEFAULT_CREDENTIALS_CHAIN); will(returnValue("true"));
-    }});
-  }
 
   @BeforeClass
   @Override
@@ -87,7 +74,7 @@ public class S3UtilTest extends BaseTestCase {
 
   @Test
   public void shutdown_manager() throws Throwable{
-    S3Util.withTransferManager(myProject, getParameters(), new S3Util.WithTransferManager<Transfer>() {
+    S3Util.withTransferManager(getParameters(), new S3Util.WithTransferManager<Transfer>() {
       @NotNull
       @Override
       public Collection<Transfer> run(@NotNull TransferManager manager) throws Throwable {
@@ -100,7 +87,7 @@ public class S3UtilTest extends BaseTestCase {
   @Test
   public void upload() throws Throwable {
     final File testUpload = createTempFile("This is a test upload");
-    S3Util.withTransferManager(myProject, getParameters(), new S3Util.WithTransferManager<Upload>() {
+    S3Util.withTransferManager(getParameters(), new S3Util.WithTransferManager<Upload>() {
       @NotNull
       @Override
       public Collection<Upload> run(@NotNull TransferManager manager) throws Throwable {
@@ -130,7 +117,7 @@ public class S3UtilTest extends BaseTestCase {
         }
       }
     }).start();
-    S3Util.withTransferManager(myProject, getParameters(), new S3Util.InterruptAwareWithTransferManager<Upload>() {
+    S3Util.withTransferManager(getParameters(), new S3Util.InterruptAwareWithTransferManager<Upload>() {
       @NotNull
       @Override
       public Collection<Upload> run(@NotNull TransferManager manager) throws Throwable {
@@ -157,7 +144,7 @@ public class S3UtilTest extends BaseTestCase {
     assertEquals(testDownload.length(), createS3Client().getObject(BUCKET_NAME, "testDownload").getObjectMetadata().getContentLength());
 
     final File result = new File(createTempDir(), "testDownload");
-    S3Util.withTransferManager(myProject, getParameters(), new S3Util.WithTransferManager<Download>() {
+    S3Util.withTransferManager(getParameters(), new S3Util.WithTransferManager<Download>() {
       @NotNull
       @Override
       public Collection<Download> run(@NotNull TransferManager manager) throws Throwable {

@@ -38,7 +38,7 @@ ext.awsSDKVersion = hasProperty('aws.sdk.version') ? property('aws.sdk.version')
 
 ext.buildNumber = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
 
-        idea {
+idea {
     project {
         vcs = 'Git'
     }

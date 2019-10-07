@@ -14,29 +14,39 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
-apply plugin: 'idea'
-
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.github.rodm:gradle-teamcity-plugin:1.0"
-    }
+plugins {
+    id 'idea'
+    id 'maven'
 }
 
-ext.teamcityVersion = findProperty('teamcityVersion') ?: '2019.2-SNAPSHOT'
+repositories {
+    mavenCentral()
+}
+configurations {
+    ftpDeployer
+    mavenArtifacts
+}
 
-ext.teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
-ext.teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
-ext.teamcityJavaHome = System.properties['java.home']
+dependencies {
+    ftpDeployer "org.apache.maven.wagon:wagon-ftp:2.3"
+}
 
-ext.awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.475'
+ext {
+    teamcityVersion = findProperty('teamcityVersion') ?: '2019.2-SNAPSHOT'
 
-ext.buildNumber = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
+    teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
+    teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
+    teamcityJavaHome = System.properties['java.home']
+
+    awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.475'
+
+    buildNumber = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
+
+    mavenRepository = findProperty('maven.repository')
+    mavenRepositoryUser = findProperty('maven.repository.user')
+    mavenRepositoryPassword = findProperty('maven.repository.password')
+    pomFile = "$rootDir/aws-core-common-pom.xml"
+}
 
 idea {
     project {
@@ -58,11 +68,79 @@ configure(subprojects) {
         useTestNG()
         testLogging.showStandardStreams = true
     }
+}
 
-    repositories {
-        mavenCentral()
-        maven {
-            url = 'https://repository.jetbrains.com/all'
+task sourceJar(type: Jar) {
+    from project('aws-core-common').sourceSets.main.allJava
+    archiveName "$rootDir/aws-core-common-sources.jar"
+}
+
+task writePom {
+    doLast {
+        pom {
+            project {
+                groupId 'jetbrains.buildServer.util'
+                artifactId 'aws-core-common'
+                version "$buildNumber"
+            }
+        }
+                .whenConfigured{ pom -> pom.dependencies.removeAll { it.scope.contains('test') } }
+                .writeTo("$pomFile")
+    }
+}
+
+task prepareArtifacts {
+//    dependsOn tasks.sourceJar
+    dependsOn tasks.writePom
+
+    doLast {
+        artifacts.mavenArtifacts file: file("$rootDir/aws-core-common/build/libs/aws-core-common.jar"), name: 'aws-core-common', type: 'jar'
+//        artifacts.mavenArtifacts file: file("$rootDir/aws-core-common-sources.jar"), name: 'aws-core-common-sources', type: 'jar', classifier: 'sources'
+    }
+}
+
+task readPom {
+    doLast {
+        def root = new XmlParser().parse(file("$pomFile"))
+
+        def sw = new StringWriter()
+        def printer = new XmlNodePrinter(new PrintWriter(sw))
+        printer.preserveWhitespace = true
+        printer.print(root)
+
+        readPom.ext.result = sw.toString()
+    }
+}
+
+task prepareUploadMavenArtifactsTask {
+    dependsOn tasks.prepareArtifacts
+    dependsOn tasks.readPom
+
+    doFirst {
+        tasks.uploadMavenArtifacts.repositories.mavenDeployer {
+            configuration = configurations.ftpDeployer
+
+            repository(url: "$mavenRepository") {
+                authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
+            }
+
+            addFilter('aws-core-common') {artifact, file ->
+                artifact.name == 'aws-core-common'
+            }.withXml { provider ->
+                def builder = provider.asString()
+                builder.length = 0
+                builder << tasks.readPom.result
+            }
+
+            addFilter('aws-core-common-sources') {artifact, file ->
+                artifact.name == 'aws-core-common-sources'
+            }.withXml { provider ->
+                def builder = provider.asString()
+                builder.length = 0
+                builder << tasks.readPom.result
+            }
         }
     }
+
+    tasks.uploadMavenArtifacts.dependsOn tasks.prepareUploadMavenArtifactsTask
 }

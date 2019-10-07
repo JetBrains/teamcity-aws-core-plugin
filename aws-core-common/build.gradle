@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.github.rodm.teamcity-common'
+plugins{
+    id 'com.github.rodm.teamcity-common' version "1.1.1"
+}
 
 dependencies {
     compile "com.amazonaws:aws-java-sdk-codedeploy:${awsSDKVersion}"

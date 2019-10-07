@@ -45,7 +45,7 @@ ext {
     mavenRepository = findProperty('maven.repository')
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
-    pomFile = "$rootDir/aws-core-common-pom.xml"
+    pomFile = "$buildDir/amazon-util-pom.xml"
 }
 
 idea {
@@ -71,8 +71,8 @@ configure(subprojects) {
 }
 
 task sourceJar(type: Jar) {
-    from project('aws-core-common').sourceSets.main.allJava
-    archiveName "$rootDir/aws-core-common-sources.jar"
+    from project(':aws-core-common').sourceSets.main.allJava
+    archiveName "aws-core-common-sources.jar"
 }
 
 task writePom {
@@ -80,7 +80,7 @@ task writePom {
         pom {
             project {
                 groupId 'jetbrains.buildServer.util'
-                artifactId 'aws-core-common'
+                artifactId 'amazon-util'
                 version "$buildNumber"
             }
         }
@@ -90,12 +90,12 @@ task writePom {
 }
 
 task prepareArtifacts {
-//    dependsOn tasks.sourceJar
+    dependsOn tasks.sourceJar
     dependsOn tasks.writePom
 
     doLast {
-        artifacts.mavenArtifacts file: file("$rootDir/aws-core-common/build/libs/aws-core-common.jar"), name: 'aws-core-common', type: 'jar'
-//        artifacts.mavenArtifacts file: file("$rootDir/aws-core-common-sources.jar"), name: 'aws-core-common-sources', type: 'jar', classifier: 'sources'
+        artifacts.mavenArtifacts file: file("$rootDir/aws-core-common/build/libs/aws-core-common.jar"), name: 'amazon-util', type: 'jar'
+        artifacts.mavenArtifacts file: file("$libsDir/aws-core-common-sources.jar"), name: 'amazon-util-sources', type: 'jar', classifier: 'sources'
     }
 }
 
@@ -124,16 +124,16 @@ task prepareUploadMavenArtifactsTask {
                 authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
             }
 
-            addFilter('aws-core-common') {artifact, file ->
-                artifact.name == 'aws-core-common'
+            addFilter('amazon-util') {artifact, file ->
+                artifact.name == 'amazon-util'
             }.withXml { provider ->
                 def builder = provider.asString()
                 builder.length = 0
                 builder << tasks.readPom.result
             }
 
-            addFilter('aws-core-common-sources') {artifact, file ->
-                artifact.name == 'aws-core-common-sources'
+            addFilter('amazon-util-sources') {artifact, file ->
+                artifact.name == 'amazon-util-sources'
             }.withXml { provider ->
                 def builder = provider.asString()
                 builder.length = 0

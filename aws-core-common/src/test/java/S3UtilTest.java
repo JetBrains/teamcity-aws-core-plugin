@@ -25,18 +25,13 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.TestNGUtil;
-import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.amazon.AWSClients;
-import jetbrains.buildServer.util.amazon.AWSCommonParams;
 import jetbrains.buildServer.util.amazon.S3Util;
 import org.jetbrains.annotations.NotNull;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;

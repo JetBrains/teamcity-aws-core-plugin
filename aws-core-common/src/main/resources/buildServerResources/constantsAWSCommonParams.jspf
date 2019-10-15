@@ -13,9 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   --%>
+<%@ page import="java.util.Map" %>
 <%@ page import="jetbrains.buildServer.util.amazon.AWSCommonParams" %>
 <%@ page import="jetbrains.buildServer.util.amazon.AWSRegions" %>
-<%@ page import="java.util.Map" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
@@ -107,4 +107,3 @@
 
 <c:set var="use_default_cred_chain_param" value="<%=AWSCommonParams.USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM%>"/>
 <c:set var="use_default_cred_chain_label" value="<%=AWSCommonParams.USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_LABEL%>"/>
-<c:set var="disable_default_cred_chain_param" value="<%=AWSCommonParams.ENABLE_DEFAULT_CREDENTIALS_CHAIN%>"/>

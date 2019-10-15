@@ -19,8 +19,7 @@
 
 <%@include file="constantsAWSCommonParams.jspf"%>
 
-<c:set var="regionName" value="${propertiesBean.properties[region_name_param]}"/>
-<c:set var="enableDefaultCredentialsChain" value="${propertiesBean.properties[disable_default_cred_chain_param]}"/>
+<c:set var="regionName" value="${propertiesBean.properties['aws.enable.default.credentials.chain']}"/>
 <c:choose>
     <c:when test="${empty param.requireEnvironment or true eq param.requireEnvironment}">
         <props:selectSectionProperty name="${environment_name_param}" title="${environment_name_label}:">

@@ -17,13 +17,14 @@
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 
-<%@include file="constantsAWSCommonParams.jspf"%>
+<%@include file="constantsAWSCommonParams.jspf" %>
 
-<c:set var="regionName" value="${propertiesBean.properties['aws.enable.default.credentials.chain']}"/>
+<c:set var="regionName" value="${propertiesBean.properties[region_name_param]}"/>
+<c:set var="enableDefaultCredentialsChain" value="${propertiesBean.properties['aws.enable.default.credentials.chain']}"/>
 <c:choose>
     <c:when test="${empty param.requireEnvironment or true eq param.requireEnvironment}">
         <props:selectSectionProperty name="${environment_name_param}" title="${environment_name_label}:">
-            <props:selectSectionPropertyContent value="" caption="<Default>" />
+            <props:selectSectionPropertyContent value="" caption="<Default>"/>
             <props:selectSectionPropertyContent value="${environment_type_custom}" caption="Custom">
                 <tr>
                     <th><label for="${service_endpoint_param}">${service_endpoint_label}: <l:star/></label></th>

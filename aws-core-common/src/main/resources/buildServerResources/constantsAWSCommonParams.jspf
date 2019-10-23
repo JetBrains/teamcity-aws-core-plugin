@@ -107,3 +107,5 @@
 
 <c:set var="use_default_cred_chain_param" value="<%=AWSCommonParams.USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM%>"/>
 <c:set var="use_default_cred_chain_label" value="<%=AWSCommonParams.USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_LABEL%>"/>
+
+<c:set var="default_cred_chain_disabled" value="<%= AWSCommonParams.DEFAULT_CREDENTIALS_PROVIDER_CHAIN_DISABLED_PARAM %>"/>

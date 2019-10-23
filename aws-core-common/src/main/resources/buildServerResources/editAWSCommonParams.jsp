@@ -21,7 +21,7 @@
 <%@include file="constantsAWSCommonParams.jspf" %>
 
 <c:set var="regionName" value="${propertiesBean.properties[region_name_param]}"/>
-<c:set var="enableDefaultCredentialsChain" value="${propertiesBean.properties[use_default_cred_chain_param]}"/>
+<c:set var="enableDefaultCredentialsChain" value="${not intprop:getBoolean(default_cred_chain_disabled)}"/>
 <c:choose>
     <c:when test="${empty param.requireEnvironment or true eq param.requireEnvironment}">
         <props:selectSectionProperty name="${environment_name_param}" title="${environment_name_label}:">
@@ -100,7 +100,7 @@
             <span class="smallNote">External ID is strongly recommended to be used in role trust relationship condition</span><span class="error" id="error_${external_id_param}"></span>
         </td>
     </tr>
-    <c:if test="${enableDefaultCredentialsChain or param.enableDefaultCredentialsChain or intprop:getBoolean(use_default_cred_chain_param)}">
+    <c:if test="${enableDefaultCredentialsChain or param.enableDefaultCredentialsChain}">
         <tr>
             <th><label for="${use_default_cred_chain_param}">${use_default_cred_chain_label}: </label></th>
             <td><props:checkboxProperty name="${use_default_cred_chain_param}" onclick="awsCommonParamsUpdateVisibility()"/></td>

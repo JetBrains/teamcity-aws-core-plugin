@@ -23,6 +23,10 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import jetbrains.buildServer.parameters.ReferencesResolverUtil;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
@@ -31,11 +35,6 @@ import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.version.ServerVersionHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static jetbrains.buildServer.serverSide.TeamCityProperties.getInteger;
 import static jetbrains.buildServer.serverSide.TeamCityProperties.getPropertyOrNull;
@@ -74,6 +73,7 @@ public final class AWSCommonParams {
 
   public static final String SSL_CERT_DIRECTORY_PARAM = "aws.ssl.cert.directory";
 
+  public static final String DEFAULT_CREDENTIALS_PROVIDER_CHAIN_DISABLED_PARAM = "teamcity.internal.aws.disable.default.credential.provider.chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM_OLD = "use_default_credential_provider_chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM = "aws.use.default.credential.provider.chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_LABEL = "Default Credential Provider Chain";
@@ -180,9 +180,9 @@ public final class AWSCommonParams {
   private static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params,
                                                                final boolean fixedCredentials){
     final String credentialsType = getCredentialsType(params);
-    final boolean useDefaultCredProvChain = isUseDefaultCredentialProviderChain(params);
-    if (useDefaultCredProvChain)
+    if (isUseDefaultCredentialProviderChain(params)) {
       return null;
+    }
 
     if (isAccessKeysOption(credentialsType) || fixedCredentials){
       return new AWSCredentialsProvider() {
@@ -213,7 +213,7 @@ public final class AWSCommonParams {
 
         @Override
         public void refresh() {
-          synchronized (this){
+          synchronized (this) {
             mySessionCredentials.set(createSessionCredentials(params));
           }
         }
@@ -223,7 +223,10 @@ public final class AWSCommonParams {
     return null;
   }
 
-  public static boolean isUseDefaultCredentialProviderChain(@NotNull Map<String, String> params) {
+  private static boolean isUseDefaultCredentialProviderChain(@NotNull Map<String, String> params) {
+    if (TeamCityProperties.getBoolean(DEFAULT_CREDENTIALS_PROVIDER_CHAIN_DISABLED_PARAM)) {
+      return false;
+    }
     return Boolean.parseBoolean(params.get(USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM)) || Boolean.parseBoolean(USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM_OLD);
   }
 
@@ -340,8 +343,6 @@ public final class AWSCommonParams {
     final String accessKeyId = getAccessKeyId(params);
     final String secretAccessKey = getSecretAccessKey(params);
 
-    final boolean useDefaultCredProvChain = isUseDefaultCredentialProviderChain(params);
-
     final AWSClients awsClients;
     if (isTempCredentialsOption(getCredentialsType(params))) {
       final String iamRoleARN = getIamRoleArnParam(params);
@@ -349,13 +350,13 @@ public final class AWSCommonParams {
       final String sessionName = getStringOrDefault(params.get(TEMP_CREDENTIALS_SESSION_NAME_PARAM), TEMP_CREDENTIALS_SESSION_NAME_DEFAULT_PREFIX + new Date().getTime());
       final int sessionDuration = getIntegerOrDefault(params.get(TEMP_CREDENTIALS_DURATION_SEC_PARAM), TEMP_CREDENTIALS_DURATION_SEC_DEFAULT);
 
-      awsClients = useDefaultCredProvChain
-              ? fromSessionCredentials(iamRoleARN, externalID, sessionName, sessionDuration, regionName)
-              : fromSessionCredentials(accessKeyId, secretAccessKey, iamRoleARN, externalID, sessionName, sessionDuration, regionName);
+      awsClients = isUseDefaultCredentialProviderChain(params)
+                   ? fromSessionCredentials(iamRoleARN, externalID, sessionName, sessionDuration, regionName)
+                   : fromSessionCredentials(accessKeyId, secretAccessKey, iamRoleARN, externalID, sessionName, sessionDuration, regionName);
     } else {
-      awsClients = useDefaultCredProvChain ?
-              fromDefaultCredentialProviderChain(regionName) :
-              fromBasicCredentials(accessKeyId, secretAccessKey, regionName);
+      awsClients = isUseDefaultCredentialProviderChain(params) ?
+                   fromDefaultCredentialProviderChain(regionName) :
+                   fromBasicCredentials(accessKeyId, secretAccessKey, regionName);
     }
 
     final String environmentType = params.get(ENVIRONMENT_NAME_PARAM);

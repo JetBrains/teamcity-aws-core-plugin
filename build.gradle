@@ -19,7 +19,7 @@ plugins {
 }
 
 ext {
-    teamcityVersion = findProperty('teamcityVersion') ?: '2019.2-SNAPSHOT'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2019.2-SNAPSHOT'
 
     teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
     teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion

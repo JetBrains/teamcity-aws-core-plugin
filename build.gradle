@@ -27,7 +27,7 @@ ext {
 
     awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.703'
 
-    buildNumber = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
+    libVersion = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
 }
 
 idea {

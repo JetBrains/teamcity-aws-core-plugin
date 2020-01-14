@@ -60,7 +60,7 @@ task writePom {
             project {
                 groupId 'jetbrains.buildServer.util'
                 artifactId 'amazon-util'
-                version "$buildNumber"
+                version "$libVersion"
             }
         }
                 .whenConfigured { pom -> pom.dependencies.removeAll { it.scope.contains('test') } }

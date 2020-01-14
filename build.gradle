@@ -18,6 +18,12 @@ plugins {
     id 'idea'
 }
 
+repositories {
+    maven { url "https://download.jetbrains.com/teamcity-repository" }
+    mavenCentral()
+    mavenLocal()
+}
+
 ext {
     teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2019.2-SNAPSHOT'
 

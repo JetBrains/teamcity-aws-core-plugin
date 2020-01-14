@@ -19,9 +19,9 @@ plugins{
 }
 
 dependencies {
+    provided(group: 'org.jetbrains.teamcity.internal', name: 'server', version: "${teamcityVersion}")
     compile project(':aws-core-common')
     agent project(path: ':aws-core-agent', configuration: 'plugin')
-    compileOnly "org.jetbrains.teamcity.internal:server:${teamcityVersion}"
 }
 
 sourceCompatibility = "1.8"

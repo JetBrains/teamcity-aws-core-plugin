@@ -108,7 +108,7 @@
     </c:if>
     <tr id="${access_key_id_param}_row">
         <th><label for="${access_key_id_param}">${access_key_id_label}: <l:star/></label></th>
-        <td><props:textProperty name="${access_key_id_param}" className="longField" maxlength="256"/>
+        <td><props:textProperty name="${access_key_id_param}" className="longField" maxlength="256" noAutoComplete="true"/>
             <span class="smallNote">AWS account access key ID</span><span class="error" id="error_${access_key_id_param}"></span>
         </td>
     </tr>

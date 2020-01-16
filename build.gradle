@@ -18,10 +18,14 @@ plugins {
     id 'idea'
 }
 
-repositories {
+allprojects {
+  project.repositories.clear()
+
+  repositories {
+    mavenLocal()
     maven { url "https://download.jetbrains.com/teamcity-repository" }
     mavenCentral()
-    mavenLocal()
+  }
 }
 
 ext {
@@ -33,7 +37,7 @@ ext {
 
     awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.703'
 
-    libVersion = project.hasProperty('build.number') ? project.property('build.number') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
+    libVersion = teamcityVersion
 }
 
 idea {

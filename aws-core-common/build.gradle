@@ -28,9 +28,9 @@ configurations {
 }
 
 dependencies {
-    compile "com.fasterxml.jackson.core:jackson-databind:2.10.2"
-    compile "com.fasterxml.jackson.core:jackson-core:2.10.2"
-    compile "com.fasterxml.jackson.core:jackson-annotations:2.10.2"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.7.9"
+    compile "com.fasterxml.jackson.core:jackson-core:2.7.9"
+    compile "com.fasterxml.jackson.core:jackson-annotations:2.7.9"
     compile "com.amazonaws:aws-java-sdk-codedeploy:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-core:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-codepipeline:${awsSDKVersion}"

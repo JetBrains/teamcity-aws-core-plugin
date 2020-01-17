@@ -121,9 +121,11 @@ distZip {
     archiveName = "amazon-util.zip"
 }
 
+
 task assembleZipArtifact {
-    dependsOn prepareArtifacts
-    dependsOn assemble
+    dependsOn tasks.prepareArtifacts
+    dependsOn tasks.readPom
+    dependsOn tasks.assemble
 }
 
 task prepareUploadMavenArtifactsTask {

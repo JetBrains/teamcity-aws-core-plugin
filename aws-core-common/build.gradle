@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins{
     id 'maven'
+    id 'maven-publish'
+    id 'distribution'
 }
 
 configurations {
@@ -42,6 +46,7 @@ ext {
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
+    snapshot = true
 }
 
 task sourceJar(type: Jar) {
@@ -56,6 +61,7 @@ task writePom {
                 groupId 'jetbrains.buildServer.util'
                 artifactId 'amazon-util'
                 version "$libVersion"
+                snapshot = true
             }
         }
                 .whenConfigured { pom -> pom.dependencies.removeAll { it.scope.contains('test') } }
@@ -84,6 +90,40 @@ task readPom {
 
         readPom.ext.result = sw.toString()
     }
+}
+
+distributions {
+    main {
+        baseName = project.name
+        contents {
+            into('') {
+                from "install_pom.xml"
+                filter(ReplaceTokens, tokens: [teamcityVersion: teamcityVersion])
+                filteringCharset = 'UTF-8'
+            }
+            into('amazon-util') {
+                from("$libsDir/aws-core-common.jar") {
+                    rename "aws-core-common.jar", "amazon-util-${teamcityVersion}.jar"
+                }
+                dirMode = 0755
+                fileMode = 0644
+            }
+            into('amazon-util') {
+                from("$pomFile") {
+                    rename ".*\\.xml", "pom.xml"
+                }
+            }
+        }
+    }
+}
+
+distZip {
+    archiveName = "amazon-util.zip"
+}
+
+task assembleZipArtifact {
+    dependsOn prepareArtifacts
+    dependsOn assemble
 }
 
 task prepareUploadMavenArtifactsTask {

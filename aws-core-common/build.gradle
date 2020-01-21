@@ -16,7 +16,7 @@
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
-plugins{
+plugins {
     id 'maven'
     id 'maven-publish'
     id 'distribution'
@@ -50,7 +50,6 @@ ext {
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
-    snapshot = true
 }
 
 task sourceJar(type: Jar) {
@@ -65,7 +64,6 @@ task writePom {
                 groupId 'jetbrains.buildServer.util'
                 artifactId 'amazon-util'
                 version "$libVersion"
-                snapshot = true
             }
         }
                 .whenConfigured { pom -> pom.dependencies.removeAll { it.scope.contains('test') } }
@@ -114,23 +112,23 @@ distributions {
             }
             into('amazon-util') {
                 from("$pomFile") {
-                    rename ".*\\.xml", "pom.xml"
+                    rename "amazon-util-pom.xml", "pom.xml"
                 }
             }
         }
     }
 }
 
+task assembleZipArtifact {
+    dependsOn tasks.prepareArtifacts
+    dependsOn tasks.writePom
+}
+
 distZip {
+    dependsOn tasks.assembleZipArtifact
     archiveName = "amazon-util.zip"
 }
 
-
-task assembleZipArtifact {
-    dependsOn tasks.prepareArtifacts
-    dependsOn tasks.readPom
-    dependsOn tasks.assemble
-}
 
 task prepareUploadMavenArtifactsTask {
     dependsOn tasks.prepareArtifacts

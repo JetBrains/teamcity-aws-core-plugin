@@ -42,6 +42,7 @@ public class AWSClients {
   @Nullable private String myS3SignerType;
   @NotNull private final String myRegion;
   @NotNull private final ClientConfiguration myClientConfiguration;
+  private boolean myDisablePathStyleAccess = false;
 
   private AWSClients(@Nullable AWSCredentials credentials, @NotNull String region) {
     myCredentials = credentials;
@@ -113,7 +114,7 @@ public class AWSClients {
 
     final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
             .withClientConfiguration(myClientConfiguration)
-            .withPathStyleAccessEnabled(true);
+            .withPathStyleAccessEnabled(!myDisablePathStyleAccess);
 
     if (myCredentials != null) {
       builder.setCredentials(new AWSStaticCredentialsProvider(myCredentials));
@@ -159,6 +160,10 @@ public class AWSClients {
 
   public void setS3SignerType(@NotNull final String s3SignerType) {
     myS3SignerType = s3SignerType;
+  }
+
+  public void setDisablePathStyleAccess(final boolean disablePathStyleAccess) {
+    myDisablePathStyleAccess = disablePathStyleAccess;
   }
 
   @NotNull

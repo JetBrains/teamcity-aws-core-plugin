@@ -109,7 +109,7 @@ public class AWSClients {
   @NotNull
   public AmazonS3 createS3Client() {
     if (StringUtil.isNotEmpty(myS3SignerType)) {
-      myClientConfiguration.setSignerOverride(myS3SignerType);
+      myClientConfiguration.withSignerOverride(myS3SignerType);
     }
 
     final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
@@ -117,11 +117,11 @@ public class AWSClients {
             .withPathStyleAccessEnabled(!myDisablePathStyleAccess);
 
     if (myCredentials != null) {
-      builder.setCredentials(new AWSStaticCredentialsProvider(myCredentials));
+      builder.withCredentials(new AWSStaticCredentialsProvider(myCredentials));
     }
 
     if (StringUtil.isNotEmpty(myServiceEndpoint)) {
-      builder.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, myRegion));
+      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, myRegion));
     } else {
       builder.withRegion(myRegion);
     }

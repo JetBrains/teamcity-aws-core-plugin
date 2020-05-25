@@ -5,7 +5,7 @@
       <configuration />
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/../aws-core-common/target/classes" />
     <output-test url="file://$MODULE_DIR$/../aws-core-common/target/test-classes" />
     <content url="file://$MODULE_DIR$/../aws-core-common">
@@ -13,7 +13,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/../aws-core-common/target" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="common" />
     <orderEntry type="module-library" exported="">

@@ -29,13 +29,13 @@ allprojects {
 }
 
 ext {
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2020.1-SNAPSHOT'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2020.1.2-SNAPSHOT'
 
     teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
     teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
     teamcityJavaHome = System.properties['java.home']
 
-    awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.703'
+    awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.816'
 
     libVersion = findProperty('awsCoreVersion') ?: teamcityVersion
 }

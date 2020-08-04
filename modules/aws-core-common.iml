@@ -82,5 +82,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="aws-sdk-services" level="project" />
   </component>
 </module>

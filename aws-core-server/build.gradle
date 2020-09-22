@@ -19,9 +19,15 @@ plugins{
 }
 
 dependencies {
-    provided(group: 'org.jetbrains.teamcity.internal', name: 'server', version: "${teamcityVersion}")
+    provided(group: 'org.jetbrains.teamcity.internal', name: 'server', version: "${teamcityVersion}") {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'commons-codec', module: 'commons-codec'
+    }
     compile project(':aws-core-common')
+
     agent project(path: ':aws-core-agent', configuration: 'plugin')
+    server group: 'commons-codec', name: 'commons-codec', version: "1.11"
 }
 
 sourceCompatibility = "1.8"

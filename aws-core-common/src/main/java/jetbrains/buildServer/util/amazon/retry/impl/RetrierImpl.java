@@ -54,8 +54,7 @@ public class RetrierImpl implements Retrier {
           if (e instanceof RuntimeException) {
             exception = (RuntimeException)e;
           } else {
-            final String message = AWSException.getMessage(e);
-            exception = new RuntimeException(message != null ? message : e.getMessage(), e);
+            exception = new RuntimeException(e.getMessage(), e);
           }
         }
         onFailure(callable, retry, e);

@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="AWS Tests">
+  <test name="AWS tests">
+    <classes>
+      <class name="jetbrains.buildServer.util.amazon.retry.impl.RetrierTest"/>
+      <class name="jetbrains.buildServer.util.amazon.S3UtilTest"/>
+      <class name="jetbrains.buildServer.util.amazon.Java9CompatibilityTest"/>
+      <class name="jetbrains.buildServer.util.amazon.AWSCommonParamsTest"/>
+    </classes>
+  </test>
+</suite>

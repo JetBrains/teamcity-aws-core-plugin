@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+package jetbrains.buildServer.util.amazon;
+
+import java.util.Map;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.util.CollectionsUtil;
-import jetbrains.buildServer.util.amazon.AWSCommonParams;
 import org.jetbrains.annotations.NotNull;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
-
-import java.util.Map;
 
 import static jetbrains.buildServer.util.amazon.AWSCommonParams.*;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -34,9 +34,9 @@ public class AWSCommonParamsTest extends BaseTestCase {
   public void mandatory_params() {
     then(validate()).as("Must detect empty params").hasSize(4).
       containsEntry(REGION_NAME_PARAM, "AWS region must not be empty").
-      containsEntry(CREDENTIALS_TYPE_PARAM, "Credentials type must not be empty").
-      containsEntry(ACCESS_KEY_ID_PARAM, "Access key ID must not be empty").
-      containsEntry(SECURE_SECRET_ACCESS_KEY_PARAM, "Secret access key must not be empty");
+                      containsEntry(CREDENTIALS_TYPE_PARAM, "Credentials type must not be empty").
+                      containsEntry(ACCESS_KEY_ID_PARAM, "Access key ID must not be empty").
+                      containsEntry(SECURE_SECRET_ACCESS_KEY_PARAM, "Secret access key must not be empty");
   }
 
   @Test
@@ -58,7 +58,7 @@ public class AWSCommonParamsTest extends BaseTestCase {
   public void default_credentials_provider_chain_true() {
     then(validate(USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM, "true")).as("must not require params").
       doesNotContainKey(ACCESS_KEY_ID_PARAM).
-      doesNotContainKey(SECURE_SECRET_ACCESS_KEY_PARAM);
+                                                                         doesNotContainKey(SECURE_SECRET_ACCESS_KEY_PARAM);
   }
 
   @Test

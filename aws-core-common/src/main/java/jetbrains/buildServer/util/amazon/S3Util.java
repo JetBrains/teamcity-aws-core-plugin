@@ -18,29 +18,151 @@ package jetbrains.buildServer.util.amazon;
 
 import com.amazonaws.client.builder.ExecutorFactory;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.transfer.*;
+import com.amazonaws.services.s3.transfer.AbortableTransfer;
+import com.amazonaws.services.s3.transfer.Transfer;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.intellij.openapi.diagnostic.Logger;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import jetbrains.buildServer.Used;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
+import jetbrains.buildServer.util.amazon.retry.Retrier;
+import jetbrains.buildServer.util.amazon.retry.impl.ExponentialDelayListener;
+import jetbrains.buildServer.util.amazon.retry.impl.LoggingRetrierListener;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author vbedrosova
  */
 public final class S3Util {
-
+  private static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
+  @NotNull
+  private static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
+  @NotNull
   private static final Logger LOG = Logger.getInstance(S3Util.class.getName());
 
-  public static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
-  public static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
+  @Used("codedeploy,codebuild,codepipeline")
+  @NotNull
+  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull AmazonS3 s3Client, @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
+    return withTransferManager(s3Client, withTransferManager, S3AdvancedConfiguration.NULL_CONFIG);
+  }
+
+  @NotNull
+  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull final AmazonS3 s3Client,
+                                                                       @NotNull final WithTransferManager<T> runnable,
+                                                                       @NotNull final S3AdvancedConfiguration advancedConfiguration) throws Throwable {
+
+    final TransferManager manager = TransferManagerBuilder.standard()
+                                                          .withS3Client(s3Client)
+                                                          .withShutDownThreadPools(true)
+                                                          .withMinimumUploadPartSize(advancedConfiguration.getMinimumUploadPartSize())
+                                                          .withMultipartUploadThreshold(advancedConfiguration.getMultipartUploadThreshold())
+                                                          .withMultipartCopyThreshold(advancedConfiguration.getMultipartUploadThreshold())
+                                                          .withExecutorFactory(createExecutorFactory(createDefaultExecutorService(advancedConfiguration.getNThreads())))
+                                                          .build();
+
+    final Retrier retrier = Retrier.withRetries(advancedConfiguration.getRetriesNum())
+                                   .registerListener(new LoggingRetrierListener(LOG))
+                                   .registerListener(new ExponentialDelayListener(advancedConfiguration.getRetryDelay()));
+
+    try {
+      final List<T> transfers = new ArrayList<>(runnable.run(manager));
+
+      final AtomicBoolean isInterrupted = new AtomicBoolean(false);
+
+      if (runnable instanceof InterruptAwareWithTransferManager) {
+        final TransferManagerInterruptHook hook = () -> {
+          isInterrupted.set(true);
+
+          for (T transfer : transfers) {
+            boolean aborted = false;
+            if (transfer instanceof AbortableTransfer) {
+              ((AbortableTransfer)transfer).abort();
+              aborted = true;
+            } else {
+              try {
+                final Method abort = transfer.getClass().getDeclaredMethod("abort");
+                if (abort != null) {
+                  abort.invoke(transfer);
+                  aborted = true;
+                }
+              } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
+              }
+            }
+            if (!aborted) {
+              LOG.warn("Transfer type " + transfer.getClass().getName() + " does not support interrupt");
+            }
+          }
+        };
+        ((InterruptAwareWithTransferManager<T>)runnable).setInterruptHook(hook);
+      }
+
+      Throwable exception = null;
+      for (T transfer : transfers) {
+        try {
+          retrier.execute(transfer::waitForCompletion);
+        } catch (Throwable t) {
+          if (!isInterrupted.get()) {
+            if (exception != null) {
+              exception.addSuppressed(t);
+            } else {
+              exception = t;
+            }
+          }
+        }
+      }
+      if (exception != null) {
+        throw exception;
+      }
+
+      return CollectionsUtil.filterCollection(transfers, data -> Transfer.TransferState.Completed == data.getState());
+    } finally {
+      manager.shutdownNow(advancedConfiguration.getShutdownClient());
+      if (advancedConfiguration.getShutdownClient()) {
+        shutdownClient(s3Client);
+      }
+    }
+  }
+
+  public static void shutdownClient(@NotNull final AmazonS3 s3Client) {
+    try {
+      LOG.debug(() -> "Shutting down s3 client " + s3Client + " started.");
+      s3Client.shutdown();
+      LOG.debug(() -> "Shutting down s3 client " + s3Client + " finished.");
+    } catch (Exception e) {
+      LOG.warnAndDebugDetails("Shutting down s3 client " + s3Client + " failed.", e);
+    }
+  }
+
+  @NotNull
+  private static ExecutorFactory createExecutorFactory(@NotNull final ExecutorService executorService) {
+    return () -> executorService;
+  }
+
+  public static ExecutorService createDefaultExecutorService(final int nThreads) {
+    final ThreadFactory threadFactory = new ThreadFactory() {
+      private final AtomicInteger threadCount = new AtomicInteger(1);
+
+      public Thread newThread(@NotNull Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName("amazon-util-s3-transfer-manager-worker-" + threadCount.getAndIncrement());
+        thread.setContextClassLoader(getClass().getClassLoader());
+        return thread;
+      }
+    };
+    return Executors.newFixedThreadPool(nThreads, threadFactory);
+  }
 
   public interface WithTransferManager<T extends Transfer> {
     @NotNull
@@ -61,109 +183,86 @@ public final class S3Util {
     void setInterruptHook(@NotNull TransferManagerInterruptHook hook);
   }
 
-  @Deprecated
-  @NotNull
-  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull AmazonS3 s3Client, @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
-    return withTransferManager(s3Client, false, withTransferManager);
-  }
+  public static class S3AdvancedConfiguration {
+    @NotNull
+    private static final S3AdvancedConfiguration NULL_CONFIG = new S3AdvancedConfiguration().withRetryDelayMs(0).withRetryNum(0);
+    @Nullable
+    private Long myMinimumUploadPartSize;
+    @Nullable
+    private Long myMultipartUploadThreshold;
+    private boolean shutdownClient = false;
+    private int nRetries = 0;
+    private int retryDelay = 0;
+    private int nThreads = TeamCityProperties.getInteger(S3_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
 
-  @NotNull
-  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull final AmazonS3 s3Client, final boolean shutdownClient,
-                                                                        @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
-
-    final TransferManager manager = TransferManagerBuilder.standard().withS3Client(s3Client).withExecutorFactory(createExecutorFactory(createDefaultExecutorService())).withShutDownThreadPools(true).build();
-
-    try {
-      final ArrayList<T> transfers = new ArrayList<T>(withTransferManager.run(manager));
-
-      final AtomicBoolean isInterrupted = new AtomicBoolean(false);
-
-      if (withTransferManager instanceof InterruptAwareWithTransferManager) {
-        final TransferManagerInterruptHook hook = new TransferManagerInterruptHook() {
-          @Override
-          public void interrupt() throws Throwable {
-            isInterrupted.set(true);
-
-            for (T transfer : transfers) {
-              if (transfer instanceof Download) {
-                ((Download) transfer).abort();
-                continue;
-              }
-
-              if (transfer instanceof Upload) {
-                ((Upload) transfer).abort();
-                continue;
-              }
-
-              if (transfer instanceof MultipleFileDownload) {
-                ((MultipleFileDownload) transfer).abort();
-                continue;
-              }
-
-              LOG.warn("Transfer type " + transfer.getClass().getName() + " does not support interrupt");
-            }
-          }
-        };
-        ((InterruptAwareWithTransferManager) withTransferManager).setInterruptHook(hook);
-      }
-
-      for (T transfer : transfers) {
-        try {
-          transfer.waitForCompletion();
-        } catch (Throwable t) {
-          if (!isInterrupted.get()) {
-            throw t;
-          }
-        }
-      }
-
-      return CollectionsUtil.filterCollection(transfers, data -> Transfer.TransferState.Completed == data.getState());
-    } finally {
-      manager.shutdownNow(shutdownClient);
-      if (shutdownClient) {
-        shutdownClient(s3Client);
-      }
+    @Nullable
+    public Long getMinimumUploadPartSize() {
+      return myMinimumUploadPartSize;
     }
-  }
 
-  @NotNull
-  private static ExecutorFactory createExecutorFactory(@NotNull final ExecutorService executorService) {
-    return new ExecutorFactory() {
-      @Override
-      public ExecutorService newExecutor() {
-        return executorService;
-      }
-    };
-  }
-
-  @NotNull
-  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull Map<String, String> params, @NotNull final WithTransferManager<T> withTransferManager)
-    throws Throwable {
-    return AWSCommonParams.withAWSClients(params, clients -> withTransferManager(clients.createS3Client(), true, withTransferManager));
-  }
-
-  public static void shutdownClient(@NotNull final AmazonS3 s3Client) {
-    try {
-      LOG.debug(() -> "Shutting down s3 client " + s3Client + " started.");
-      s3Client.shutdown();
-      LOG.debug(() -> "Shutting down s3 client " + s3Client + " finished.");
-    } catch (Exception e) {
-      LOG.warnAndDebugDetails("Shutting down s3 client " + s3Client + " failed.", e);
+    public S3AdvancedConfiguration withMinimumUploadPartSize(@Nullable final Long multipartChunkSize) {
+      myMinimumUploadPartSize = multipartChunkSize;
+      return this;
     }
-  }
 
-  @NotNull
-  public static ExecutorService createDefaultExecutorService() {
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      private final AtomicInteger threadCount = new AtomicInteger(1);
+    @Nullable
+    public Long getMultipartUploadThreshold() {
+      return myMultipartUploadThreshold;
+    }
 
-      public Thread newThread(@NotNull Runnable r) {
-        Thread thread = new Thread(r);
-        thread.setName("amazon-util-s3-transfer-manager-worker-" + threadCount.getAndIncrement());
-        thread.setContextClassLoader(getClass().getClassLoader());
-        return thread;
+    public S3AdvancedConfiguration withMultipartUploadThreshold(@Nullable final Long multipartThreshold) {
+      myMultipartUploadThreshold = multipartThreshold;
+      return this;
+    }
+
+    public boolean getShutdownClient() {
+      return shutdownClient;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withShutdownClient() {
+      this.shutdownClient = true;
+      return this;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withRetryNum(final int nRetries) {
+      if (nRetries < 0) {
+        throw new IllegalArgumentException("nRetries should be >= 0");
       }
-    };
-    return Executors.newFixedThreadPool(TeamCityProperties.getInteger(S3_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE), threadFactory);
+      this.nRetries = nRetries;
+      return this;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withRetryDelayMs(final int delayMs) {
+      if (delayMs < 0) {
+        throw new IllegalArgumentException("delayMs should be >= 0");
+      }
+      this.retryDelay = delayMs;
+      return this;
+    }
+
+    @SuppressWarnings("unused")
+    @NotNull
+    public S3AdvancedConfiguration withNThreads(final int nThreads) {
+      if (nThreads < 1) {
+        throw new IllegalArgumentException("NThreads should be > 0");
+      }
+      this.nThreads = nThreads;
+      return this;
+    }
+
+    public int getRetriesNum() {
+      return nRetries;
+    }
+
+    public int getRetryDelay() {
+      return retryDelay;
+    }
+
+    public int getNThreads() {
+      return nThreads;
+    }
   }
 }

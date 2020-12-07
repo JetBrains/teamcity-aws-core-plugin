@@ -18,32 +18,41 @@ package jetbrains.buildServer.util.amazon;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import java.util.Map;
+import jetbrains.buildServer.Used;
 import jetbrains.buildServer.util.CollectionsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 /**
  * @author vbedrosova
  */
 public class AWSException extends RuntimeException {
-
-  // "CODEDEPLOY_" prefix is for backward compatibility
-  public static String SERVICE_PROBLEM_TYPE = "AWS_SERVICE";
-  public static String CLIENT_PROBLEM_TYPE = "AWS_CLIENT";
-  public static String EXCEPTION_BUILD_PROBLEM_TYPE = "AWS_EXCEPTION";
+  @NotNull
   private static final String NETWORK_PROBLEM_MESSAGE = "Unable to execute HTTP request";
-
+  @Used("CodeDeploy")
+  @NotNull
+  public static String SERVICE_PROBLEM_TYPE = "AWS_SERVICE";
+  @Used("CodeDeploy")
+  @NotNull
+  public static String CLIENT_PROBLEM_TYPE = "AWS_CLIENT";
+  @Used("CodeDeploy")
+  @NotNull
+  public static String EXCEPTION_BUILD_PROBLEM_TYPE = "AWS_EXCEPTION";
+  @NotNull
+  @Used("CodeDeploy")
   public static Map<String, String> PROBLEM_TYPES = CollectionsUtil.asMap(
     SERVICE_PROBLEM_TYPE, "Amazon service exception",
     CLIENT_PROBLEM_TYPE, "Amazon client exception",
     EXCEPTION_BUILD_PROBLEM_TYPE, "Amazon unexpected exception");
+  @Nullable
+  private final String myIdentity;
+  @NotNull
+  private final String myType;
+  @Nullable
+  private final String myDetails;
 
-  @Nullable private final String myIdentity;
-  @NotNull private final String myType;
-  @Nullable private final String myDetails;
-
+  @Used("CodeDeploy")
   public AWSException(@NotNull String message, @Nullable String identity, @NotNull String type, @Nullable String details) {
     super(message);
     myIdentity = identity;
@@ -73,12 +82,13 @@ public class AWSException extends RuntimeException {
     return "Unexpected error: " + removeTrailingDot(t.getMessage());
   }
 
+  @Used("CodeDeploy")
   @Nullable
   public static String getIdentity(@NotNull Throwable t) {
     if (t instanceof AWSException) return ((AWSException) t).getIdentity();
     if (t instanceof AmazonServiceException) {
       final AmazonServiceException ase = (AmazonServiceException) t;
-      return ase.getServiceName() + ase.getErrorType().name() + String.valueOf(ase.getStatusCode()) + ase.getErrorCode();
+      return ase.getServiceName() + ase.getErrorType().name() + ase.getStatusCode() + ase.getErrorCode();
     }
     return null;
   }
@@ -91,6 +101,7 @@ public class AWSException extends RuntimeException {
     return EXCEPTION_BUILD_PROBLEM_TYPE;
   }
 
+  @Used("CodeDeploy")
   @Nullable
   public static String getDetails(@NotNull Throwable t) {
     if (t instanceof AWSException) return ((AWSException) t).getDetails();
@@ -111,6 +122,7 @@ public class AWSException extends RuntimeException {
     return (msg != null && msg.endsWith(".")) ? msg.substring(0, msg.length() - 1) : msg;
   }
 
+  @Used("CodeDeploy")
   @NotNull
   public String getIdentity() {
     return myIdentity == null ? getMessage() :  myIdentity;

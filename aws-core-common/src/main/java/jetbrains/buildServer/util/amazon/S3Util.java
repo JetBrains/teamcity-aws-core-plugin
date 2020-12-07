@@ -190,6 +190,8 @@ public final class S3Util {
     private Long myMinimumUploadPartSize;
     @Nullable
     private Long myMultipartUploadThreshold;
+    @Nullable
+    private Integer connectionTimeout = null;
     private boolean shutdownClient = false;
     private int nRetries = 0;
     private int retryDelay = 0;
@@ -208,6 +210,21 @@ public final class S3Util {
     @Nullable
     public Long getMultipartUploadThreshold() {
       return myMultipartUploadThreshold;
+    }
+
+    @Nullable
+    public Integer getConnectionTimeout() {
+      return connectionTimeout;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withConnectionTimeout(@Nullable final Integer connectionTimeout) {
+      if (connectionTimeout == null || connectionTimeout == -1) {
+        this.connectionTimeout = null;
+      } else {
+        this.connectionTimeout = connectionTimeout;
+      }
+      return this;
     }
 
     public S3AdvancedConfiguration withMultipartUploadThreshold(@Nullable final Long multipartThreshold) {

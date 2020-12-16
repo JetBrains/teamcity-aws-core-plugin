@@ -16,7 +16,10 @@
 
 package jetbrains.buildServer.util.amazon;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.client.builder.ExecutorFactory;
+import com.amazonaws.retry.RetryUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.transfer.AbortableTransfer;
 import com.amazonaws.services.s3.transfer.Transfer;
@@ -28,6 +31,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -37,6 +41,7 @@ import jetbrains.buildServer.Used;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.amazon.retry.Retrier;
+import jetbrains.buildServer.util.amazon.retry.impl.AbortingListener;
 import jetbrains.buildServer.util.amazon.retry.impl.ExponentialDelayListener;
 import jetbrains.buildServer.util.amazon.retry.impl.LoggingRetrierListener;
 import org.jetbrains.annotations.NotNull;
@@ -46,9 +51,9 @@ import org.jetbrains.annotations.Nullable;
  * @author vbedrosova
  */
 public final class S3Util {
-  private static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
+  public static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
   @NotNull
-  private static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
+  public static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
   @NotNull
   private static final Logger LOG = Logger.getInstance(S3Util.class.getName());
 
@@ -73,6 +78,21 @@ public final class S3Util {
                                                           .build();
 
     final Retrier retrier = Retrier.withRetries(advancedConfiguration.getRetriesNum())
+                                   .registerListener(new AbortingListener() {
+                                     @Override
+                                     public <R> void onFailure(@NotNull final Callable<R> callable, final int retry, @NotNull final Exception e) {
+                                       if (e instanceof SdkClientException) {
+                                         if (RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+                                           return;
+                                         }
+                                       } else if (e instanceof AmazonServiceException) {
+                                         if (RetryUtils.isRetryableServiceException((AmazonServiceException)e)) {
+                                           return;
+                                         }
+                                       }
+                                       super.onFailure(callable, retry, e);
+                                     }
+                                   })
                                    .registerListener(new LoggingRetrierListener(LOG))
                                    .registerListener(new ExponentialDelayListener(advancedConfiguration.getRetryDelay()));
 
@@ -128,8 +148,8 @@ public final class S3Util {
 
       return CollectionsUtil.filterCollection(transfers, data -> Transfer.TransferState.Completed == data.getState());
     } finally {
-      manager.shutdownNow(advancedConfiguration.getShutdownClient());
-      if (advancedConfiguration.getShutdownClient()) {
+      manager.shutdownNow(advancedConfiguration.shouldShutdownClient());
+      if (advancedConfiguration.shouldShutdownClient()) {
         shutdownClient(s3Client);
       }
     }
@@ -185,55 +205,33 @@ public final class S3Util {
 
   public static class S3AdvancedConfiguration {
     @NotNull
-    private static final S3AdvancedConfiguration NULL_CONFIG = new S3AdvancedConfiguration().withRetryDelayMs(0).withRetryNum(0);
+    private static final S3AdvancedConfiguration NULL_CONFIG = new S3AdvancedConfiguration().withRetryDelayMs(0).withNumberOfRetries(0);
     @Nullable
     private Long myMinimumUploadPartSize;
     @Nullable
     private Long myMultipartUploadThreshold;
-    @Nullable
-    private Integer connectionTimeout = null;
+    private int connectionTimeout;
     private boolean shutdownClient = false;
+    private boolean presignedMultipartUploadEnabled = false;
     private int nRetries = 0;
     private int retryDelay = 0;
     private int nThreads = TeamCityProperties.getInteger(S3_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
-
-    @Nullable
-    public Long getMinimumUploadPartSize() {
-      return myMinimumUploadPartSize;
-    }
 
     public S3AdvancedConfiguration withMinimumUploadPartSize(@Nullable final Long multipartChunkSize) {
       myMinimumUploadPartSize = multipartChunkSize;
       return this;
     }
 
-    @Nullable
-    public Long getMultipartUploadThreshold() {
-      return myMultipartUploadThreshold;
-    }
-
-    @Nullable
-    public Integer getConnectionTimeout() {
-      return connectionTimeout;
+    @NotNull
+    public S3AdvancedConfiguration withConnectionTimeout(final int connectionTimeout) {
+      this.connectionTimeout = connectionTimeout;
+      return this;
     }
 
     @NotNull
-    public S3AdvancedConfiguration withConnectionTimeout(@Nullable final Integer connectionTimeout) {
-      if (connectionTimeout == null || connectionTimeout == -1) {
-        this.connectionTimeout = null;
-      } else {
-        this.connectionTimeout = connectionTimeout;
-      }
-      return this;
-    }
-
     public S3AdvancedConfiguration withMultipartUploadThreshold(@Nullable final Long multipartThreshold) {
       myMultipartUploadThreshold = multipartThreshold;
       return this;
-    }
-
-    public boolean getShutdownClient() {
-      return shutdownClient;
     }
 
     @NotNull
@@ -243,7 +241,7 @@ public final class S3Util {
     }
 
     @NotNull
-    public S3AdvancedConfiguration withRetryNum(final int nRetries) {
+    public S3AdvancedConfiguration withNumberOfRetries(final int nRetries) {
       if (nRetries < 0) {
         throw new IllegalArgumentException("nRetries should be >= 0");
       }
@@ -262,11 +260,17 @@ public final class S3Util {
 
     @SuppressWarnings("unused")
     @NotNull
-    public S3AdvancedConfiguration withNThreads(final int nThreads) {
+    public S3AdvancedConfiguration withNumberOfThreads(final int nThreads) {
       if (nThreads < 1) {
         throw new IllegalArgumentException("NThreads should be > 0");
       }
       this.nThreads = nThreads;
+      return this;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withPresignedMultipartUploadEnabled(final boolean enabled) {
+      this.presignedMultipartUploadEnabled = enabled;
       return this;
     }
 
@@ -280,6 +284,28 @@ public final class S3Util {
 
     public int getNThreads() {
       return nThreads;
+    }
+
+    public boolean shouldShutdownClient() {
+      return shutdownClient;
+    }
+
+    @Nullable
+    public Long getMultipartUploadThreshold() {
+      return myMultipartUploadThreshold;
+    }
+
+    @Nullable
+    public Long getMinimumUploadPartSize() {
+      return myMinimumUploadPartSize;
+    }
+
+    public int getConnectionTimeout() {
+      return connectionTimeout;
+    }
+
+    public boolean isPresignedMultipartUploadEnabled() {
+      return presignedMultipartUploadEnabled;
     }
   }
 }

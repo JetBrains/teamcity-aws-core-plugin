@@ -44,7 +44,7 @@ import static jetbrains.buildServer.util.amazon.AWSCommonParams.*;
  */
 
 @Test
-public class S3UtilTest extends BaseTestCase {
+public class S3UtilIntegrationTest extends BaseTestCase {
   private static final String BUCKET_NAME = "amazon.util.s3.util.test";
   private AmazonS3 myS3Client;
 
@@ -152,7 +152,7 @@ public class S3UtilTest extends BaseTestCase {
         break;
       }
     }
-    myS3Client.deleteBucket(S3UtilTest.BUCKET_NAME);
+    myS3Client.deleteBucket(S3UtilIntegrationTest.BUCKET_NAME);
   }
 
   private void createS3Client(@NotNull final Map<String, String> params) {

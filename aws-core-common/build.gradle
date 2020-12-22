@@ -87,6 +87,13 @@ task readPom {
     }
 }
 
+test {
+    useTestNG()
+    options {
+        systemProperties(System.getProperties())
+    }
+}
+
 distributions {
     main {
         baseName = project.name

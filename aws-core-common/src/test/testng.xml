@@ -3,7 +3,7 @@
   <test name="AWS tests">
     <classes>
       <class name="jetbrains.buildServer.util.amazon.retry.impl.RetrierTest"/>
-      <class name="jetbrains.buildServer.util.amazon.S3UtilTest"/>
+      <class name="jetbrains.buildServer.util.amazon.S3UtilIntegrationTest"/>
       <class name="jetbrains.buildServer.util.amazon.Java9CompatibilityTest"/>
       <class name="jetbrains.buildServer.util.amazon.AWSCommonParamsTest"/>
     </classes>

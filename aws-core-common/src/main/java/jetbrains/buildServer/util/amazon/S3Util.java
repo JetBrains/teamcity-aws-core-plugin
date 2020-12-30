@@ -54,6 +54,9 @@ public final class S3Util {
   public static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
   @NotNull
   public static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
+  public static final int DEFAULT_S3_URL_LIFETIME_SEC = 600;
+  public static final int DEFAULT_S3_RETRY_DELAY_ON_ERROR_MS = 0;
+  public static final int DEFAULT_S3_NUMBER_OF_RETRIES_ON_ERROR = 5;
   @NotNull
   private static final Logger LOG = Logger.getInstance(S3Util.class.getName());
 
@@ -170,6 +173,7 @@ public final class S3Util {
     return () -> executorService;
   }
 
+  @Used("code-deploy-plugin")
   public static ExecutorService createDefaultExecutorService(final int nThreads) {
     final ThreadFactory threadFactory = new ThreadFactory() {
       private final AtomicInteger threadCount = new AtomicInteger(1);
@@ -213,8 +217,9 @@ public final class S3Util {
     private int connectionTimeout;
     private boolean shutdownClient = false;
     private boolean presignedMultipartUploadEnabled = false;
-    private int nRetries = 0;
-    private int retryDelay = 0;
+    private int nRetries = DEFAULT_S3_NUMBER_OF_RETRIES_ON_ERROR;
+    private int retryDelay = DEFAULT_S3_RETRY_DELAY_ON_ERROR_MS;
+    private int ttlSeconds = DEFAULT_S3_URL_LIFETIME_SEC;
     private int nThreads = TeamCityProperties.getInteger(S3_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
 
     public S3AdvancedConfiguration withMinimumUploadPartSize(@Nullable final Long multipartChunkSize) {
@@ -274,6 +279,12 @@ public final class S3Util {
       return this;
     }
 
+    @NotNull
+    public S3AdvancedConfiguration withUrlTtlSeconds(final int ttlSeconds) {
+      this.ttlSeconds = ttlSeconds;
+      return this;
+    }
+
     public int getRetriesNum() {
       return nRetries;
     }
@@ -306,6 +317,10 @@ public final class S3Util {
 
     public boolean isPresignedMultipartUploadEnabled() {
       return presignedMultipartUploadEnabled;
+    }
+
+    public int getUrlTtlSeconds() {
+      return ttlSeconds;
     }
   }
 }

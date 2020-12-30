@@ -53,10 +53,11 @@ import org.jetbrains.annotations.Nullable;
 public final class S3Util {
   public static final int DEFAULT_S3_THREAD_POOL_SIZE = 10;
   @NotNull
-  public static final String S3_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
-  public static final int DEFAULT_S3_URL_LIFETIME_SEC = 600;
-  public static final int DEFAULT_S3_RETRY_DELAY_ON_ERROR_MS = 0;
-  public static final int DEFAULT_S3_NUMBER_OF_RETRIES_ON_ERROR = 5;
+  public static final String TRANSFER_MANAGER_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
+  public static final int DEFAULT_URL_LIFETIME_SEC = 600;
+  public static final int DEFAULT_RETRY_DELAY_ON_ERROR_MS = 0;
+  public static final int DEFAULT_NUMBER_OF_RETRIES_ON_ERROR = 5;
+  public static final int DEFAULT_PRESIGNED_URL_MAX_CHUNK_SIZE = 1000;
   @NotNull
   private static final Logger LOG = Logger.getInstance(S3Util.class.getName());
 
@@ -215,13 +216,23 @@ public final class S3Util {
     @Nullable
     private Long myMultipartUploadThreshold;
     private int connectionTimeout;
-    private boolean shutdownClient = false;
-    private boolean presignedMultipartUploadEnabled = false;
-    private int nRetries = DEFAULT_S3_NUMBER_OF_RETRIES_ON_ERROR;
-    private int retryDelay = DEFAULT_S3_RETRY_DELAY_ON_ERROR_MS;
-    private int ttlSeconds = DEFAULT_S3_URL_LIFETIME_SEC;
-    private int nThreads = TeamCityProperties.getInteger(S3_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
+    private boolean myShutdownClient = false;
+    private boolean myPresignedMultipartUploadEnabled = false;
+    private int myPresignedUrlMaxChunkSize = DEFAULT_PRESIGNED_URL_MAX_CHUNK_SIZE;
+    private int myNumberOfRetriesOnError = DEFAULT_NUMBER_OF_RETRIES_ON_ERROR;
+    private int myRetryDelayOnErrorMs = DEFAULT_RETRY_DELAY_ON_ERROR_MS;
+    private int myTtlSeconds = DEFAULT_URL_LIFETIME_SEC;
+    private int myNThreads = TeamCityProperties.getInteger(TRANSFER_MANAGER_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
 
+    @NotNull
+    public S3AdvancedConfiguration withPresignedUrlsChunkSize(@Nullable final Integer presignedUrlsChunkSize) {
+      if (presignedUrlsChunkSize != null) {
+         myPresignedUrlMaxChunkSize = presignedUrlsChunkSize;
+      }
+      return this;
+    }
+
+    @NotNull
     public S3AdvancedConfiguration withMinimumUploadPartSize(@Nullable final Long multipartChunkSize) {
       myMinimumUploadPartSize = multipartChunkSize;
       return this;
@@ -241,7 +252,7 @@ public final class S3Util {
 
     @NotNull
     public S3AdvancedConfiguration withShutdownClient() {
-      this.shutdownClient = true;
+      this.myShutdownClient = true;
       return this;
     }
 
@@ -250,7 +261,7 @@ public final class S3Util {
       if (nRetries < 0) {
         throw new IllegalArgumentException("nRetries should be >= 0");
       }
-      this.nRetries = nRetries;
+      this.myNumberOfRetriesOnError = nRetries;
       return this;
     }
 
@@ -259,7 +270,7 @@ public final class S3Util {
       if (delayMs < 0) {
         throw new IllegalArgumentException("delayMs should be >= 0");
       }
-      this.retryDelay = delayMs;
+      this.myRetryDelayOnErrorMs = delayMs;
       return this;
     }
 
@@ -269,36 +280,40 @@ public final class S3Util {
       if (nThreads < 1) {
         throw new IllegalArgumentException("NThreads should be > 0");
       }
-      this.nThreads = nThreads;
+      this.myNThreads = nThreads;
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withPresignedMultipartUploadEnabled(final boolean enabled) {
-      this.presignedMultipartUploadEnabled = enabled;
+      this.myPresignedMultipartUploadEnabled = enabled;
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withUrlTtlSeconds(final int ttlSeconds) {
-      this.ttlSeconds = ttlSeconds;
+      this.myTtlSeconds = ttlSeconds;
       return this;
     }
 
+    public int getPresignedUrlMaxChunkSize() {
+      return myPresignedUrlMaxChunkSize;
+    }
+
     public int getRetriesNum() {
-      return nRetries;
+      return myNumberOfRetriesOnError;
     }
 
     public int getRetryDelay() {
-      return retryDelay;
+      return myRetryDelayOnErrorMs;
     }
 
     public int getNThreads() {
-      return nThreads;
+      return myNThreads;
     }
 
     public boolean shouldShutdownClient() {
-      return shutdownClient;
+      return myShutdownClient;
     }
 
     @Nullable
@@ -316,11 +331,11 @@ public final class S3Util {
     }
 
     public boolean isPresignedMultipartUploadEnabled() {
-      return presignedMultipartUploadEnabled;
+      return myPresignedMultipartUploadEnabled;
     }
 
     public int getUrlTtlSeconds() {
-      return ttlSeconds;
+      return myTtlSeconds;
     }
   }
 }

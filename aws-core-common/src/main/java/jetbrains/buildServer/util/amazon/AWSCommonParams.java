@@ -428,7 +428,9 @@ public final class AWSCommonParams {
       if (StringUtil.isEmptyOrSpaces(p)) continue;
 
       p = FileUtil.toSystemIndependentName(p);
-      p = p.replace(baseDir, "");
+      if (baseDir.length() > 0) {
+        p = p.replace(baseDir, "");
+      }
       sb.append(p);
     }
 

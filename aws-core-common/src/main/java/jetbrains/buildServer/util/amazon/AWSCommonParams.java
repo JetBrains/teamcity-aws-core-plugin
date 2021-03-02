@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import jetbrains.buildServer.parameters.ReferencesResolverUtil;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
+import jetbrains.buildServer.util.BaseArchiveUtil;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -172,16 +173,17 @@ public final class AWSCommonParams {
     return getNewOrOld(params, ACCESS_KEY_ID_PARAM, ACCESS_KEY_ID_PARAM_OLD);
   }
 
-  @Nullable
+  @NotNull
   public static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params){
     return getCredentialsProvider(params, false);
   }
 
+  @NotNull
   private static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params,
                                                                final boolean fixedCredentials){
     final String credentialsType = getCredentialsType(params);
     if (isUseDefaultCredentialProviderChain(params)) {
-      return null;
+      return new DefaultAWSCredentialsProviderChain();
     }
 
     if (isAccessKeysOption(credentialsType) || fixedCredentials){
@@ -220,7 +222,17 @@ public final class AWSCommonParams {
       };
     }
 
-    return null;
+    // a workaround to not return a DefaultAWSCredentialsProviderChain (null)
+    // I'm afraid throwing an exception here could result in undesired behaviour in different places
+    //TODO: remove this as well (throw an exception instead)
+    return new AWSCredentialsProvider() {
+      @Override
+      public AWSCredentials getCredentials() {
+        return new BasicAWSCredentials("", "");
+      }
+      @Override
+      public void refresh() {}
+    };
   }
 
   private static boolean isUseDefaultCredentialProviderChain(@NotNull Map<String, String> params) {

@@ -75,6 +75,10 @@ public final class AWSCommonParams {
   public static final String SSL_CERT_DIRECTORY_PARAM = "aws.ssl.cert.directory";
 
   public static final String DEFAULT_CREDENTIALS_PROVIDER_CHAIN_DISABLED_PARAM = "teamcity.internal.aws.disable.default.credential.provider.chain";
+  // this option should hide the default credentials provider chain checkbox,
+  // but allow its usage through for the existing connections and ones created through the DSL
+  // mainly this intended to use for compatibility or in complex circumstances (i.e. TC Cloud)
+  public static final String DEFAULT_CREDENTIALS_PROVIDER_CHAIN_HIDDEN_PARAM = "teamcity.internal.aws.hide.default.credential.provider.chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM_OLD = "use_default_credential_provider_chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM = "aws.use.default.credential.provider.chain";
   public static final String USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_LABEL = "Default Credential Provider Chain";

@@ -80,6 +80,7 @@ public final class S3Util {
                                                           .withMultipartCopyThreshold(advancedConfiguration.getMultipartUploadThreshold())
                                                           .withExecutorFactory(createExecutorFactory(createDefaultExecutorService(advancedConfiguration.getNThreads())))
                                                           .build();
+    LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
     final Retrier retrier = Retrier.withRetries(advancedConfiguration.getRetriesNum())
                                    .registerListener(new AbortingListener() {
@@ -209,12 +210,11 @@ public final class S3Util {
   }
 
   public static class S3AdvancedConfiguration {
+    private static final int FIVE_MB = 5 * 1024 * 1024;
     @NotNull
     private static final S3AdvancedConfiguration NULL_CONFIG = new S3AdvancedConfiguration().withRetryDelayMs(0).withNumberOfRetries(0);
-    @Nullable
-    private Long myMinimumUploadPartSize;
-    @Nullable
-    private Long myMultipartUploadThreshold;
+    private long myMinimumUploadPartSize = FIVE_MB;
+    private long myMultipartUploadThreshold = FIVE_MB;
     private int connectionTimeout;
     private boolean myShutdownClient = false;
     private boolean myPresignedMultipartUploadEnabled = false;
@@ -227,26 +227,26 @@ public final class S3Util {
     @NotNull
     public S3AdvancedConfiguration withPresignedUrlsChunkSize(@Nullable final Integer presignedUrlsChunkSize) {
       if (presignedUrlsChunkSize != null) {
-         myPresignedUrlMaxChunkSize = presignedUrlsChunkSize;
+        myPresignedUrlMaxChunkSize = presignedUrlsChunkSize;
       }
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withMinimumUploadPartSize(@Nullable final Long multipartChunkSize) {
-      myMinimumUploadPartSize = multipartChunkSize;
+      myMinimumUploadPartSize = multipartChunkSize != null ? multipartChunkSize : FIVE_MB;
+      return this;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withMultipartUploadThreshold(@Nullable final Long multipartThreshold) {
+      myMultipartUploadThreshold = multipartThreshold != null ? multipartThreshold : FIVE_MB;
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withConnectionTimeout(final int connectionTimeout) {
       this.connectionTimeout = connectionTimeout;
-      return this;
-    }
-
-    @NotNull
-    public S3AdvancedConfiguration withMultipartUploadThreshold(@Nullable final Long multipartThreshold) {
-      myMultipartUploadThreshold = multipartThreshold;
       return this;
     }
 
@@ -316,13 +316,11 @@ public final class S3Util {
       return myShutdownClient;
     }
 
-    @Nullable
-    public Long getMultipartUploadThreshold() {
+    public long getMultipartUploadThreshold() {
       return myMultipartUploadThreshold;
     }
 
-    @Nullable
-    public Long getMinimumUploadPartSize() {
+    public long getMinimumUploadPartSize() {
       return myMinimumUploadPartSize;
     }
 
@@ -336,6 +334,22 @@ public final class S3Util {
 
     public int getUrlTtlSeconds() {
       return myTtlSeconds;
+    }
+
+    @Override
+    public String toString() {
+      return "S3Configuration{" +
+             "myMinimumUploadPartSize=" + myMinimumUploadPartSize +
+             ", myMultipartUploadThreshold=" + myMultipartUploadThreshold +
+             ", connectionTimeout=" + connectionTimeout +
+             ", myShutdownClient=" + myShutdownClient +
+             ", myPresignedMultipartUploadEnabled=" + myPresignedMultipartUploadEnabled +
+             ", myPresignedUrlMaxChunkSize=" + myPresignedUrlMaxChunkSize +
+             ", myNumberOfRetriesOnError=" + myNumberOfRetriesOnError +
+             ", myRetryDelayOnErrorMs=" + myRetryDelayOnErrorMs +
+             ", myTtlSeconds=" + myTtlSeconds +
+             ", myNThreads=" + myNThreads +
+             '}';
     }
   }
 }

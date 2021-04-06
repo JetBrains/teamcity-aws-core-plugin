@@ -186,11 +186,11 @@ public final class AWSCommonParams {
   private static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params,
                                                                final boolean fixedCredentials){
     final String credentialsType = getCredentialsType(params);
-    if (isUseDefaultCredentialProviderChain(params)) {
-      return new DefaultAWSCredentialsProviderChain();
-    }
 
     if (isAccessKeysOption(credentialsType) || fixedCredentials){
+      if (isUseDefaultCredentialProviderChain(params)) {
+        return new DefaultAWSCredentialsProviderChain();
+      }
       return new AWSCredentialsProvider() {
         @Override
         public AWSCredentials getCredentials() {

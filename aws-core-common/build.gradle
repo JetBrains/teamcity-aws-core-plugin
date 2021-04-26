@@ -131,6 +131,7 @@ distZip {
 publishing {
     repositories {
         maven {
+            name = "jetbrainsMaven"
             credentials {
                 username = mavenRepositoryUser
                 password = mavenRepositoryPassword
@@ -139,6 +140,7 @@ publishing {
         }
 
         maven {
+            name = "spacePackages"
             credentials {
                 username = spaceRepositoryUser
                 password = spaceRepositoryPassword
@@ -146,6 +148,30 @@ publishing {
             url = 'https://packages.jetbrains.team/maven/p/tc/maven'
         }
     }
+
+    task prepareUploadMavenArtifactsTask {
+        dependsOn tasks.prepareArtifacts
+        dependsOn tasks.readPom
+
+        doFirst {
+            tasks.uploadMavenArtifacts.repositories.mavenDeployer {
+                configuration = configurations.ftpDeployer
+
+                repository(url: "$mavenRepository") {
+                    authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
+                }
+
+                addFilter('amazon-util') {artifact, file ->
+                    artifact.name == 'amazon-util'
+                }.withXml { provider ->
+                    def builder = provider.asString()
+                    builder.length = 0
+                    builder << tasks.readPom.result
+                }
+            }
+        }
+    }
+
     publications {
         mavenPrivate(MavenPublication) {
             groupId = 'org.jetbrains.teamcity'

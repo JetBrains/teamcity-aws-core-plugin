@@ -46,6 +46,8 @@ ext {
     mavenRepository = findProperty('maven.repository')
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
+    spaceRepositoryUser = findProperty('space.repository.user')
+    spaceRepositoryPassword = findProperty('space.repository.password')
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
 }
 
@@ -126,25 +128,45 @@ distZip {
     archiveName = "amazon-util.zip"
 }
 
-
-task prepareUploadMavenArtifactsTask {
-    dependsOn tasks.prepareArtifacts
-    dependsOn tasks.readPom
-
-    doFirst {
-        tasks.uploadMavenArtifacts.repositories.mavenDeployer {
-            configuration = configurations.ftpDeployer
-
-            repository(url: "$mavenRepository") {
-                authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username = mavenRepositoryUser
+                password = mavenRepositoryPassword
             }
+            url = mavenRepository
+        }
 
-            addFilter('amazon-util') {artifact, file ->
-                artifact.name == 'amazon-util'
-            }.withXml { provider ->
-                def builder = provider.asString()
-                builder.length = 0
-                builder << tasks.readPom.result
+        maven {
+            credentials {
+                username = spaceRepositoryUser
+                password = spaceRepositoryPassword
+            }
+            url = 'https://packages.jetbrains.team/maven/p/tc/maven'
+        }
+    }
+    publications {
+        mavenPrivate(MavenPublication) {
+            groupId = 'org.jetbrains.teamcity'
+            artifactId = 'aws-core-common'
+            version = "${teamcityVersion}"
+            from components.java
+            pom {
+                name = 'AWS Core Library'
+                description = 'Shared AWS Core Library'
+                url = 'https://packages.jetbrains.team/maven/p/tc/maven'
+            }
+        }
+        mavenPublic(MavenPublication) {
+            groupId = 'jetbrains.buildServer.util'
+            artifactId = 'amazon-util'
+            version = "${teamcityVersion}"
+            from components.java
+            pom {
+                name = 'AWS Core Library'
+                description = 'Shared AWS Core Library'
+                url = mavenRepository
             }
         }
     }

@@ -38,7 +38,7 @@ ext {
 
     awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.908'
 
-    libVersion = findProperty('awsCoreVersion') ?: teamcityVersion
+    libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
 }
 
 idea {

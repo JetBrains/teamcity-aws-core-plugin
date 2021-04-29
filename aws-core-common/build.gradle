@@ -71,7 +71,7 @@ task prepareArtifacts {
     dependsOn tasks.writePom
 
     doLast {
-        artifacts.mavenArtifacts file: file("$libsDir/aws-core-common.jar"), name: 'amazon-util', type: 'jar'
+        artifacts.mavenArtifacts file: file("${libsDir}/aws-core-common-${libVersion}.jar"), name: 'amazon-util', type: 'jar'
     }
 }
 

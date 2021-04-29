@@ -51,6 +51,8 @@ ext {
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
 }
 
+version = "$libVersion"
+
 task writePom {
     doLast {
         pom {

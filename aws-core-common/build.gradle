@@ -52,6 +52,7 @@ ext {
 }
 
 version = "$libVersion"
+group = 'jetbrains.buildServer.util'
 
 task writePom {
     doLast {

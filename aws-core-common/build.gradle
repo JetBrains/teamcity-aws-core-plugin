@@ -102,12 +102,12 @@ distributions {
         contents {
             into('') {
                 from "install_pom.xml"
-                filter(ReplaceTokens, tokens: [teamcityVersion: teamcityVersion])
+                filter(ReplaceTokens, tokens: [teamcityVersion: libVersion])
                 filteringCharset = 'UTF-8'
             }
             into('amazon-util') {
-                from("$libsDir/aws-core-common.jar") {
-                    rename "aws-core-common.jar", "amazon-util-${teamcityVersion}.jar"
+                from("$libsDir/aws-core-common-${libVersion}.jar") {
+                    rename "aws-core-common-${libVersion}.jar", "amazon-util-${libVersion}.jar"
                 }
                 dirMode = 0755
                 fileMode = 0644

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 JetBrains s.r.o.
+ * Copyright 2000-2021 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ allprojects {
   repositories {
     mavenLocal()
     maven { url "https://download.jetbrains.com/teamcity-repository" }
+    maven { url 'https://packages.jetbrains.team/maven/p/tc/maven' }
     mavenCentral()
   }
 }
 
 ext {
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2020.2-SNAPSHOT'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1-SNAPSHOT'
 
     teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
     teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
@@ -37,7 +38,7 @@ ext {
 
     awsSDKVersion = findProperty('aws.sdk.version') ?: '1.11.908'
 
-    libVersion = findProperty('awsCoreVersion') ?: teamcityVersion
+    libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
 }
 
 idea {

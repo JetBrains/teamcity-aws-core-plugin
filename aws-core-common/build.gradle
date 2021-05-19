@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 JetBrains s.r.o.
+ * Copyright 2000-2021 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ configurations {
 }
 
 dependencies {
-    compile "com.fasterxml.jackson.core:jackson-databind:2.7.9"
-    compile "com.fasterxml.jackson.core:jackson-core:2.7.9"
-    compile "com.fasterxml.jackson.core:jackson-annotations:2.7.9"
     compile "com.amazonaws:aws-java-sdk-codedeploy:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-core:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-codepipeline:${awsSDKVersion}"
@@ -49,8 +46,13 @@ ext {
     mavenRepository = findProperty('maven.repository')
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
+    spaceRepositoryUser = findProperty('space.repository.user')
+    spaceRepositoryPassword = findProperty('space.repository.password')
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
 }
+
+version = "$libVersion"
+group = 'jetbrains.buildServer.util'
 
 task writePom {
     doLast {
@@ -70,7 +72,7 @@ task prepareArtifacts {
     dependsOn tasks.writePom
 
     doLast {
-        artifacts.mavenArtifacts file: file("$libsDir/aws-core-common.jar"), name: 'amazon-util', type: 'jar'
+        artifacts.mavenArtifacts file: file("${libsDir}/aws-core-common-${libVersion}.jar"), name: 'amazon-util', type: 'jar'
     }
 }
 
@@ -87,18 +89,25 @@ task readPom {
     }
 }
 
+test {
+    useTestNG()
+    options {
+        systemProperties(System.getProperties())
+    }
+}
+
 distributions {
     main {
         baseName = project.name
         contents {
             into('') {
                 from "install_pom.xml"
-                filter(ReplaceTokens, tokens: [teamcityVersion: teamcityVersion])
+                filter(ReplaceTokens, tokens: [teamcityVersion: libVersion])
                 filteringCharset = 'UTF-8'
             }
             into('amazon-util') {
-                from("$libsDir/aws-core-common.jar") {
-                    rename "aws-core-common.jar", "amazon-util-${teamcityVersion}.jar"
+                from("$libsDir/aws-core-common-${libVersion}.jar") {
+                    rename "aws-core-common-${libVersion}.jar", "amazon-util-${libVersion}.jar"
                 }
                 dirMode = 0755
                 fileMode = 0644
@@ -122,25 +131,71 @@ distZip {
     archiveName = "amazon-util.zip"
 }
 
-
-task prepareUploadMavenArtifactsTask {
-    dependsOn tasks.prepareArtifacts
-    dependsOn tasks.readPom
-
-    doFirst {
-        tasks.uploadMavenArtifacts.repositories.mavenDeployer {
-            configuration = configurations.ftpDeployer
-
-            repository(url: "$mavenRepository") {
-                authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
+publishing {
+    repositories {
+        maven {
+            name = "jetbrainsMaven"
+            credentials {
+                username = mavenRepositoryUser
+                password = mavenRepositoryPassword
             }
+            url = mavenRepository
+        }
 
-            addFilter('amazon-util') {artifact, file ->
-                artifact.name == 'amazon-util'
-            }.withXml { provider ->
-                def builder = provider.asString()
-                builder.length = 0
-                builder << tasks.readPom.result
+        maven {
+            name = "spacePackages"
+            credentials {
+                username = spaceRepositoryUser
+                password = spaceRepositoryPassword
+            }
+            url = 'https://packages.jetbrains.team/maven/p/tc/maven'
+        }
+    }
+
+    task prepareUploadMavenArtifactsTask {
+        dependsOn tasks.prepareArtifacts
+        dependsOn tasks.readPom
+
+        doFirst {
+            tasks.uploadMavenArtifacts.repositories.mavenDeployer {
+                configuration = configurations.ftpDeployer
+
+                repository(url: "$mavenRepository") {
+                    authentication(userName: "${mavenRepositoryUser}", password: "${mavenRepositoryPassword}")
+                }
+
+                addFilter('amazon-util') {artifact, file ->
+                    artifact.name == 'amazon-util'
+                }.withXml { provider ->
+                    def builder = provider.asString()
+                    builder.length = 0
+                    builder << tasks.readPom.result
+                }
+            }
+        }
+    }
+
+    publications {
+        mavenPrivate(MavenPublication) {
+            groupId = 'org.jetbrains.teamcity'
+            artifactId = 'aws-core-common'
+            version = "${libVersion}"
+            from components.java
+            pom {
+                name = 'AWS Core Library'
+                description = 'Shared AWS Core Library'
+                url = 'https://packages.jetbrains.team/maven/p/tc/maven'
+            }
+        }
+        mavenPublic(MavenPublication) {
+            groupId = 'jetbrains.buildServer.util'
+            artifactId = 'amazon-util'
+            version = "${libVersion}"
+            from components.java
+            pom {
+                name = 'AWS Core Library'
+                description = 'Shared AWS Core Library'
+                url = mavenRepository
             }
         }
     }

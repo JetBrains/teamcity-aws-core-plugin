@@ -85,5 +85,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" exported="" name="aws-sdk-services" level="project" />
+    <orderEntry type="library" exported="" name="jackson" level="project" />
   </component>
 </module>

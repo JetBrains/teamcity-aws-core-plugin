@@ -6,14 +6,14 @@
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/../aws-core/aws-core-common/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../aws-core/aws-core-common/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../aws-core/aws-core-common">
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core/aws-core-common/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core/aws-core-common/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core/aws-core-common/src/main/resources" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/../aws-core/aws-core-common/build" />
-      <excludeFolder url="file://$MODULE_DIR$/../aws-core/aws-core-common/target" />
+    <output url="file://$MODULE_DIR$/../aws-core-common/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../aws-core-common/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../aws-core-common">
+      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/main/resources" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/../aws-core-common/build" />
+      <excludeFolder url="file://$MODULE_DIR$/../aws-core-common/target" />
     </content>
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />

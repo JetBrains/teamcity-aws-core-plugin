@@ -6,14 +6,14 @@
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/../aws-core-common/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../aws-core-common/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../aws-core-common">
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../aws-core-common/src/main/resources" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/../aws-core-common/build" />
-      <excludeFolder url="file://$MODULE_DIR$/../aws-core-common/target" />
+    <output url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/target/classes" />
+    <output-test url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/target/test-classes" />
+    <content url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common">
+      <sourceFolder url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/src/main/resources" isTestSource="false" />
+      <excludeFolder url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/build" />
+      <excludeFolder url="file://$BUILDSERVER_PROJECT_HOME$/external-repos/aws-core/aws-core-common/target" />
     </content>
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -21,7 +21,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-codebuild.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-codebuild.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -30,7 +30,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-codedeploy.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-codedeploy.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -39,7 +39,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-codepipeline.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-codepipeline.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -48,7 +48,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-s3.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-s3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -58,7 +58,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-sts.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-sts.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -69,7 +69,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-ec2.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-ec2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -78,12 +78,13 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../lib.fetched/aws-sdk-services/aws-java-sdk-iam.jar!/" />
+          <root url="jar://$BUILDSERVER_PROJECT_HOME$/lib.fetched/aws-sdk-services/aws-java-sdk-iam.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="library" exported="" name="aws-sdk-services" level="project" />
+    <orderEntry type="library" exported="" name="jackson" level="project" />
   </component>
 </module>

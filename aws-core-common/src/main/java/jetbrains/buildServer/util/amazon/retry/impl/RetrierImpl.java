@@ -19,7 +19,8 @@ package jetbrains.buildServer.util.amazon.retry.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import jetbrains.buildServer.util.amazon.AWSException;
+import java.util.concurrent.atomic.AtomicReference;
+import jetbrains.buildServer.util.ExceptionUtil;
 import jetbrains.buildServer.util.amazon.retry.Retrier;
 import jetbrains.buildServer.util.amazon.retry.RetrierEventListener;
 import org.jetbrains.annotations.NotNull;
@@ -94,8 +95,19 @@ public class RetrierImpl implements Retrier {
 
   @Override
   public <T> void onFailure(@NotNull final Callable<T> callable, final int retry, @NotNull final Exception e) {
+    final AtomicReference<Exception> thrownExceptions = new AtomicReference<>(null);
     for (final RetrierEventListener retrierEventListener : myRetrierEventListeners) {
-      retrierEventListener.onFailure(callable, retry, e);
+      try {
+        retrierEventListener.onFailure(callable, retry, e);
+      } catch (Exception exception) {
+        if (!thrownExceptions.compareAndSet(null, exception) && !thrownExceptions.compareAndSet(exception, exception)) {
+          thrownExceptions.get().addSuppressed(exception);
+        }
+      }
+    }
+    final Exception thrownException = thrownExceptions.get();
+    if (thrownException != null) {
+      ExceptionUtil.rethrowAsRuntimeException(thrownException);
     }
   }
 

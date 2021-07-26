@@ -28,6 +28,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,7 +84,8 @@ public final class S3Util {
     LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
     final Retrier retrier = Retrier.withRetries(advancedConfiguration.getRetriesNum())
-                                   .registerListener(new AbortingListener() {
+                                   .registerListener(new LoggingRetrierListener(LOG))
+                                   .registerListener(new AbortingListener(UnknownHostException.class) {
                                      @Override
                                      public <R> void onFailure(@NotNull final Callable<R> callable, final int retry, @NotNull final Exception e) {
                                        if (e instanceof SdkClientException) {
@@ -98,7 +100,6 @@ public final class S3Util {
                                        super.onFailure(callable, retry, e);
                                      }
                                    })
-                                   .registerListener(new LoggingRetrierListener(LOG))
                                    .registerListener(new ExponentialDelayListener(advancedConfiguration.getRetryDelay()));
 
     try {

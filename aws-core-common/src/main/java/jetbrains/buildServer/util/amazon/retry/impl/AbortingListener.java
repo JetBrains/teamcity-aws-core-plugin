@@ -37,7 +37,7 @@ public class AbortingListener extends AbstractRetrierEventListener {
   public <T> void onFailure(@NotNull final Callable<T> callable,
                             final int retry,
                             @NotNull final Exception e) {
-    if (retryableExceptions.stream().noneMatch(aClass -> aClass.isAssignableFrom(e.getClass()))) {
+    if (retryableExceptions.stream().noneMatch(retryableException -> ExceptionUtil.getCause(e, retryableException) != null)) {
       ExceptionUtil.rethrowAsRuntimeException(e);
     }
   }

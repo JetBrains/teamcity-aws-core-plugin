@@ -54,6 +54,38 @@ public class RetrierTest {
   }
 
   @Test
+  void testNumberOfRetriesIsWhenAbortingListenerIsRegisteredForExceptionClass() {
+    final CounterListener counter = new CounterListener();
+    try {
+      new RetrierImpl(5)
+        .registerListener(new AbortingListener(RuntimeException.class))
+        .registerListener(counter)
+        .execute((Callable<Integer>)() -> {
+          throw new DummyRuntimeException("Oops!");
+        });
+    } catch (Exception ignored) {
+    }
+    Assert.assertEquals(counter.getNumberOfFailures(), 6);
+    Assert.assertEquals(counter.getNumberOfRetries(), 5);
+  }
+
+  @Test
+  void testNumberOfRetriesIsWhenAbortingListenerIsRegisteredForDifferentClass() {
+    final CounterListener counter = new CounterListener();
+    try {
+      new RetrierImpl(5)
+        .registerListener(new AbortingListener(ClassNotFoundException.class))
+        .registerListener(counter)
+        .execute((Callable<Integer>)() -> {
+          throw new DummyRuntimeException("Oops!");
+        });
+    } catch (Exception ignored) {
+    }
+    Assert.assertEquals(counter.getNumberOfFailures(), 1);
+    Assert.assertEquals(counter.getNumberOfRetries(), 0);
+  }
+
+  @Test
   void testRuntimeExceptionThrownUnchanged() {
     final DummyRuntimeException expected = new DummyRuntimeException("Oops!");
     try {

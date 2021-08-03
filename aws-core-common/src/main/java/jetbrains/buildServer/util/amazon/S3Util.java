@@ -56,7 +56,7 @@ public final class S3Util {
   @NotNull
   public static final String TRANSFER_MANAGER_THREAD_POOL_SIZE = "amazon.s3.transferManager.threadPool.size";
   public static final int DEFAULT_URL_LIFETIME_SEC = 600;
-  public static final int DEFAULT_RETRY_DELAY_ON_ERROR_MS = 0;
+  public static final int DEFAULT_RETRY_DELAY_ON_ERROR_MS = 1000;
   public static final int DEFAULT_NUMBER_OF_RETRIES_ON_ERROR = 5;
   public static final int DEFAULT_PRESIGNED_URL_MAX_CHUNK_SIZE = 1000;
   @NotNull

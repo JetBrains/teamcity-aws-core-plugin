@@ -16,10 +16,7 @@
 
 package jetbrains.buildServer.util.amazon;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.client.builder.ExecutorFactory;
-import com.amazonaws.retry.RetryUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.transfer.AbortableTransfer;
 import com.amazonaws.services.s3.transfer.Transfer;
@@ -28,11 +25,9 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -42,9 +37,6 @@ import jetbrains.buildServer.Used;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.amazon.retry.Retrier;
-import jetbrains.buildServer.util.amazon.retry.impl.AbortingListener;
-import jetbrains.buildServer.util.amazon.retry.impl.ExponentialDelayListener;
-import jetbrains.buildServer.util.amazon.retry.impl.LoggingRetrierListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,24 +75,7 @@ public final class S3Util {
                                                           .build();
     LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
-    final Retrier retrier = Retrier.withRetries(advancedConfiguration.getRetriesNum())
-                                   .registerListener(new LoggingRetrierListener(LOG))
-                                   .registerListener(new AbortingListener(UnknownHostException.class) {
-                                     @Override
-                                     public <R> void onFailure(@NotNull final Callable<R> callable, final int retry, @NotNull final Exception e) {
-                                       if (e instanceof SdkClientException) {
-                                         if (RetryUtils.isRetryableServiceException((SdkClientException)e)) {
-                                           return;
-                                         }
-                                       } else if (e instanceof AmazonServiceException) {
-                                         if (RetryUtils.isRetryableServiceException((AmazonServiceException)e)) {
-                                           return;
-                                         }
-                                       }
-                                       super.onFailure(callable, retry, e);
-                                     }
-                                   })
-                                   .registerListener(new ExponentialDelayListener(advancedConfiguration.getRetryDelay()));
+    final Retrier retrier = Retrier.defaultRetrier(advancedConfiguration.getRetriesNum(), advancedConfiguration.getRetryDelay(), LOG);
 
     try {
       final List<T> transfers = new ArrayList<>(runnable.run(manager));

@@ -19,7 +19,12 @@ package jetbrains.buildServer.util.amazon.retry.impl;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import jetbrains.buildServer.BaseTestCase;
+import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.util.amazon.retry.AbortRetriesException;
 import jetbrains.buildServer.util.amazon.retry.AbstractRetrierEventListener;
+import jetbrains.buildServer.util.amazon.retry.ExecuteForAborted;
+import jetbrains.buildServer.util.amazon.retry.Retrier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
@@ -30,7 +35,7 @@ import org.testng.annotations.Test;
  * @author Dmitrii Bogdanov
  */
 @Test
-public class RetrierTest {
+public class RetrierTest extends BaseTestCase {
   private final CounterListener myCounterListener = new CounterListener();
 
   @BeforeMethod
@@ -67,6 +72,34 @@ public class RetrierTest {
     }
     Assert.assertEquals(counter.getNumberOfFailures(), 6);
     Assert.assertEquals(counter.getNumberOfRetries(), 5);
+  }
+
+  @Test
+  void testInterruptedExceptionKeepsInterruptedStatus() {
+    final CounterListener counter = new CounterListener();
+    BaseTestCase.assertExceptionThrown(() -> {
+      new RetrierImpl(5)
+        .registerListener(new AbortingListener())
+        .registerListener(counter)
+        .execute(() -> {
+          Thread.currentThread().interrupt();
+          throw new InterruptedException();
+        });
+    }, AbortRetriesException.class);
+    Assert.assertTrue(Thread.currentThread().isInterrupted());
+    Assert.assertEquals(counter.getNumberOfFailures(), 1);
+    Assert.assertEquals(counter.getNumberOfRetries(), 0);
+  }
+
+  @Test
+  void testDefaultRetrierKeepsInterruptedStatus() {
+    BaseTestCase.assertExceptionThrown(() -> {
+      Retrier.defaultRetrier(5, 1000, Loggers.TEST).execute(() -> {
+        Thread.currentThread().interrupt();
+        throw new InterruptedException();
+      });
+    }, AbortRetriesException.class);
+    Assert.assertTrue(Thread.currentThread().isInterrupted());
   }
 
   @Test
@@ -159,7 +192,7 @@ public class RetrierTest {
   /**
    * @author Dmitrii Bogdanov
    */
-  public static class CounterListener extends AbstractRetrierEventListener {
+  public static class CounterListener extends AbstractRetrierEventListener implements ExecuteForAborted {
     private final AtomicInteger myNumberOfRetries = new AtomicInteger();
     private final AtomicInteger myNumberOfFailures = new AtomicInteger(0);
     private final AtomicLong myExecutionTimeMs = new AtomicLong();

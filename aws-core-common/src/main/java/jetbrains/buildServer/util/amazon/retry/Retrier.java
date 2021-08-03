@@ -16,9 +16,14 @@
 
 package jetbrains.buildServer.util.amazon.retry;
 
+import com.amazonaws.SdkClientException;
+import com.amazonaws.retry.RetryUtils;
+import com.intellij.openapi.diagnostic.Logger;
+import java.io.InterruptedIOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
-import jetbrains.buildServer.util.amazon.retry.impl.NoRetryRetrierImpl;
-import jetbrains.buildServer.util.amazon.retry.impl.RetrierImpl;
+import jetbrains.buildServer.util.amazon.retry.impl.*;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -33,6 +38,27 @@ public interface Retrier extends RetrierEventListener {
     } else {
       return new RetrierImpl(nRetries);
     }
+  }
+
+  @NotNull
+  static Retrier defaultRetrier(final int retriesNum, final int retryDelay, @NotNull final Logger logger) {
+    return Retrier.withRetries(retriesNum)
+                  .registerListener(new LoggingRetrierListener(logger))
+                  .registerListener(new AbortingListener(UnknownHostException.class, SocketException.class, InterruptedIOException.class, InterruptedException.class) {
+                    @Override
+                    public <T> void onFailure(@NotNull Callable<T> callable, int retry, @NotNull Exception e) {
+                      if (e instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                        return;
+                      } else if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
+                        return;
+                      } else if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+                        return;
+                      }
+                      super.onFailure(callable, retry, e);
+                    }
+                  })
+                  .registerListener(new ExponentialDelayListener(retryDelay));
   }
 
   <T> T execute(@NotNull final Callable<T> callable);

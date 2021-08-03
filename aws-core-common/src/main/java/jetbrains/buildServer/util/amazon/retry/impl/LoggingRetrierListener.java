@@ -19,12 +19,13 @@ package jetbrains.buildServer.util.amazon.retry.impl;
 import com.intellij.openapi.diagnostic.Logger;
 import java.util.concurrent.Callable;
 import jetbrains.buildServer.util.amazon.retry.AbstractRetrierEventListener;
+import jetbrains.buildServer.util.amazon.retry.ExecuteForAborted;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Dmitrii Bogdanov
  */
-public class LoggingRetrierListener extends AbstractRetrierEventListener {
+public class LoggingRetrierListener extends AbstractRetrierEventListener implements ExecuteForAborted {
   private final Logger myLogger;
 
   public LoggingRetrierListener(@NotNull final Logger logger) {
@@ -43,6 +44,6 @@ public class LoggingRetrierListener extends AbstractRetrierEventListener {
 
   @Override
   public <T> void onFailure(@NotNull final Callable<T> callable, final int retry, @NotNull final Exception e) {
-    myLogger.warnAndDebugDetails("Calling [" + callable + "], retry: " + retry + " failed with exception.", e);
+    myLogger.infoAndDebugDetails("Calling [" + callable + "], retry: " + retry + " failed with exception.", e);
   }
 }

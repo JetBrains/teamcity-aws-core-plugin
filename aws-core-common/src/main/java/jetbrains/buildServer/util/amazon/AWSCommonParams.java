@@ -102,7 +102,9 @@ public final class AWSCommonParams {
   private static final Map<String, String> DEFAULTS = Collections.unmodifiableMap(CollectionsUtil.asMap(
     CREDENTIALS_TYPE_PARAM, ACCESS_KEYS_OPTION,
     EXTERNAL_ID_PARAM, UUID.randomUUID().toString(),
-    USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM, "false"
+    USE_DEFAULT_CREDENTIAL_PROVIDER_CHAIN_PARAM, "false",
+    ENVIRONMENT_NAME_PARAM, "",
+    SERVICE_ENDPOINT_PARAM, ""
   ));
 
   public static final String TEMP_CREDENTIALS_SESSION_NAME_PARAM = "aws.temp.credentials.session.name";

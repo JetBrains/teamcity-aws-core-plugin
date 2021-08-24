@@ -20,6 +20,9 @@ import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.cloudfront.AmazonCloudFront;
+import com.amazonaws.services.cloudfront.AmazonCloudFrontClient;
+import com.amazonaws.services.cloudfront.AmazonCloudFrontClientBuilder;
 import com.amazonaws.services.codebuild.AWSCodeBuildClient;
 import com.amazonaws.services.codedeploy.AmazonCodeDeployClient;
 import com.amazonaws.services.codepipeline.AWSCodePipelineClient;
@@ -142,6 +145,24 @@ public class AWSClients {
   @NotNull
   public AWSCodeBuildClient createCodeBuildClient() {
     return withRegion(myCredentials == null ? new AWSCodeBuildClient(myClientConfiguration) : new AWSCodeBuildClient(myCredentials, myClientConfiguration));
+  }
+
+  @NotNull
+  public AmazonCloudFront createCloudFrontClient(){
+    final AmazonCloudFrontClientBuilder builder = AmazonCloudFrontClientBuilder.standard()
+                                                                               .withClientConfiguration(myClientConfiguration);
+
+    if (myCredentials != null) {
+      builder.withCredentials(new AWSStaticCredentialsProvider(myCredentials));
+    }
+
+    if (StringUtil.isNotEmpty(myServiceEndpoint)) {
+      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, myRegion));
+    } else {
+      builder.withRegion(myRegion);
+    }
+
+    return builder.build();
   }
 
   @NotNull

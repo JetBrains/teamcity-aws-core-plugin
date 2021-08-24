@@ -203,27 +203,7 @@ public final class AWSCommonParams {
         }
       };
     } else if (isTempCredentialsOption(credentialsType)) {
-      return new AWSSessionCredentialsProvider() {
-        private final AtomicReference<AWSSessionCredentials> mySessionCredentials = new AtomicReference<AWSSessionCredentials>();
-        @Override
-        public AWSSessionCredentials getCredentials() {
-          if (mySessionCredentials.get() == null){
-            synchronized (this){
-              if (mySessionCredentials.get() == null){
-                mySessionCredentials.set(createSessionCredentials(params));
-              }
-            }
-          }
-          return mySessionCredentials.get();
-        }
-
-        @Override
-        public void refresh() {
-          synchronized (this) {
-            mySessionCredentials.set(createSessionCredentials(params));
-          }
-        }
-      };
+      return createSessionCredentialsProvider(params);
     }
 
     // a workaround to not return a DefaultAWSCredentialsProviderChain (null)
@@ -384,23 +364,25 @@ public final class AWSCommonParams {
     return awsClients;
   }
 
-  private static AWSSessionCredentials createSessionCredentials(Map<String, String> params) throws AWSException {
+  private static AWSSessionCredentialsProvider createSessionCredentialsProvider(Map<String, String> params) throws AWSException {
     final String iamRoleARN = getIamRoleArnParam(params);
     final String externalID = getExternalId(params);
     final String sessionName = getStringOrDefault(params.get(TEMP_CREDENTIALS_SESSION_NAME_PARAM), TEMP_CREDENTIALS_SESSION_NAME_DEFAULT_PREFIX + new Date().getTime());
     final int sessionDuration = getIntegerOrDefault(params.get(TEMP_CREDENTIALS_DURATION_SEC_PARAM), TEMP_CREDENTIALS_DURATION_SEC_DEFAULT);
 
-    final AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
-      .withRoleArn(iamRoleARN)
-      .withRoleSessionName(patchSessionName(sessionName))
-      .withDurationSeconds(patchSessionDuration(sessionDuration));
-
-    if (StringUtil.isNotEmpty(externalID)) assumeRoleRequest.setExternalId(externalID);
-
     try {
-      final AWSSecurityTokenService securityTokenService = createSecurityTokenService(params);
-      final Credentials credentials = securityTokenService.assumeRole(assumeRoleRequest).getCredentials();
-      return new BasicSessionCredentials(credentials.getAccessKeyId(), credentials.getSecretAccessKey(), credentials.getSessionToken());
+      if (StringUtil.isEmptyOrSpaces(iamRoleARN)){
+        return new STSSessionCredentialsProvider(createSecurityTokenService(params));
+      } else {
+        STSAssumeRoleSessionCredentialsProvider.Builder builder = new STSAssumeRoleSessionCredentialsProvider
+          .Builder(iamRoleARN, sessionName)
+          .withRoleSessionDurationSeconds(sessionDuration)
+          .withStsClient(createSecurityTokenService(params));
+        if (StringUtil.isNotEmpty(externalID)) {
+          builder.withExternalId(externalID);
+        }
+        return builder.build();
+      }
     } catch (Exception e) {
       throw new AWSException(e);
     }

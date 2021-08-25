@@ -32,6 +32,7 @@ dependencies {
     compile "com.amazonaws:aws-java-sdk-core:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-codepipeline:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-s3:${awsSDKVersion}"
+    compile "com.amazonaws:aws-java-sdk-cloudfront:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-sts:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-codebuild:${awsSDKVersion}"
 

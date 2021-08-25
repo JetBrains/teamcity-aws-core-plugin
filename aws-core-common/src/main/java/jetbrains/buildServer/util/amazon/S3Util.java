@@ -17,7 +17,6 @@
 package jetbrains.buildServer.util.amazon;
 
 import com.amazonaws.client.builder.ExecutorFactory;
-import com.amazonaws.services.cloudfront.AmazonCloudFront;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.transfer.AbortableTransfer;
 import com.amazonaws.services.s3.transfer.Transfer;
@@ -144,16 +143,6 @@ public final class S3Util {
       LOG.debug(() -> "Shutting down s3 client " + s3Client + " finished.");
     } catch (Exception e) {
       LOG.warnAndDebugDetails("Shutting down s3 client " + s3Client + " failed.", e);
-    }
-  }
-
-  public static void shutdownClient(@NotNull final AmazonCloudFront client) {
-    try {
-      LOG.debug(() -> "Shutting down CloudFront client " + client + " started.");
-      client.shutdown();
-      LOG.debug(() -> "Shutting down CloudFront client " + client + " finished.");
-    } catch (Exception e) {
-      LOG.warnAndDebugDetails("Shutting down CloudFront client " + client + " failed.", e);
     }
   }
 

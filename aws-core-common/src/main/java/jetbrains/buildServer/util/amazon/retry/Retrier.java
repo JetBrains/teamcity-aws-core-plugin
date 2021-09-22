@@ -23,6 +23,7 @@ import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import jetbrains.buildServer.util.amazon.retry.impl.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,6 +69,11 @@ public interface Retrier extends RetrierEventListener {
       runnable.run();
       return null;
     });
+  }
+
+  @NotNull
+  default <T, R> Function<T, R> retryableMapper(@NotNull final Function<T, R> function) {
+    return (t) -> execute(() -> function.apply(t));
   }
 
   @NotNull

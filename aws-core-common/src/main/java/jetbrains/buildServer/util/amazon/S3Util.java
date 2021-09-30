@@ -52,13 +52,14 @@ public final class S3Util {
   public static final int DEFAULT_RETRY_DELAY_ON_ERROR_MS = 1000;
   public static final int DEFAULT_NUMBER_OF_RETRIES_ON_ERROR = 5;
   public static final int DEFAULT_PRESIGNED_URL_MAX_CHUNK_SIZE = 1000;
+  public static final boolean DEFAULT_ENABLE_CONSISTENCY_CHECK = false;
   @NotNull
   private static final Logger LOG = Logger.getInstance(S3Util.class.getName());
 
   @Used("codedeploy,codebuild,codepipeline")
   @NotNull
   public static <T extends Transfer> Collection<T> withTransferManager(@NotNull AmazonS3 s3Client, @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
-    return withTransferManager(s3Client, withTransferManager, S3AdvancedConfiguration.NULL_CONFIG);
+    return withTransferManager(s3Client, withTransferManager, S3AdvancedConfiguration.defaultConfiguration());
   }
 
   @NotNull
@@ -95,10 +96,8 @@ public final class S3Util {
             } else {
               try {
                 final Method abort = transfer.getClass().getDeclaredMethod("abort");
-                if (abort != null) {
-                  abort.invoke(transfer);
-                  aborted = true;
-                }
+                abort.invoke(transfer);
+                aborted = true;
               } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
               }
             }
@@ -198,8 +197,6 @@ public final class S3Util {
 
   public static class S3AdvancedConfiguration {
     private static final int FIVE_MB = 5 * 1024 * 1024;
-    @NotNull
-    private static final S3AdvancedConfiguration NULL_CONFIG = new S3AdvancedConfiguration().withRetryDelayMs(0).withNumberOfRetries(0);
     private long myMinimumUploadPartSize = FIVE_MB;
     private long myMultipartUploadThreshold = FIVE_MB;
     private int connectionTimeout;
@@ -210,6 +207,12 @@ public final class S3Util {
     private int myRetryDelayOnErrorMs = DEFAULT_RETRY_DELAY_ON_ERROR_MS;
     private int myTtlSeconds = DEFAULT_URL_LIFETIME_SEC;
     private int myNThreads = TeamCityProperties.getInteger(TRANSFER_MANAGER_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
+    private boolean myConsistencyCheckEnabled = DEFAULT_ENABLE_CONSISTENCY_CHECK;
+
+    @NotNull
+    public static S3AdvancedConfiguration defaultConfiguration() {
+      return new S3AdvancedConfiguration().withRetryDelayMs(0).withNumberOfRetries(0);
+    }
 
     @NotNull
     public S3AdvancedConfiguration withPresignedUrlsChunkSize(@Nullable final Integer presignedUrlsChunkSize) {
@@ -239,7 +242,7 @@ public final class S3Util {
 
     @NotNull
     public S3AdvancedConfiguration withShutdownClient() {
-      this.myShutdownClient = true;
+      myShutdownClient = true;
       return this;
     }
 
@@ -248,7 +251,7 @@ public final class S3Util {
       if (nRetries < 0) {
         throw new IllegalArgumentException("nRetries should be >= 0");
       }
-      this.myNumberOfRetriesOnError = nRetries;
+      myNumberOfRetriesOnError = nRetries;
       return this;
     }
 
@@ -257,7 +260,7 @@ public final class S3Util {
       if (delayMs < 0) {
         throw new IllegalArgumentException("delayMs should be >= 0");
       }
-      this.myRetryDelayOnErrorMs = delayMs;
+      myRetryDelayOnErrorMs = delayMs;
       return this;
     }
 
@@ -267,19 +270,25 @@ public final class S3Util {
       if (nThreads < 1) {
         throw new IllegalArgumentException("NThreads should be > 0");
       }
-      this.myNThreads = nThreads;
+      myNThreads = nThreads;
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withPresignedMultipartUploadEnabled(final boolean enabled) {
-      this.myPresignedMultipartUploadEnabled = enabled;
+      myPresignedMultipartUploadEnabled = enabled;
       return this;
     }
 
     @NotNull
     public S3AdvancedConfiguration withUrlTtlSeconds(final int ttlSeconds) {
-      this.myTtlSeconds = ttlSeconds;
+      myTtlSeconds = ttlSeconds;
+      return this;
+    }
+
+    @NotNull
+    public S3AdvancedConfiguration withConsistencyCheckEnabled(final boolean consistencyCheckEnabled) {
+      myConsistencyCheckEnabled = consistencyCheckEnabled;
       return this;
     }
 
@@ -323,6 +332,10 @@ public final class S3Util {
       return myTtlSeconds;
     }
 
+    public boolean isConsistencyCheckEnabled() {
+      return myConsistencyCheckEnabled;
+    }
+
     @Override
     public String toString() {
       return "S3Configuration{" +
@@ -336,6 +349,7 @@ public final class S3Util {
              ", myRetryDelayOnErrorMs=" + myRetryDelayOnErrorMs +
              ", myTtlSeconds=" + myTtlSeconds +
              ", myNThreads=" + myNThreads +
+             ", myConsistencyCheckEnabled=" + myConsistencyCheckEnabled +
              '}';
     }
   }

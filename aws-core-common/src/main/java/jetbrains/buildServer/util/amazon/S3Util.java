@@ -211,7 +211,7 @@ public final class S3Util {
 
     @NotNull
     public static S3AdvancedConfiguration defaultConfiguration() {
-      return new S3AdvancedConfiguration().withRetryDelayMs(0).withNumberOfRetries(0);
+      return new S3AdvancedConfiguration();
     }
 
     @NotNull

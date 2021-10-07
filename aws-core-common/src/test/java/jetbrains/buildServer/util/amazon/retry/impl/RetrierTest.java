@@ -19,12 +19,10 @@ package jetbrains.buildServer.util.amazon.retry.impl;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.util.amazon.retry.AbortRetriesException;
-import jetbrains.buildServer.util.amazon.retry.AbstractRetrierEventListener;
-import jetbrains.buildServer.util.amazon.retry.ExecuteForAborted;
-import jetbrains.buildServer.util.amazon.retry.Retrier;
+import jetbrains.buildServer.util.amazon.retry.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
@@ -162,6 +160,44 @@ public class RetrierTest extends BaseTestCase {
     Assert.assertEquals(result, "expected");
     Assert.assertEquals(myCounterListener.getNumberOfFailures(), 1);
     Assert.assertEquals(myCounterListener.getNumberOfRetries(), 1);
+  }
+
+  @Test
+  void testDefaultRetrierRetriesExpectedExceptions() {
+    final Retrier retrier = Retrier.defaultRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
+    final AtomicInteger counter = new AtomicInteger();
+    retrier.execute(() -> {
+      if (counter.getAndIncrement() < 4) {
+        throw new RecoverableException("Got error") {
+          @Override
+          public boolean isRecoverable() {
+            return true;
+          }
+        };
+      }
+    });
+    Assert.assertEquals(myCounterListener.getNumberOfRetries(), 4);
+    Assert.assertEquals(myCounterListener.getNumberOfFailures(), 4);
+  }
+
+  @Test
+  void testDefaultRetrierRetriesExpectedExceptionsFromMapper() {
+    final Retrier retrier = Retrier.defaultRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
+    final AtomicInteger counter = new AtomicInteger();
+    IntStream.of(1).boxed().map(retrier.retryableMapper(i -> {
+      if (counter.getAndIncrement() < 4) {
+        throw new RecoverableException("Got error") {
+          @Override
+          public boolean isRecoverable() {
+            return true;
+          }
+        };
+      } else {
+        return null;
+      }
+    })).count();
+    Assert.assertEquals(myCounterListener.getNumberOfRetries(), 4);
+    Assert.assertEquals(myCounterListener.getNumberOfFailures(), 4);
   }
 
   @SuppressWarnings("SameParameterValue")

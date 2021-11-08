@@ -188,6 +188,17 @@ publishing {
                 url = 'https://packages.jetbrains.team/maven/p/tc/maven'
             }
         }
+        mavenPrivateUtils(MavenPublication) {
+            groupId = 'jetbrains.buildServer.util'
+            artifactId = 'amazon-util'
+            version = "${libVersion}"
+            from components.java
+            pom {
+                name = 'AWS Core Library'
+                description = 'Shared AWS Core Library'
+                url = 'https://packages.jetbrains.team/maven/p/tc/maven'
+            }
+        }
         mavenPublic(MavenPublication) {
             groupId = 'jetbrains.buildServer.util'
             artifactId = 'amazon-util'

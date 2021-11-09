@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'idea'
+  id 'idea'
 }
 
 allprojects {
@@ -30,39 +30,42 @@ allprojects {
 }
 
 ext {
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1'
+  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1'
 
-    teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
-    teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
-    teamcityJavaHome = System.properties['java.home']
+  teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
+  teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
+  teamcityJavaHome = System.properties['java.home']
 
-    awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.48'
+  awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.48'
 
-    libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
+  libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
+
+  spaceUsername = findProperty('space.repository.user') ?: findProperty('spaceUsername')
+  spacePassword = findProperty('space.repository.password') ?: findProperty('spacePassword')
 }
 
 idea {
-    project {
-        vcs = 'Git'
-    }
+  project {
+    vcs = 'Git'
+  }
 }
 
 configure(subprojects) {
-    apply plugin: 'java'
+  apply plugin: 'java'
 
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+  sourceCompatibility = "1.8"
+  targetCompatibility = "1.8"
 
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
+  tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+  }
 
-    test {
-        useTestNG()
-        testLogging.showStandardStreams = true
-    }
+  test {
+    useTestNG()
+    testLogging.showStandardStreams = true
+  }
 }
 
 task uploadMavenArtifacts {
-    tasks.uploadMavenArtifacts.dependsOn ':aws-core-common:prepareUploadMavenArtifactsTask'
+  tasks.uploadMavenArtifacts.dependsOn ':aws-core-common:prepareUploadMavenArtifactsTask'
 }

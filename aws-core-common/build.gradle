@@ -47,8 +47,6 @@ ext {
     mavenRepository = findProperty('maven.repository')
     mavenRepositoryUser = findProperty('maven.repository.user')
     mavenRepositoryPassword = findProperty('maven.repository.password')
-    spaceRepositoryUser = findProperty('space.repository.user')
-    spaceRepositoryPassword = findProperty('space.repository.password')
     pomFile = "$mavenPomDir/amazon-util-pom.xml"
 }
 
@@ -146,8 +144,8 @@ publishing {
         maven {
             name = "spacePackages"
             credentials {
-                username = spaceRepositoryUser
-                password = spaceRepositoryPassword
+                username = spaceUsername
+                password = spacePassword
             }
             url = 'https://packages.jetbrains.team/maven/p/tc/maven'
         }

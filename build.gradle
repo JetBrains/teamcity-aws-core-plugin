@@ -30,7 +30,7 @@ allprojects {
 }
 
 ext {
-  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1'
+  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.2'
 
   teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
   teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion

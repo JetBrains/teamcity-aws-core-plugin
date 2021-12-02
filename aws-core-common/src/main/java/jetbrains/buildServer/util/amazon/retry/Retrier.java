@@ -24,6 +24,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import javax.net.ssl.SSLException;
 import jetbrains.buildServer.util.amazon.retry.impl.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +55,8 @@ public interface Retrier extends RetrierEventListener {
                       } else if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
                         return;
                       } else if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+                        return;
+                      } else if (e instanceof SSLException) {
                         return;
                       }
                       super.onFailure(callable, retry, e);

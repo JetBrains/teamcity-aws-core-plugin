@@ -46,22 +46,21 @@ public interface Retrier extends RetrierEventListener {
   static Retrier defaultRetrier(final int retriesNum, final int retryDelay, @NotNull final Logger logger) {
     return Retrier.withRetries(retriesNum)
                   .registerListener(new LoggingRetrierListener(logger))
-                  .registerListener(new AbortingListener(UnknownHostException.class, SocketException.class, InterruptedIOException.class, InterruptedException.class) {
-                    @Override
-                    public <T> void onFailure(@NotNull Callable<T> callable, int retry, @NotNull Exception e) {
-                      if (e instanceof InterruptedException) {
-                        Thread.currentThread().interrupt();
-                        return;
-                      } else if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
-                        return;
-                      } else if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
-                        return;
-                      } else if (e instanceof SSLException) {
-                        return;
+                  .registerListener(
+                    new AbortingListener(SSLException.class, UnknownHostException.class, SocketException.class, InterruptedIOException.class, InterruptedException.class) {
+                      @Override
+                      public <T> void onFailure(@NotNull Callable<T> callable, int retry, @NotNull Exception e) {
+                        if (e instanceof InterruptedException) {
+                          Thread.currentThread().interrupt();
+                          return;
+                        } else if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
+                          return;
+                        } else if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+                          return;
+                        }
+                        super.onFailure(callable, retry, e);
                       }
-                      super.onFailure(callable, retry, e);
-                    }
-                  })
+                    })
                   .registerListener(new ExponentialDelayListener(retryDelay));
   }
 

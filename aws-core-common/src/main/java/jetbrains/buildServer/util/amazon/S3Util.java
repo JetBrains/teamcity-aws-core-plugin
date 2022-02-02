@@ -138,9 +138,7 @@ public final class S3Util {
 
   public static void shutdownClient(@NotNull final AmazonS3 s3Client) {
     try {
-      LOG.debug(() -> "Shutting down s3 client " + s3Client + " started.");
       s3Client.shutdown();
-      LOG.debug(() -> "Shutting down s3 client " + s3Client + " finished.");
     } catch (Exception e) {
       LOG.warnAndDebugDetails("Shutting down s3 client " + s3Client + " failed.", e);
     }
@@ -148,9 +146,7 @@ public final class S3Util {
 
   public static void shutdownClient(@NotNull final AmazonCloudFront client) {
     try {
-      LOG.debug(() -> "Shutting down CloudFront client " + client + " started.");
       client.shutdown();
-      LOG.debug(() -> "Shutting down CloudFront client " + client + " finished.");
     } catch (Exception e) {
       LOG.warnAndDebugDetails("Shutting down CloudFront client " + client + " failed.", e);
     }

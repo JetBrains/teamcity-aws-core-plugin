@@ -26,6 +26,15 @@ dependencies {
     }
     compile project(':aws-core-common')
 
+    compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
+
+    compile "org.jetbrains.teamcity:oauth:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:server-web-api:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity.internal:server:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity.internal:web:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity.internal:plugins:${teamcityVersion}"
+
     agent project(path: ':aws-core-agent', configuration: 'plugin')
     server group: 'commons-codec', name: 'commons-codec', version: "1.11"
 }

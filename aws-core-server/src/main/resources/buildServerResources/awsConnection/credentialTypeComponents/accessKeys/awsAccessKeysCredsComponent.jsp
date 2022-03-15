@@ -60,7 +60,7 @@
     <tr id="${session_duration_param}_row">
         <th><label for="${session_duration_param}">${session_duration_label}</label></th>
         <td><props:textProperty name="${session_duration_param}" value="${sessionCredsDuration}" className="longField" maxlength="256"/>
-            <span class="smallNote">In seconds. From 900 (15 min) to 129600 (36 h). </span>
+            <span class="smallNote">In minutes. From 15 to 2160 (36 h). </span>
             <span class="error" id="error_${session_duration_param}"></span>
         </td>
     </tr>

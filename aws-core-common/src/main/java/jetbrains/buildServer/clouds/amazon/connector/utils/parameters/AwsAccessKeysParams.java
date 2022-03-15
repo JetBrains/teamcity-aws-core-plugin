@@ -25,13 +25,13 @@ public final class AwsAccessKeysParams {
 
   public static final String SESSION_DURATION_PARAM = "aws.session.duration";
   public static final String SESSION_DURATION_LABEL = "Session duration:";
-  public static final String SESSION_DURATION_DEFAULT = "3600";
+  public static final String SESSION_DURATION_DEFAULT = "60";
 
-  public static final int MIN_SESSION_DURATION = 900;
-  public static final int MAX_SESSION_DURATION = 129600;
+  public static final int MIN_SESSION_DURATION = 15;
+  public static final int MAX_SESSION_DURATION = 2160;
 
 
   public static final String STS_ENDPOINT_PARAM = "aws.sts.endpoint";
-  public static final String STS_ENDPOINT_LABEL = "STS endpoint";
+  public static final String STS_ENDPOINT_LABEL = "STS endpoint:";
   public static final String STS_ENDPOINT_DEFAULT = "https://sts.amazonaws.com";
 }

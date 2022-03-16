@@ -37,7 +37,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
     if(ParamUtil.useSessionCredentials(cloudConnectorProperties)){
       int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(cloudConnectorProperties);
-      return new AwsConnectionCredentialsProvider(
+      return new AwsConnTempCredentialsProvider(
         StsClientBuilder.buildClient(cloudConnectorProperties),
         sessionDurationMinutes,
         myExecutorServices

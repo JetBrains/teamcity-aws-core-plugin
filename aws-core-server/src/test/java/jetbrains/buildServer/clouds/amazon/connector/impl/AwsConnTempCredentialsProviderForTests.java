@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 
-public class AwsConnectionCredentialsProviderForTests implements AWSCredentialsProvider {
+public class AwsConnTempCredentialsProviderForTests implements AWSCredentialsProvider {
 
   private final long mySessionCredentialsValidThresholdMilis;
   private final long mySessionDurationMilis;
@@ -20,7 +20,7 @@ public class AwsConnectionCredentialsProviderForTests implements AWSCredentialsP
   private GetSessionTokenResult currentSession;
 
 
-  public AwsConnectionCredentialsProviderForTests(ExecutorServices executorServices, long sessionCredentialsValidThresholdMilis, long sessionDurationMilis) {
+  public AwsConnTempCredentialsProviderForTests(ExecutorServices executorServices, long sessionCredentialsValidThresholdMilis, long sessionDurationMilis) {
     mySessionCredentialsValidThresholdMilis = sessionCredentialsValidThresholdMilis;
     mySessionDurationMilis = sessionDurationMilis;
     executorServices.getNormalExecutorService().scheduleAtFixedRate(getRefreshTask(), 100, sessionCredentialsValidThresholdMilis, TimeUnit.MILLISECONDS);

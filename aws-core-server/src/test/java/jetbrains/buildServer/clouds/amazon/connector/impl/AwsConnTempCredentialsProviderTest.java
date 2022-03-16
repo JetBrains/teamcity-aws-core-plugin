@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertNotEquals;
 
-public class AwsConnectionCredentialsProviderTest extends BaseTestCase {
+public class AwsConnTempCredentialsProviderTest extends BaseTestCase {
 
   private ExecutorServices myExecutorServices;
 
@@ -36,7 +36,7 @@ public class AwsConnectionCredentialsProviderTest extends BaseTestCase {
 
   @Test
   public void givenRefreshingAwsCredentials_whenTheyExpire_thenRefreshCredentials() throws InterruptedException {
-    AwsConnectionCredentialsProviderForTests test = new AwsConnectionCredentialsProviderForTests(myExecutorServices, 1000, 1500);
+    AwsConnTempCredentialsProviderForTests test = new AwsConnTempCredentialsProviderForTests(myExecutorServices, 1000, 1500);
 
     BasicSessionCredentials creds = (BasicSessionCredentials)test.getCredentials();
     assertNotNull(creds.getAWSAccessKeyId());

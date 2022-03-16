@@ -9,16 +9,23 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
-  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
+  private final ExecutorServices myExecutorServices;
+
+  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                  @NotNull final ExecutorServices executorServices) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    myExecutorServices = executorServices;
   }
 
   @Override
@@ -28,20 +35,29 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
     List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
     processInvalidProperties(invalidProperties);
 
-    return new AWSCredentialsProvider() {
-      @Override
-      public AWSCredentials getCredentials() {
-        return new BasicAWSCredentials(
-          cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
-          cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
-        );
-      }
+    if(ParamUtil.useSessionCredentials(cloudConnectorProperties)){
+      int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(cloudConnectorProperties);
+      return new AwsConnectionCredentialsProvider(
+        StsClientBuilder.buildClient(cloudConnectorProperties),
+        sessionDurationMinutes,
+        myExecutorServices
+      );
+    } else {
+      return new AWSCredentialsProvider() {
+        @Override
+        public AWSCredentials getCredentials() {
+          return new BasicAWSCredentials(
+            cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
+            cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
+          );
+        }
 
-      @Override
-      public void refresh() {
-        //
-      }
-    };
+        @Override
+        public void refresh() {
+          //
+        }
+      };
+    }
   }
 
   @Override

@@ -10,6 +10,8 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.serverSide.executors.ExecutorServices;
+import jetbrains.buildServer.serverSide.impl.executors.MockExecutorServices;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -20,16 +22,19 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myConnectorProperties;
 
+  private ExecutorServices myExecutorServices;
+
   @BeforeMethod
   public void setup() {
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     myConnectorProperties = new HashMap<>();
+    myExecutorServices = new MockExecutorServices();
   }
 
   @Test
   public void givenAwsConnBuilder_whenWithStaticCredsFactory_thenReturnConnectorWithTwoKeys() {
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
@@ -55,15 +60,15 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   @Test(expectedExceptions = {IllegalStateException.class})
   public void givenAwsConnBuilderWithRegisteredFactory_whenTryingToRegisterTheSameType_thenThrowException() {
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
-    StaticCredentialsBuilder secondStaticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder secondStaticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
   }
 
   @Test
   public void givenAwsConnBuilderAndStaticCredsFactiry_whenWithBadAccessKey_thenThrowExceptionWithParamName() {
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, "");
@@ -80,7 +85,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   @Test
   public void givenAwsConnBuilderAndStaticCredsFactiry_whenWithBadSecretKey_thenThrowExceptionWithParamName() {
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);

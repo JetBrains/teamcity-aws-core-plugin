@@ -15,12 +15,6 @@ public class StsClientBuilder {
   public static AWSSecurityTokenService buildClient(Map<String, String> properties) {
     AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder.standard();
     addConfiguration(stsBuilder, properties);
-    return stsBuilder.build();
-  }
-
-  public static AWSSecurityTokenService buildClientWithCredentials(Map<String, String> properties) {
-    AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder.standard();
-    addConfiguration(stsBuilder, properties);
 
     String accessKey = StringUtil.emptyIfNull(properties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM));
     String secretKey = StringUtil.emptyIfNull(properties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM));
@@ -34,8 +28,8 @@ public class StsClientBuilder {
   }
 
   private static void addConfiguration(AWSSecurityTokenServiceClientBuilder stsBuilder, Map<String, String> properties) {
-    String stsEndpoint = StringUtil.emptyIfNull(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM));
-    if (!stsEndpoint.equals(AwsAccessKeysParams.STS_ENDPOINT_DEFAULT)) {
+    String stsEndpoint = properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM);
+    if (stsEndpoint != null && ! stsEndpoint.equals(AwsAccessKeysParams.STS_ENDPOINT_DEFAULT)) {
 
       AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
         stsEndpoint,

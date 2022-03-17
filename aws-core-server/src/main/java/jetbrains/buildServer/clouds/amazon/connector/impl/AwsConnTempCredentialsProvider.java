@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
+import org.jetbrains.annotations.NotNull;
 
 public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
 
@@ -21,7 +22,9 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   private volatile GetSessionTokenResult currentSession;
 
 
-  public AwsConnTempCredentialsProvider(AWSSecurityTokenService sts, int sessionDurationMinutes, ExecutorServices executorServices) {
+  public AwsConnTempCredentialsProvider(@NotNull final AWSSecurityTokenService sts,
+                                        final int sessionDurationMinutes,
+                                        @NotNull final ExecutorServices executorServices) {
     mySessionConfiguration = new GetSessionTokenRequest()
       .withDurationSeconds(sessionDurationMinutes * 60);
 
@@ -36,6 +39,7 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   }
 
   @Override
+  @NotNull
   public AWSCredentials getCredentials() {
     Credentials credentials = currentSession.getCredentials();
     return new BasicSessionCredentials(
@@ -46,6 +50,7 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   }
 
   @Override
+  @NotNull
   public void refresh() {
     currentSession = mySts.getSessionToken(mySessionConfiguration);
   }

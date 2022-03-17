@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
+import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 import java.time.Instant;
@@ -17,25 +18,30 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   private final GetSessionTokenRequest mySessionConfiguration;
   private final int sessionCredentialsValidThresholdMinutes = 10;
 
-  private GetSessionTokenResult currentSession;
+  private volatile GetSessionTokenResult currentSession;
 
 
   public AwsConnTempCredentialsProvider(AWSSecurityTokenService sts, int sessionDurationMinutes, ExecutorServices executorServices) {
-    executorServices.getNormalExecutorService().scheduleAtFixedRate(getRefreshTask(), 1, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
-
-    mySts = sts;
-
     mySessionConfiguration = new GetSessionTokenRequest()
       .withDurationSeconds(sessionDurationMinutes * 60);
+
     currentSession = sts.getSessionToken(mySessionConfiguration);
+
+    executorServices.getNormalExecutorService().scheduleWithFixedDelay(() -> {
+      if(currentSessionExpired())
+        refresh();
+    }, 0, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
+
+    mySts = sts;
   }
 
   @Override
   public AWSCredentials getCredentials() {
+    Credentials credentials = currentSession.getCredentials();
     return new BasicSessionCredentials(
-      currentSession.getCredentials().getAccessKeyId(),
-      currentSession.getCredentials().getSecretAccessKey(),
-      currentSession.getCredentials().getSessionToken()
+      credentials.getAccessKeyId(),
+      credentials.getSecretAccessKey(),
+      credentials.getSessionToken()
     );
   }
 
@@ -44,14 +50,8 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
     currentSession = mySts.getSessionToken(mySessionConfiguration);
   }
 
-  private Runnable getRefreshTask() {
-    return new Runnable() {
-      @Override
-      public void run() {
-        if (Date.from(Instant.now().plusSeconds(sessionCredentialsValidThresholdMinutes * 60L)).after(currentSession.getCredentials().getExpiration())) {
-          refresh();
-        }
-      }
-    };
+  private boolean currentSessionExpired(){
+    return Date.from(Instant.now().plusSeconds(sessionCredentialsValidThresholdMinutes * 60L))
+               .after(currentSession.getCredentials().getExpiration());
   }
 }

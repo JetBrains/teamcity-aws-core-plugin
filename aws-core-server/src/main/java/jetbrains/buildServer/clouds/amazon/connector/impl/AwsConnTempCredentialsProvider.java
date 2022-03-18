@@ -34,7 +34,7 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
     executorServices.getNormalExecutorService().scheduleWithFixedDelay(() -> {
       if(currentSessionExpired())
         refresh();
-    }, 0, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
+    }, sessionCredentialsValidHandicapMinutes, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
 
     mySts = sts;
   }

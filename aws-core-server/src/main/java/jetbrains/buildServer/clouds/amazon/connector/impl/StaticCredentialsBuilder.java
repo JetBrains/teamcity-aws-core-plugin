@@ -3,6 +3,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,26 +38,18 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
     if(ParamUtil.useSessionCredentials(cloudConnectorProperties)){
       int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(cloudConnectorProperties);
+
+      AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder.standard();
+      StsClientBuilder.addConfiguration(stsBuilder, cloudConnectorProperties);
+      stsBuilder.withCredentials(getBasicCredentialsProvider(cloudConnectorProperties));
+
       return new AwsConnTempCredentialsProvider(
-        StsClientBuilder.buildClient(cloudConnectorProperties),
+        stsBuilder.build(),
         sessionDurationMinutes,
         myExecutorServices
       );
     } else {
-      return new AWSCredentialsProvider() {
-        @Override
-        public AWSCredentials getCredentials() {
-          return new BasicAWSCredentials(
-            cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
-            cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
-          );
-        }
-
-        @Override
-        public void refresh() {
-          //
-        }
-      };
+      return getBasicCredentialsProvider(cloudConnectorProperties);
     }
   }
 
@@ -84,6 +77,24 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
         lastInvalidProperty.getPropertyName()
       );
     }
+  }
+
+  @NotNull
+  private AWSCredentialsProvider getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties){
+    return new AWSCredentialsProvider() {
+      @Override
+      public AWSCredentials getCredentials() {
+        return new BasicAWSCredentials(
+          cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
+          cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
+        );
+      }
+
+      @Override
+      public void refresh() {
+        //
+      }
+    };
   }
 
   @Override

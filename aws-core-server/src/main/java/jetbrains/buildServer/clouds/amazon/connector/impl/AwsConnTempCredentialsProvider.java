@@ -17,7 +17,8 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
 
   private final AWSSecurityTokenService mySts;
   private final GetSessionTokenRequest mySessionConfiguration;
-  private final int sessionCredentialsValidThresholdMinutes = 10;
+  private final int sessionCredentialsValidThresholdMinutes = 1;
+  private final int sessionCredentialsValidHandicapMinutes = 2;
 
   private volatile GetSessionTokenResult currentSession;
 
@@ -50,13 +51,12 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   }
 
   @Override
-  @NotNull
   public void refresh() {
     currentSession = mySts.getSessionToken(mySessionConfiguration);
   }
 
   private boolean currentSessionExpired(){
-    return Date.from(Instant.now().plusSeconds(sessionCredentialsValidThresholdMinutes * 60L))
+    return Date.from(Instant.now().plusSeconds((sessionCredentialsValidThresholdMinutes + sessionCredentialsValidHandicapMinutes) * 60L))
                .after(currentSession.getCredentials().getExpiration());
   }
 }

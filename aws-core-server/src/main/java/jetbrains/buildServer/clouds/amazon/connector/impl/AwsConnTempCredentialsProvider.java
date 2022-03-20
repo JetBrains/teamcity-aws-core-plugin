@@ -10,6 +10,7 @@ import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,7 +53,11 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
 
   @Override
   public void refresh() {
-    currentSession = mySts.getSessionToken(mySessionConfiguration);
+    try {
+      currentSession = mySts.getSessionToken(mySessionConfiguration);
+    } catch (Exception e){
+      Loggers.CLOUD.debug("Failed to refresh AWS Credentials: " + e.getMessage());
+    }
   }
 
   private boolean currentSessionExpired(){

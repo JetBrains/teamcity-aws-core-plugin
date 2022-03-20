@@ -7,5 +7,5 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.backwardsCompat.AwsConnectorExtensionRegistar"/>
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.StaticCredentialsBuilder"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
 </beans>

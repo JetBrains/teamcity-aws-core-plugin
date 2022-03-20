@@ -1,43 +1,36 @@
-package jetbrains.buildServer.clouds.amazon.connector.impl;
+package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
 
-public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
+public class AwsConnTempCredentialsProvider extends CredentialsRefresher {
 
-  private final AWSSecurityTokenService mySts;
   private final GetSessionTokenRequest mySessionConfiguration;
-  private final int sessionCredentialsValidThresholdMinutes = 1;
-  private final int sessionCredentialsValidHandicapMinutes = 2;
 
   private volatile GetSessionTokenResult currentSession;
 
-
-  public AwsConnTempCredentialsProvider(@NotNull final AWSSecurityTokenService sts,
-                                        final int sessionDurationMinutes,
+  public AwsConnTempCredentialsProvider(@NotNull final AWSCredentialsProvider awsCredentialsProvider,
+                                        @NotNull final Map<String, String> connectionProperties,
                                         @NotNull final ExecutorServices executorServices) {
+    super(awsCredentialsProvider, connectionProperties, executorServices);
+
+    int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(connectionProperties);
     mySessionConfiguration = new GetSessionTokenRequest()
       .withDurationSeconds(sessionDurationMinutes * 60);
 
-    currentSession = sts.getSessionToken(mySessionConfiguration);
-
-    executorServices.getNormalExecutorService().scheduleWithFixedDelay(() -> {
-      if(currentSessionExpired())
-        refresh();
-    }, sessionCredentialsValidHandicapMinutes, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
-
-    mySts = sts;
+    currentSession = getSts().getSessionToken(mySessionConfiguration);
   }
 
   @Override
@@ -54,13 +47,13 @@ public class AwsConnTempCredentialsProvider implements AWSCredentialsProvider {
   @Override
   public void refresh() {
     try {
-      currentSession = mySts.getSessionToken(mySessionConfiguration);
-    } catch (Exception e){
+      currentSession = getSts().getSessionToken(mySessionConfiguration);
+    } catch (Exception e) {
       Loggers.CLOUD.debug("Failed to refresh AWS Credentials: " + e.getMessage());
     }
   }
 
-  private boolean currentSessionExpired(){
+  public boolean currentSessionExpired() {
     return Date.from(Instant.now().plusSeconds((sessionCredentialsValidThresholdMinutes + sessionCredentialsValidHandicapMinutes) * 60L))
                .after(currentSession.getCredentials().getExpiration());
   }

@@ -35,7 +35,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
     processInvalidProperties(invalidProperties);
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
-      return new AwsConnTempCredentialsProvider(
+      return new StaticSessionCredentialsProvider(
         getBasicCredentialsProvider(cloudConnectorProperties),
         cloudConnectorProperties,
         myExecutorServices

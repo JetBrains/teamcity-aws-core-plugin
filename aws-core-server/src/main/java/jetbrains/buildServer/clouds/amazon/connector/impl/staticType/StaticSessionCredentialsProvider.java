@@ -15,15 +15,15 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
 
-public class AwsConnTempCredentialsProvider extends CredentialsRefresher {
+public class StaticSessionCredentialsProvider extends CredentialsRefresher {
 
   private final GetSessionTokenRequest mySessionConfiguration;
 
   private volatile GetSessionTokenResult currentSession;
 
-  public AwsConnTempCredentialsProvider(@NotNull final AWSCredentialsProvider awsCredentialsProvider,
-                                        @NotNull final Map<String, String> connectionProperties,
-                                        @NotNull final ExecutorServices executorServices) {
+  public StaticSessionCredentialsProvider(@NotNull final AWSCredentialsProvider awsCredentialsProvider,
+                                          @NotNull final Map<String, String> connectionProperties,
+                                          @NotNull final ExecutorServices executorServices) {
     super(awsCredentialsProvider, connectionProperties, executorServices);
 
     int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(connectionProperties);

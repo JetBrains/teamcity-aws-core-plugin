@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertNotEquals;
 
-public class AwsConnTempCredentialsProviderTest extends BaseTestCase {
+public class StaticSessionCredentialsProviderTest extends BaseTestCase {
 
   private ExecutorServices myExecutorServices;
 

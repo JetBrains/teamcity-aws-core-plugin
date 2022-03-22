@@ -6,7 +6,6 @@ import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
@@ -30,7 +29,7 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
     mySessionConfiguration = new GetSessionTokenRequest()
       .withDurationSeconds(sessionDurationMinutes * 60);
 
-    currentSession = getSts().getSessionToken(mySessionConfiguration);
+    currentSession = mySts.getSessionToken(mySessionConfiguration);
   }
 
   @Override
@@ -47,14 +46,15 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
   @Override
   public void refresh() {
     try {
-      currentSession = getSts().getSessionToken(mySessionConfiguration);
+      currentSession = mySts.getSessionToken(mySessionConfiguration);
     } catch (Exception e) {
       Loggers.CLOUD.debug("Failed to refresh AWS Credentials: " + e.getMessage());
     }
   }
 
-  public boolean currentSessionExpired() {
-    return Date.from(Instant.now().plusSeconds((sessionCredentialsValidThresholdMinutes + sessionCredentialsValidHandicapMinutes) * 60L))
-               .after(currentSession.getCredentials().getExpiration());
+  @Override
+  @NotNull
+  public Date getSessionExpirationDate() {
+    return currentSession.getCredentials().getExpiration();
   }
 }

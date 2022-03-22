@@ -3,6 +3,8 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
@@ -13,7 +15,7 @@ public abstract class CredentialsRefresher implements AWSCredentialsProvider {
 
   protected final int sessionCredentialsValidThresholdMinutes = 1;
   protected final int sessionCredentialsValidHandicapMinutes = 2;
-  private AWSSecurityTokenService mySts;
+  protected AWSSecurityTokenService mySts;
 
   public CredentialsRefresher(@NotNull final AWSCredentialsProvider awsCredentialsProvider,
                               @NotNull final Map<String, String> connectionProperties,
@@ -25,19 +27,17 @@ public abstract class CredentialsRefresher implements AWSCredentialsProvider {
     mySts = stsBuilder.build();
 
     executorServices.getNormalExecutorService().scheduleWithFixedDelay(() -> {
-      if (currentSessionExpired()) {
+      if (currentSessionExpired(getSessionExpirationDate())) {
         refresh();
       }
     }, sessionCredentialsValidHandicapMinutes, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
   }
 
-  protected AWSSecurityTokenService getSts() {
-    return mySts;
-  }
+  @NotNull
+  public abstract Date getSessionExpirationDate();
 
-  protected void setSts(AWSSecurityTokenService sts) {
-    mySts = sts;
+  private boolean currentSessionExpired(@NotNull final Date expirationDate) {
+    return Date.from(Instant.now().plusSeconds((sessionCredentialsValidThresholdMinutes + sessionCredentialsValidHandicapMinutes) * 60L))
+               .after(expirationDate);
   }
-
-  public abstract boolean currentSessionExpired();
 }

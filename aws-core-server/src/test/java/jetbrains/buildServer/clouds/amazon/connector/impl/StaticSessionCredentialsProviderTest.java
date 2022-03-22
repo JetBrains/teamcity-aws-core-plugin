@@ -29,7 +29,7 @@ public class StaticSessionCredentialsProviderTest extends BaseTestCase {
       @NotNull
       @Override
       public ExecutorService getLowPriorityExecutorService() {
-        return null;
+        return Executors.newSingleThreadExecutor();
       }
     };
   }

@@ -27,7 +27,7 @@ public class ParamUtil {
     return true;
   }
 
-  public static int getSesseionDurationMinutes(@NotNull final Map<String, String> cloudConnectorProperties) {
+  public static int getSessionDurationMinutes(@NotNull final Map<String, String> cloudConnectorProperties) {
     String sessionDurationStr = cloudConnectorProperties.get(AwsAccessKeysParams.SESSION_DURATION_PARAM);
     if(isEmptyString(sessionDurationStr) || ! isValidSessionDuration(sessionDurationStr)) {
       return Integer.parseInt(AwsAccessKeysParams.SESSION_DURATION_DEFAULT);

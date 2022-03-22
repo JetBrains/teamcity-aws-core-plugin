@@ -26,7 +26,7 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
                                           @NotNull final ExecutorServices executorServices) {
     super(awsCredentialsProvider, connectionProperties, executorServices);
 
-    int sessionDurationMinutes = ParamUtil.getSesseionDurationMinutes(connectionProperties);
+    int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
     mySessionConfiguration = new GetSessionTokenRequest()
       .withDurationSeconds(sessionDurationMinutes * 60);
 

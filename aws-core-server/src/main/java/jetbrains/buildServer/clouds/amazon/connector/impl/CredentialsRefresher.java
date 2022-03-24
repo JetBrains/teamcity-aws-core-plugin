@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class CredentialsRefresher implements AWSCredentialsProvider {
 
-  protected final int sessionCredentialsValidThresholdMinutes = 1;
-  protected final int sessionCredentialsValidHandicapMinutes = 2;
+  protected static final int SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES = 1;
+  protected static final int SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES = 2;
   protected AWSSecurityTokenService mySts;
 
   public CredentialsRefresher(@NotNull final AWSCredentialsProvider awsCredentialsProvider,
@@ -30,14 +30,14 @@ public abstract class CredentialsRefresher implements AWSCredentialsProvider {
       if (currentSessionExpired(getSessionExpirationDate())) {
         refresh();
       }
-    }, sessionCredentialsValidHandicapMinutes, sessionCredentialsValidThresholdMinutes, TimeUnit.MINUTES);
+    }, SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES, SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES, TimeUnit.MINUTES);
   }
 
   @NotNull
   public abstract Date getSessionExpirationDate();
 
   private boolean currentSessionExpired(@NotNull final Date expirationDate) {
-    return Date.from(Instant.now().plusSeconds((sessionCredentialsValidThresholdMinutes + sessionCredentialsValidHandicapMinutes) * 60L))
+    return Date.from(Instant.now().plusSeconds((SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES + SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES) * 60L))
                .after(expirationDate);
   }
 }

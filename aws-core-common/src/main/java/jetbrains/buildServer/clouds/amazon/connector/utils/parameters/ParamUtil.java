@@ -11,10 +11,7 @@ public class ParamUtil {
   }
 
   public static boolean isValidSessionDuration(@Nullable final String strSessionDuration) {
-    if (strSessionDuration == null) {
-      return false;
-    }
-    if(isEmptyString(strSessionDuration)){
+    if(strSessionDuration == null || isEmptyString(strSessionDuration)){
       return true;
     }
     try {

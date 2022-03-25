@@ -3,6 +3,10 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
@@ -12,7 +16,7 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCrede
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
-import jetbrains.buildServer.serverSide.impl.executors.MockExecutorServices;
+import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -29,7 +33,19 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   public void setup() {
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     myConnectorProperties = new HashMap<>();
-    myExecutorServices = new MockExecutorServices();
+    myExecutorServices = new ExecutorServices() {
+      @NotNull
+      @Override
+      public ScheduledExecutorService getNormalExecutorService() {
+        return Executors.newScheduledThreadPool(1);
+      }
+
+      @NotNull
+      @Override
+      public ExecutorService getLowPriorityExecutorService() {
+        return Executors.newSingleThreadExecutor();
+      }
+    };
   }
 
   @Test

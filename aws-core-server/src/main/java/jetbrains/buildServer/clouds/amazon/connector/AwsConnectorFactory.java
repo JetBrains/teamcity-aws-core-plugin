@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
@@ -8,10 +9,16 @@ import org.jetbrains.annotations.NotNull;
 
 public interface AwsConnectorFactory {
 
-  void registerAwsCredentialsBuilder(@NotNull final AwsCredentialsBuilder credentialsBuilder);
-
+  /**
+   * Creates <b>AWSCredentialsProvider</b> using connection properties.
+   * The credentials type will be extracted from the parameters.
+   * @param  connectionProperties  Connection feature properties.
+   * @return AWSCredentialsProvider object with needed credentials type.
+   */
   @NotNull
-  AwsCredentialsBuilder getAwsCredentialsBuilderOfType(@NotNull final String type) throws NoSuchAwsCredentialsBuilderException;
+  public AWSCredentialsProvider buildAwsCredentialsProvider(@NotNull final Map<String, String> connectionProperties);
+
+  void registerAwsCredentialsBuilder(@NotNull final AwsCredentialsBuilder credentialsBuilder);
 
   @NotNull
   List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties) throws NoSuchAwsCredentialsBuilderException;

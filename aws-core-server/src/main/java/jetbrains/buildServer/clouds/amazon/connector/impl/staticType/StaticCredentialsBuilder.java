@@ -29,7 +29,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
   @Override
   @NotNull
-  public AWSCredentialsProvider createCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
+  public AWSCredentialsProvider constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
 
     List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
     processInvalidProperties(invalidProperties);

@@ -65,10 +65,6 @@ public class AwsConnectionProvider extends OAuthProvider {
         validateCredentialsTypeProperties(map, invalidProperties);
       }
 
-      if (!ParamUtil.isValidSessionDuration(map.get(AwsAccessKeysParams.SESSION_DURATION_PARAM))) {
-        invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
-      }
-
       return invalidProperties;
     };
   }

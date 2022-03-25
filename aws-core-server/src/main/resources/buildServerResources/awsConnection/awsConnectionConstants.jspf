@@ -28,3 +28,5 @@
 
 <c:set var="credentials_type_access_keys_option" value="<%=AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE%>"/>
 <c:set var="credentials_type_access_keys_label" value="<%=AwsCloudConnectorConstants.ACCESS_KEYS_LABEL%>"/>
+
+<c:set var="test_connection_controller_url" value="<%=AwsCloudConnectorConstants.TEST_CONNECTION_CONTROLLER_URL%>"/>

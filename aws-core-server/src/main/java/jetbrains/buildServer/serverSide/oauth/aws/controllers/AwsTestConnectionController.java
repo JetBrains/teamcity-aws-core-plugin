@@ -1,17 +1,13 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsExceptionsHandler;
-import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
@@ -31,13 +27,13 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class AwsTestConnectionController extends BaseFormXmlController {
   public static final String PATH = TEST_CONNECTION_CONTROLLER_URL;
 
-  private final AwsConnectorFactory myAwsConnectorFactory;
+  private final AwsConnectionTester myAwsConnectionTester;
 
   public AwsTestConnectionController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
-                                     @NotNull final AwsConnectorFactory awsConnectorFactory) {
+                                     @NotNull final AwsConnectionTester awsConnectionTester) {
     super(server);
-    myAwsConnectorFactory = awsConnectorFactory;
+    myAwsConnectionTester = awsConnectionTester;
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
     }
@@ -49,29 +45,21 @@ public class AwsTestConnectionController extends BaseFormXmlController {
 
     BasePropertiesBean basePropertiesBean = new BasePropertiesBean(null);
     PluginPropertiesUtil.bindPropertiesFromRequest(request, basePropertiesBean);
+    Map<String, String> connectionProperties = basePropertiesBean.getProperties();
 
     try {
-      List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(basePropertiesBean.getProperties());
+      List<InvalidProperty> invalidProperties = myAwsConnectionTester.getInvalidProperties(connectionProperties);
+
       if (invalidProperties.isEmpty()) {
-        GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest()
-          .withRequestCredentialsProvider(
-            myAwsConnectorFactory.buildAwsCredentialsProvider(basePropertiesBean.getProperties())
-          );
-
-        AWSSecurityTokenServiceClientBuilder stsClientBuilder = AWSSecurityTokenServiceClientBuilder.standard();
-        StsClientBuilder.addConfiguration(stsClientBuilder, basePropertiesBean.getProperties());
-        AWSSecurityTokenService sts = stsClientBuilder.build();
-
-        GetCallerIdentityResult getCallerIdentityResult = sts.getCallerIdentity(getCallerIdentityRequest);
+        GetCallerIdentityResult getCallerIdentityResult = myAwsConnectionTester.testConnection(connectionProperties);
         xmlResponse.addContent((Content)createCallerIdentityElement(getCallerIdentityResult));
-
       } else {
         for (InvalidProperty invalidProp : invalidProperties) {
           errors.addError(invalidProp);
         }
       }
-    } catch (Exception e) {
-      handleException(e, errors);
+    } catch (AmazonClientException e) {
+      handleAwsClientException(e, errors);
     }
 
     if (errors.hasErrors()) {
@@ -79,7 +67,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     }
   }
 
-  private Element createCallerIdentityElement(GetCallerIdentityResult getCallerIdentityResult) {
+  @NotNull
+  private Element createCallerIdentityElement(@NotNull final GetCallerIdentityResult getCallerIdentityResult) {
     Element callerIdentityElement = new Element(AWS_CALLER_IDENTITY_ELEMENT);
     callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID, getCallerIdentityResult.getAccount());
     callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_USER_ID, getCallerIdentityResult.getUserId());
@@ -87,21 +76,11 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     return callerIdentityElement;
   }
 
-  private void handleException(Exception e, ActionErrors errors) {
-    String actionDesription = "Unable to run AmazonSts.getCallerIdentity. ";
-
-    if (e instanceof AwsConnectorException) {
-      Loggers.CLOUD.debug("Failed to create the AWS Connector: " + e.getMessage());
-      AwsExceptionsHandler.addAwsConnectorException((AwsConnectorException)e, errors);
-    } else if (e instanceof AmazonClientException) {
-      AmazonClientException amazonException = (AmazonClientException)e;
-      Loggers.CLOUD.debug(actionDesription + "(got an AWS exception)", amazonException);
-      String errorDescription = AwsExceptionsHandler.getAwsErrorDescription(amazonException);
-      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + errorDescription));
-    } else {
-      Loggers.CLOUD.debug(actionDesription, e);
-      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + e.getMessage()));
-    }
+  private void handleAwsClientException(@NotNull final AmazonClientException amazonException, @NotNull ActionErrors errors) {
+    String actionDesription = "Unable to run AmazonSts.getCallerIdentity, got an AWS exception. ";
+    Loggers.CLOUD.debug(actionDesription, amazonException);
+    String errorDescription = AwsExceptionsHandler.getAwsErrorDescription(amazonException);
+    errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + errorDescription));
   }
 
   @Override

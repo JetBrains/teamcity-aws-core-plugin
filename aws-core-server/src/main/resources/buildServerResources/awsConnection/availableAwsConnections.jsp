@@ -27,24 +27,17 @@
 
 <props:hiddenProperty id="chosenAwsConnIdParam" name="${chosen_aws_conn_id}"/>
 
-<c:choose>
-  <c:when test="${intprop:getBooleanOrTrue(aws_feature_prop_name)}">
-    <table class="runnerFormTable">
-      <tr class="noBorder">
-        <th>
-          <label for="availAwsConnectionsSelect">Select AWS Connection:</label>
-        </th>
-        <td>
-          <select id="availAwsConnectionsSelect" onchange="onAwsConnectionSelectChange()" class= "availAwsConnections hidden"> </select>
-          <span class="error error_availAwsConnections hidden"></span>
-        </td>
-      </tr>
-    </table>
-  </c:when>
-  <c:otherwise>
-    AWS Connections feature is turned off
-  </c:otherwise>
-</c:choose>
+<table class="runnerFormTable">
+  <tr class="noBorder">
+    <th>
+      <label for="availAwsConnectionsSelect">Select AWS Connection:</label>
+    </th>
+    <td>
+      <select id="availAwsConnectionsSelect" onchange="onAwsConnectionSelectChange()" class= "availAwsConnections hidden"> </select>
+      <span class="error error_availAwsConnections hidden"></span>
+    </td>
+  </tr>
+</table>
 
 <script type="text/javascript">
 

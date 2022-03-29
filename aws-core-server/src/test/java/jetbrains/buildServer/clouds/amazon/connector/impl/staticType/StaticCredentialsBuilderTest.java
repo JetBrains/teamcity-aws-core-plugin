@@ -45,40 +45,34 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     };
   }
 
-  @Test(expectedExceptions = {NoSuchAwsCredentialsBuilderException.class})
+  @Test
   public void givenAwsConnFactory_whenWithUnlnownCredentialsType_thenReturnThrowException() throws NoSuchAwsCredentialsBuilderException {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "UNKNOWN");
-    myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    assertEquals("There should be one invalid property", 1, invalidProperties.size());
+    assertEquals("The ivalid property reason sould be as described", "The credentials type UNKNOWN is not supported.", invalidProperties.get(0).getInvalidReason());
   }
 
   @Test
-  public void givenAwsConnFactory_whenWithWithOnlyCredentialsTypeProp_thenReturnAllInvalidProps(){
+  public void givenAwsConnFactory_whenWithWithOnlyCredentialsTypeProp_thenReturnAllInvalidProps() {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
 
-    try {
-      List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
-      assertEquals("There should be two invalid properties", 2, invalidProperties.size());
-    } catch (NoSuchAwsCredentialsBuilderException e) {
-      fail(e.getMessage());
-    }
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    assertEquals("There should be two invalid properties", 2, invalidProperties.size());
   }
 
   @Test
-  public void givenAwsConnFactory_whenWithAccessKeyIdOnly_thenReturnOneInvalidProp(){
+  public void givenAwsConnFactory_whenWithAccessKeyIdOnly_thenReturnOneInvalidProp() {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
 
-    try {
-      List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
-      assertEquals("There should be one invalid property (Secret Access Key)", 1, invalidProperties.size());
-      assertEquals("The ivalid property name sould be the secret access key", AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, invalidProperties.get(0).getPropertyName());
-      assertEquals("The ivalid property reason sould be as described", "Please provide the secret access key ", invalidProperties.get(0).getInvalidReason());
-    } catch (NoSuchAwsCredentialsBuilderException e) {
-      fail(e.getMessage());
-    }
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    assertEquals("There should be one invalid property (Secret Access Key)", 1, invalidProperties.size());
+    assertEquals("The ivalid property name sould be the secret access key", AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, invalidProperties.get(0).getPropertyName());
+    assertEquals("The ivalid property reason sould be as described", "Please provide the secret access key ", invalidProperties.get(0).getInvalidReason());
   }
 }

@@ -1,13 +1,12 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectionTester;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsExceptionsHandler;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
@@ -58,8 +57,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
           errors.addError(invalidProp);
         }
       }
-    } catch (AmazonClientException e) {
-      handleAwsClientException(e, errors);
+    } catch (Exception e) {
+      handleException(e, errors);
     }
 
     if (errors.hasErrors()) {
@@ -76,11 +75,14 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     return callerIdentityElement;
   }
 
-  private void handleAwsClientException(@NotNull final AmazonClientException amazonException, @NotNull ActionErrors errors) {
-    String actionDesription = "Unable to run AmazonSts.getCallerIdentity, got an AWS exception. ";
-    Loggers.CLOUD.debug(actionDesription, amazonException);
-    String errorDescription = AwsExceptionsHandler.getAwsErrorDescription(amazonException);
-    errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + errorDescription));
+  private void handleException(@NotNull final Exception exception, @NotNull ActionErrors errors) {
+    String actionDesription = "Unable to run AmazonSts.getCallerIdentity: ";
+    Loggers.CLOUD.debug(actionDesription, exception);
+    if (exception instanceof AmazonServiceException) {
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + ((AmazonServiceException)exception).getErrorMessage()));
+    } else {
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + exception.getMessage()));
+    }
   }
 
   @Override

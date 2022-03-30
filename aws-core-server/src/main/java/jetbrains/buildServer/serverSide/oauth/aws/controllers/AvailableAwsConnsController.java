@@ -4,6 +4,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.controllers.ActionErrors;
+import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -11,6 +12,7 @@ import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Content;
@@ -29,12 +31,14 @@ public class AvailableAwsConnsController extends BaseFormXmlController {
   public AvailableAwsConnsController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                                     @NotNull final ProjectManager projectManager) {
+                                     @NotNull final ProjectManager projectManager,
+                                     @NotNull final AuthorizationInterceptor authInterceptor) {
     super(server);
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
+      authInterceptor.addPathBasedPermissionsChecker(PATH, new ProjectAccessChecker(myProjectManager));
     }
   }
 

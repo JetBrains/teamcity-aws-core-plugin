@@ -35,6 +35,7 @@
 
 <c:set var="avail_connections_controller_url" value="<%=AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_CONTROLLER_URL%>"/>
 
+<c:set var="aws_conn_element_name" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ELEMENT%>"/>
 <c:set var="aws_conn_attr_name" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ATTR_NAME%>"/>
 <c:set var="aws_conn_attr_id" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ATTR_ID%>"/>
 

@@ -18,6 +18,8 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<c:set var="aws_feature_prop_name" value="<%=AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME%>"/>
+
 <c:set var="aws_caller_identity_element" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ELEMENT%>"/>
 <c:set var="aws_caller_identity_attr_account_id" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID%>"/>
 <c:set var="aws_caller_identity_attr_user_id" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ATTR_USER_ID%>"/>
@@ -28,3 +30,12 @@
 
 <c:set var="credentials_type_access_keys_option" value="<%=AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE%>"/>
 <c:set var="credentials_type_access_keys_label" value="<%=AwsCloudConnectorConstants.ACCESS_KEYS_LABEL%>"/>
+
+<%--Available AWS Connections--%>
+
+<c:set var="avail_connections_controller_url" value="<%=AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_CONTROLLER_URL%>"/>
+
+<c:set var="aws_conn_attr_name" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ATTR_NAME%>"/>
+<c:set var="aws_conn_attr_id" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ATTR_ID%>"/>
+
+<c:set var="chosen_aws_conn_id" value="<%=AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM%>"/>

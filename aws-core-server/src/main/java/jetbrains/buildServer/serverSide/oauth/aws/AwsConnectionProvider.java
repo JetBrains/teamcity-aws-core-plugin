@@ -59,7 +59,7 @@ public class AwsConnectionProvider extends OAuthProvider {
       if (StringUtil.isEmpty(credentialsType)) {
         invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "Please choose a credentials type."));
       } else {
-        invalidProperties.addAll(myAwsConnectorFactory.validateProperties(map));
+        invalidProperties.addAll(myAwsConnectorFactory.getInvalidProperties(map));
       }
 
       return invalidProperties;

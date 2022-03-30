@@ -38,6 +38,6 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
   @Override
   @NotNull
   public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> connectionProperties) {
-    return myAwsConnectorFactory.validateProperties(connectionProperties);
+    return myAwsConnectorFactory.getInvalidProperties(connectionProperties);
   }
 }

@@ -20,7 +20,7 @@ public interface AwsConnectorFactory {
   void registerAwsCredentialsBuilder(@NotNull final AwsCredentialsBuilder credentialsBuilder);
 
   @NotNull
-  List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties);
+  List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> properties);
 
   @NotNull
   String describeAwsConnection(@NotNull final Map<String, String> connectionProperties);

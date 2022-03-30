@@ -77,7 +77,7 @@ public class AwsTestConnectionControllerTest extends BaseControllerTestCase<AwsT
       @NotNull
       @Override
       public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> connectionProperties) {
-        return myAwsConnectorFactory.validateProperties(connectionProperties);
+        return myAwsConnectorFactory.getInvalidProperties(connectionProperties);
       }
     };
   }

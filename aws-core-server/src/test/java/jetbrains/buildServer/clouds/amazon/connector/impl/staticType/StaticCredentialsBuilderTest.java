@@ -46,9 +46,9 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
   }
 
   @Test
-  public void givenAwsConnFactory_whenWithUnlnownCredentialsType_thenReturnThrowException() throws NoSuchAwsCredentialsBuilderException {
+  public void givenAwsConnFactory_whenWithUnlnownCredentialsType_thenReturnThrowException() {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "UNKNOWN");
-    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
     assertEquals("There should be one invalid property", 1, invalidProperties.size());
     assertEquals("The ivalid property reason sould be as described", "The credentials type UNKNOWN is not supported.", invalidProperties.get(0).getInvalidReason());
   }
@@ -59,7 +59,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
 
-    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
     assertEquals("There should be two invalid properties", 2, invalidProperties.size());
   }
 
@@ -70,7 +70,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
 
-    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.validateProperties(myConnectorProperties);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
     assertEquals("There should be one invalid property (Secret Access Key)", 1, invalidProperties.size());
     assertEquals("The ivalid property name sould be the secret access key", AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, invalidProperties.get(0).getPropertyName());
     assertEquals("The ivalid property reason sould be as described", "Please provide the secret access key ", invalidProperties.get(0).getInvalidReason());

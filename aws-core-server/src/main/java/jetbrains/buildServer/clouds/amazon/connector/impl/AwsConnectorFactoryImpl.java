@@ -36,7 +36,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   @NotNull
   @Override
-  public List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties) {
+  public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> properties) {
     String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
     try {
       if(credentialsType == null){

@@ -57,7 +57,7 @@
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {
-    var that = this;
+    var enableForm = this.enable();
     BS.PasswordFormSaver.save(this, '${testAwsConnctionControllerUrl}', OO.extend(BS.ErrorsAwareListener, {
       onFailedTestConnectionError: function (elem) {
         var text = "";
@@ -74,7 +74,7 @@
         }
       },
       onSuccessfulSave: function (responseXML) {
-        that.enable();
+        enableForm();
         var testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
 
         var additionalInfo;

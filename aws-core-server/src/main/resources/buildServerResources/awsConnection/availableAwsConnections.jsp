@@ -56,7 +56,7 @@
     getAvailableAwsConnections();
   });
 
-  var onAwsConnectionSelectChange = function () {
+  onAwsConnectionSelectChange = function () {
     const selectedOption = $j('#' + availConnsSelectId + ' option:selected');
     if (selectedOption.val() !== '') {
       $j('#' + chosenAwsConnParamId).val(selectedOption.val());
@@ -79,6 +79,9 @@
             availConnsSelectElement.empty();
 
             const select = document.getElementById(availConnsSelectId);
+
+            $j('#' + chosenAwsConnParamId).val(connections[0].getAttribute('${aws_conn_attr_id}'));
+
             for (let i = 0; i < connections.length; i++) {
               const option = document.createElement('option');
               option.text = connections[i].getAttribute('${aws_conn_attr_name}');

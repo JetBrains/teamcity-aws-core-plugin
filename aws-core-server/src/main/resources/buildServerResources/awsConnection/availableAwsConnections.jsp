@@ -91,7 +91,11 @@
             toggleAvailableConnectionsSelect(true);
             toggleErrors(false)
           } else {
-            addError('There are no available AWS connections, please, create one in the Project configuration.', $j('.' + errorPrefix + availConnPrefix));
+            addError(
+              'There are no available AWS connections.<br>\
+              <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${connectorType}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
+              $j('.' + errorPrefix + availConnPrefix)
+            );
             toggleErrors(true);
             toggleAvailableConnectionsSelect(false);
           }
@@ -124,7 +128,7 @@
 
 
   var addError = function (errorHTML, target) {
-    target.append($j('<div>').text(errorHTML));
+    target.append($j('<div>').html(errorHTML));
   };
 
   var clearAllErrors = function (){

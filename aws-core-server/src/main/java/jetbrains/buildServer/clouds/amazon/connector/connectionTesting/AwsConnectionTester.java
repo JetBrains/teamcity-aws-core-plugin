@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector;
+package jetbrains.buildServer.clouds.amazon.connector.connectionTesting;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;

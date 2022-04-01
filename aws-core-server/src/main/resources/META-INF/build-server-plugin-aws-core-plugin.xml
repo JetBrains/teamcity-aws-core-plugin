@@ -9,6 +9,6 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
 
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionTesterImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsConnectionTesterImpl"/>
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsTestConnectionController"/>
 </beans>

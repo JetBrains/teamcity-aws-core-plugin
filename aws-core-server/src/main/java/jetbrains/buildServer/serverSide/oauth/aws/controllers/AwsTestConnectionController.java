@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectionTester;
+import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;

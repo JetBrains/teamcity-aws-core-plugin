@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.impl;
+package jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
@@ -7,7 +7,7 @@ import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectionTester;
+import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.serverSide.InvalidProperty;

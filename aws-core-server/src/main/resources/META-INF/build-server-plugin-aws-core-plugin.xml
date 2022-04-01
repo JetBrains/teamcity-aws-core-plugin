@@ -10,7 +10,4 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
 
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>
-
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.AwsConnToEnvVarsBuildFeature"/>
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.InjectAwsCredsToEnvVars"/>
 </beans>

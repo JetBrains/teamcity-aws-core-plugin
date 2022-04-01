@@ -3,16 +3,14 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
-import jetbrains.buildServer.controllers.BaseFormXmlController;
+import jetbrains.buildServer.controllers.*;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
+import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Content;
@@ -37,8 +35,17 @@ public class AvailableAwsConnsController extends BaseFormXmlController {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
+      final RequestPermissionsChecker projectAccessChecker = (RequestPermissionsCheckerEx)(securityContext, request) -> {
+        String projectId = request.getParameter("projectId");
+        SProject curProject = myProjectManager.findProjectByExternalId(projectId);
+        if (curProject == null) {
+          throw new AccessDeniedException(securityContext.getAuthorityHolder(), "Project with id " + request.getParameter("projectId") + " does not exist");
+        }
+        securityContext.getAccessChecker().checkCanEditProject(curProject);
+      };
+
       webControllerManager.registerController(PATH, this);
-      authInterceptor.addPathBasedPermissionsChecker(PATH, new ProjectAccessChecker(myProjectManager));
+      authInterceptor.addPathBasedPermissionsChecker(PATH, projectAccessChecker);
     }
   }
 

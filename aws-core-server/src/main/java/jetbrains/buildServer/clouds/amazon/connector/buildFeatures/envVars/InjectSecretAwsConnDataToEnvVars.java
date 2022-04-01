@@ -4,8 +4,10 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import jetbrains.buildServer.agent.Constants;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.Parameter;
@@ -31,24 +33,23 @@ public class InjectSecretAwsConnDataToEnvVars implements PasswordsProvider {
   @Override
   public Collection<Parameter> getPasswordParameters(@NotNull SBuild build) {
     ArrayList<Parameter> secureParams = new ArrayList<>();
-    ArrayList<OAuthConnectionDescriptor> awsConnections = AwsConnToEnvVarsBuildFeature.getAwsConnections(build, myOAuthConnectionsManager);
-    if(awsConnections.size() == 0){
-      Loggers.CLOUD.warn("There is no AWS Connection to expose. Check that chosen AWS Connection exists.");
-      return new ArrayList<>();
-    }
+    List<OAuthConnectionDescriptor> awsConnections = AwsConnToEnvVarsBuildFeature.getLinkedAwsConnections(build, myOAuthConnectionsManager);
 
-    AWSCredentialsProvider creds = myAwsConnectorFactory.buildAwsCredentialsProvider(awsConnections.get(0).getParameters());
+    for (OAuthConnectionDescriptor awsConnection : awsConnections) {
 
-    secureParams.add(new SimpleParameter(
-      Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SECRET_KEY_ENV_PARAM_DEFAULT,
-      creds.getCredentials().getAWSSecretKey())
-    );
+      AWSCredentialsProvider creds = myAwsConnectorFactory.buildAwsCredentialsProvider(awsConnection.getParameters());
 
-    if (creds.getCredentials() instanceof BasicSessionCredentials) {
       secureParams.add(new SimpleParameter(
-        Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SESSION_TOKEN_ENV_PARAM_DEFAULT,
-        ((BasicSessionCredentials)creds.getCredentials()).getSessionToken())
+        Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SECRET_KEY_ENV_PARAM_DEFAULT,
+        creds.getCredentials().getAWSSecretKey())
       );
+
+      if (creds.getCredentials() instanceof BasicSessionCredentials) {
+        secureParams.add(new SimpleParameter(
+          Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SESSION_TOKEN_ENV_PARAM_DEFAULT,
+          ((BasicSessionCredentials)creds.getCredentials()).getSessionToken())
+        );
+      }
     }
 
     return secureParams;

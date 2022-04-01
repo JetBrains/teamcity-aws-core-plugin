@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
+import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
@@ -50,7 +51,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
       List<InvalidProperty> invalidProperties = myAwsConnectionTester.getInvalidProperties(connectionProperties);
 
       if (invalidProperties.isEmpty()) {
-        GetCallerIdentityResult getCallerIdentityResult = myAwsConnectionTester.testConnection(connectionProperties);
+        AwsTestConnectionResult testConnectionResult = myAwsConnectionTester.testConnection(connectionProperties);
+        GetCallerIdentityResult getCallerIdentityResult = testConnectionResult.getGetCallerIdentityResult();
         xmlResponse.addContent((Content)createCallerIdentityElement(getCallerIdentityResult));
       } else {
         for (InvalidProperty invalidProp : invalidProperties) {

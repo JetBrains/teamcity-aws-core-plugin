@@ -4,11 +4,10 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,7 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
 
   @Override
   @NotNull
-  public GetCallerIdentityResult testConnection(@NotNull final Map<String, String> connectionProperties) throws AmazonClientException {
+  public AwsTestConnectionResult testConnection(@NotNull final Map<String, String> connectionProperties) throws AmazonClientException {
     GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest()
       .withRequestCredentialsProvider(
         myAwsConnectorFactory.buildAwsCredentialsProvider(connectionProperties)
@@ -32,7 +31,7 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
     StsClientBuilder.addConfiguration(stsClientBuilder, connectionProperties);
     AWSSecurityTokenService sts = stsClientBuilder.build();
 
-    return sts.getCallerIdentity(getCallerIdentityRequest);
+    return new AwsTestConnectionResult(sts.getCallerIdentity(getCallerIdentityRequest));
   }
 
   @Override

@@ -22,4 +22,16 @@ public final class AwsCloudConnectorConstants {
   public static final String AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID = "accountId";
   public static final String AWS_CALLER_IDENTITY_ATTR_USER_ID = "userId";
   public static final String AWS_CALLER_IDENTITY_ATTR_USER_ARN = "userArn";
+
+  //AVAIL AWS CONNs
+  public static final String AVAIL_AWS_CONNECTIONS_CONTROLLER_URL = "/admin/oauth/availAwsConnections.html";
+
+  public static final String AVAIL_AWS_CONNECTIONS_ELEMENT = "availableAwsConnections";
+  public static final String AWS_CONNECTION_ELEMENT = "awsConnection";
+  public static final String AWS_CONNECTION_ATTR_NAME = "name";
+  public static final String AWS_CONNECTION_ATTR_ID = "id";
+  public static final String AWS_CONNECTION_ATTR_DESCRIPTION = "description";
+  public static final String AWS_CONNECTION_ATTR_OWN_PROJ_ID = "ownerProjectId";
+
+  public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.chosen.connection.id";
 }

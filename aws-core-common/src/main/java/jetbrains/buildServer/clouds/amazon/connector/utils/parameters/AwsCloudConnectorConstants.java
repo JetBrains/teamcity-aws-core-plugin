@@ -16,6 +16,8 @@ public final class AwsCloudConnectorConstants {
   public static final String ACCESS_KEYS_LABEL = "Access keys";
 
   public static final String REGION_NAME_PARAM = "aws.region.name";
+  public static final String REGION_NAME_LABEL = "AWS region";
+  public static final String REGION_NAME_DEFAULT = "us-east-1";
 
   //XML
   public static final String AWS_CALLER_IDENTITY_ELEMENT = "callerIdentity";

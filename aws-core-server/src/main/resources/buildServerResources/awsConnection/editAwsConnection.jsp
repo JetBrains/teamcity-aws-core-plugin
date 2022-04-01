@@ -28,6 +28,8 @@
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
 
+<c:set var="regionName" value="${propertiesBean.properties[region_name_param]}"/>
+
 <bs:linkScript>
   /js/bs/testConnection.js
 </bs:linkScript>
@@ -38,6 +40,30 @@
     <props:textProperty name="displayName" className="longField" style="width: 20em;"/>
     <span class="smallNote nowrap">Provide some name to distinguish this connection from others.</span>
     <span class="error" id="error_displayName"></span>
+  </td>
+</tr>
+
+<tr>
+  <th><label for="${region_name_param}">${region_name_label}: </label></th>
+  <td>
+    <props:selectProperty name="${region_name_param}" enableFilter="true">
+      <props:option value="${region_name_default}">
+        <c:choose>
+          <c:when test="${not empty regionName}">
+            Current region: <c:out value="${allRegions[regionName]}"/>
+          </c:when>
+          <c:otherwise>
+            Default: <c:out value="${allRegions[region_name_default]}"/>
+          </c:otherwise>
+        </c:choose>
+      </props:option>
+      <c:forEach var="region" items="${allRegions.keySet()}">
+        <props:option value="${region}">
+          <c:out value="${allRegions[region]}"/>
+        </props:option>
+      </c:forEach>
+    </props:selectProperty>
+    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>
   </td>
 </tr>
 

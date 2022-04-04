@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,8 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
@@ -33,10 +36,21 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   @NotNull
   @Override
-  public List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties) throws NoSuchAwsCredentialsBuilderException {
+  public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> properties) {
     String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
-    AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
-    return credentialsBuilder.validateProperties(properties);
+    try {
+      if(credentialsType == null){
+        throw new NoSuchAwsCredentialsBuilderException("Credentials type is null");
+      }
+
+      AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
+      return credentialsBuilder.validateProperties(properties);
+
+    } catch (NoSuchAwsCredentialsBuilderException e){
+      List<InvalidProperty> invalidProperties = new ArrayList<>();
+      invalidProperties.add(new InvalidProperty(CREDENTIALS_TYPE_PARAM, "The credentials type " + credentialsType + " is not supported."));
+      return invalidProperties;
+    }
   }
 
   @NotNull
@@ -60,7 +74,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
   }
 
   @NotNull
-  private AwsCredentialsBuilder getAwsCredentialsBuilderOfType(final String type) throws NoSuchAwsCredentialsBuilderException {
+  private AwsCredentialsBuilder getAwsCredentialsBuilderOfType(@NotNull final String type) throws NoSuchAwsCredentialsBuilderException {
     AwsCredentialsBuilder builder = myCredentialBuilders.get(type);
     if (builder == null) {
       String errMsg = "Failed to find registered AwsCredentialsBuilder for type " + type + ".";

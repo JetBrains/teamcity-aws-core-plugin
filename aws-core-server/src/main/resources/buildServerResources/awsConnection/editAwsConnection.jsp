@@ -28,6 +28,8 @@
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
 
+<c:url var="testAwsConnctionControllerUrl" value="${test_connection_controller_url}"/>
+
 <bs:linkScript>
   /js/bs/testConnection.js
 </bs:linkScript>
@@ -55,7 +57,40 @@
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {
-    //TODO to be implemented
+    var enableForm = this.enable;
+    BS.PasswordFormSaver.save(this, '${testAwsConnctionControllerUrl}', OO.extend(BS.ErrorsAwareListener, {
+      onFailedTestConnectionError: function (elem) {
+        var text = "";
+        if (elem.firstChild) {
+          text = elem.firstChild.nodeValue;
+        }
+        BS.TestConnectionDialog.show(false, text, $('testConnectionButton'));
+      },
+      onCompleteSave: function (form, responseXML) {
+        var err = BS.XMLResponse.processErrors(responseXML, this, form.propertiesErrorsHandler);
+        BS.ErrorsAwareListener.onCompleteSave(form, responseXML, err);
+        if (!err) {
+          this.onSuccessfulSave(responseXML);
+        }
+      },
+      onSuccessfulSave: function (responseXML) {
+        enableForm();
+        var testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
+
+        var additionalInfo;
+        if (testConnectionResultNodes.length > 0) {
+          additionalInfo = "Caller Identity:";
+          var testConnectionResult = testConnectionResultNodes.item(0);
+          additionalInfo += "\n Account ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_account_id}');
+          additionalInfo += "\n User ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_id}');
+          additionalInfo += "\n ARN: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_arn}');
+        } else {
+          additionalInfo = "Could not get the Caller Identity information from the response.";
+        }
+
+        BS.TestConnectionDialog.show(true, additionalInfo, $('testConnectionButton'));
+      }
+    }));
     return false;
   };
 

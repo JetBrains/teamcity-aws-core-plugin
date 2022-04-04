@@ -5,10 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
@@ -62,26 +59,11 @@ public class AwsConnectionProvider extends OAuthProvider {
       if (StringUtil.isEmpty(credentialsType)) {
         invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "Please choose a credentials type."));
       } else {
-        validateCredentialsTypeProperties(map, invalidProperties);
-      }
-
-      if (!ParamUtil.isValidSessionDuration(map.get(AwsAccessKeysParams.SESSION_DURATION_PARAM))) {
-        invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
+        invalidProperties.addAll(myAwsConnectorFactory.getInvalidProperties(map));
       }
 
       return invalidProperties;
     };
-  }
-
-  private void validateCredentialsTypeProperties(@NotNull final Map<String, String> properties, @NotNull final List<InvalidProperty> invalidProperties) {
-    String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
-    try {
-      invalidProperties.addAll(myAwsConnectorFactory.validateProperties(properties));
-    } catch (NoSuchAwsCredentialsBuilderException e) {
-      invalidProperties.add(
-        new InvalidProperty(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM,
-                            "The credentials type " + credentialsType + " is not supported."));
-    }
   }
 
   @Override

@@ -57,6 +57,10 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
       invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, "Please provide the secret access key "));
     }
 
+    if (!ParamUtil.isValidSessionDuration(properties.get(AwsAccessKeysParams.SESSION_DURATION_PARAM))) {
+      invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
+    }
+
     return invalidProperties;
   }
 

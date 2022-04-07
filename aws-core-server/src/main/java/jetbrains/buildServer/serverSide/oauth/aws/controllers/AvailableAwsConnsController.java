@@ -1,8 +1,16 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.intellij.openapi.util.Pair;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.controllers.*;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -12,28 +20,34 @@ import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
-import org.jdom.Content;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.ModelAndView;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
-public class AvailableAwsConnsController extends BaseFormXmlController {
+public class AvailableAwsConnsController extends BaseController {
   public static final String PATH = AVAIL_AWS_CONNECTIONS_CONTROLLER_URL;
 
-  private final OAuthConnectionsManager myOAuthConnectionsManager;
+  private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private final String availableAwsConnsBeanName = "awsConnections";
+
+  private final OAuthConnectionsManager myConnectionsManager;
   private final ProjectManager myProjectManager;
+  private final PluginDescriptor myDescriptor;
 
   public AvailableAwsConnsController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final OAuthConnectionsManager oAuthConnectionsManager,
                                      @NotNull final ProjectManager projectManager,
-                                     @NotNull final AuthorizationInterceptor authInterceptor) {
+                                     @NotNull final AuthorizationInterceptor authInterceptor,
+                                     @NotNull final PluginDescriptor descriptor) {
     super(server);
-    myOAuthConnectionsManager = oAuthConnectionsManager;
+    myConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
+    myDescriptor = descriptor;
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
       final RequestPermissionsChecker projectAccessChecker = (RequestPermissionsCheckerEx)(securityContext, request) -> {
         String projectId = request.getParameter("projectId");
@@ -49,47 +63,59 @@ public class AvailableAwsConnsController extends BaseFormXmlController {
     }
   }
 
+  @Nullable
   @Override
-  protected void doPost(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response, @NotNull final Element xmlResponse) {
+  protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
+    final ActionErrors errors = new ActionErrors();
 
-    String projectId = request.getParameter("projectId");
-    SProject project = getCurrentProject(projectId);
+    try {
+      final String projectId = request.getParameter("projectId");
+      if (projectId == null) {
+        throw new AwsConnectorException("The ID of the project where to find Available AWS Connections is null");
+      }
+      SProject project = myProjectManager.findProjectByExternalId(projectId);
+      if (project == null) {
+        throw new AwsConnectorException("Could not find the project with id: " + projectId);
+      }
 
-    ActionErrors errors = new ActionErrors();
 
-    if (project == null) {
-      errors.addError("error_availAwsConnections", "Failed to find project with id: " + projectId);
-      writeErrors(xmlResponse, errors);
-      return;
+      String resourceName = request.getParameter("resource");
+      if (resourceName == null) {
+        ModelAndView mv = new ModelAndView(myDescriptor.getPluginResourcesPath(AwsConnectionProvider.EDIT_PARAMS_URL));
+        mv.getModel().put("projectId", project.getProjectId());
+        final List<OAuthConnectionDescriptor> connections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+        mv.getModel().put(availableAwsConnsBeanName, asPairs(connections, c -> c.getId(), c -> c.getConnectionDisplayName()));
+
+        return mv;
+
+      } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_SELECT_ID)) {
+        List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+        writeAsJson(asPairs(awsConnections, c -> c.getId(), c -> c.getConnectionDisplayName()), response);
+
+      } else {
+        throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_SELECT_ID + " is supported.");
+      }
+
+    } catch (AwsConnectorException e) {
+      errors.addError("error_" + AVAIL_AWS_CONNECTIONS_SELECT_ID, e.getMessage());
+      writeAsJson(errors, response);
     }
 
-    List<OAuthConnectionDescriptor> awsConnections = myOAuthConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-
-    Element awsConnectionsElements = awsConnectionsToElement(awsConnections);
-    xmlResponse.addContent((Content)awsConnectionsElements);
-  }
-
-  private SProject getCurrentProject(String projectId) {
-    return myProjectManager.findProjectByExternalId(projectId);
-  }
-
-  private Element awsConnectionsToElement(List<OAuthConnectionDescriptor> awsConnections) {
-
-    Element availConnectionsElement = new Element(AVAIL_AWS_CONNECTIONS_ELEMENT);
-    for (OAuthConnectionDescriptor awsConnection : awsConnections) {
-      Element elem = new Element(AWS_CONNECTION_ELEMENT);
-      elem.setAttribute(AWS_CONNECTION_ATTR_NAME, awsConnection.getConnectionDisplayName());
-      elem.setAttribute(AWS_CONNECTION_ATTR_ID, awsConnection.getId());
-      elem.setAttribute(AWS_CONNECTION_ATTR_DESCRIPTION, awsConnection.getDescription());
-      elem.setAttribute(AWS_CONNECTION_ATTR_OWN_PROJ_ID, awsConnection.getProject().getProjectId());
-      availConnectionsElement.addContent((Content)elem);
-    }
-    return availConnectionsElement;
-  }
-
-  @Override
-  protected ModelAndView doGet(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) {
     return null;
+  }
+
+  private <T> void writeAsJson(@NotNull T value, @NotNull HttpServletResponse response) throws IOException {
+    final String json = OBJECT_MAPPER.writeValueAsString(value);
+    response.setContentType("application/json");
+    response.setCharacterEncoding(Charsets.UTF_8.name());
+    final PrintWriter writer = response.getWriter();
+    writer.write(json);
+    writer.flush();
+  }
+
+  @NotNull
+  private <T> List<Pair<String, String>> asPairs(@NotNull List<T> values, @NotNull Function<T, String> getValue, @NotNull Function<T, String> getLabel) {
+    return values.stream().map(c -> new Pair<String, String>(getValue.apply(c), getLabel.apply(c))).collect(Collectors.toList());
   }
 }
 

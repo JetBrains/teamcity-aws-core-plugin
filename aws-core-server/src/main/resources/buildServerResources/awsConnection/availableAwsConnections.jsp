@@ -25,105 +25,90 @@
 
 <c:url var="availableAwsConnectionsControllerUrl" value="${avail_connections_controller_url}"/>
 
-<props:hiddenProperty id="chosenAwsConnIdParam" name="${chosen_aws_conn_id}"/>
 
-<table class="runnerFormTable">
+<l:settingsGroup title="AWS Connection">
   <tr class="noBorder">
-    <th>
-      <label for="availAwsConnectionsSelect">Select AWS Connection:</label>
-    </th>
+    <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
     <td>
-      <select id="availAwsConnectionsSelect" onchange="onAwsConnectionSelectChange()" class= "availAwsConnections hidden"> </select>
-      <span class="error error_availAwsConnections hidden"></span>
+        <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+        <span class="error error_${avail_connections_select_id} hidden"></span>
     </td>
   </tr>
-</table>
+</l:settingsGroup>
 
 <script type="text/javascript">
 
   const errorPrefix = 'error_';
-  const availConnPrefix = 'availAwsConnections';
-  const availConnsSelectId = availConnPrefix+'Select';
-
-  const chosenAwsConnParamId = 'chosenAwsConnIdParam';
+  const availConnPrefix = '${avail_connections_select_id}';
 
   var _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
 
-  $j(document).ready(function() {
+  $j(document).ready(function () {
+    const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
+    const availConnsSelector = $j(availConnsSelectorId);
+
+    function reload(selector, getValue, getLabel) {
+
+      BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
+        parameters: '&projectId=${param.projectId}&resource=${avail_connections_select_id}',
+
+        onComplete: function(response) {
+          const json = response.responseJSON;
+
+          const errors = json.errors;
+
+          if(errors == null) {
+            const selected = selector.val();
+
+            selector.empty();
+            if (json.length != 0) {
+              json.forEach(v => selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v))));
+              selector.prop('disabled', false);
+              selector.val(selected).change();
+              BS.enableJQueryDropDownFilter(selector.attr('id'), {});
+              toggleErrors(false);
+
+            } else {
+              addError(
+                'There are no available AWS connections.<br>\
+                <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${connectorType}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
+                $j('.' + errorPrefix + availConnPrefix)
+              );
+              toggleErrors(true);
+            }
+
+          } else {
+            for (let i = 0; i < errors.length; i++) {
+              errors.forEach(({message, id}) => addError(message, $j('.' + id)));
+            }
+            toggleErrors(true);
+          }
+        }
+      });
+    }
+
+    function getAvailableAwsConnections() {
+      reload(availConnsSelector, v => v.first, v => `\${v.second}`)
+    }
+
     getAvailableAwsConnections();
   });
 
-  onAwsConnectionSelectChange = function () {
-    const selectedOption = $j('#' + availConnsSelectId + ' option:selected');
-    if (selectedOption.val() !== '') {
-      $j('#' + chosenAwsConnParamId).val(selectedOption.val());
-    }
-  };
-
-  var getAvailableAwsConnections = function () {
-    const availConnsSelectElement = $j('#' + availConnsSelectId);
-    BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-
-      parameters: '&projectId=${param.projectId}',
-
-      onComplete: function(response) {
-
-        const errors = response.responseXML.documentElement.getElementsByTagName('error');
-        if (errors.length == 0) {
-
-          const connections = response.responseXML.documentElement.getElementsByTagName('${aws_conn_element_name}');
-          if (connections.length > 0) {
-            availConnsSelectElement.empty();
-
-            const select = document.getElementById(availConnsSelectId);
-
-            $j('#' + chosenAwsConnParamId).val(connections[0].getAttribute('${aws_conn_attr_id}'));
-
-            for (let i = 0; i < connections.length; i++) {
-              const option = document.createElement('option');
-              option.text = connections[i].getAttribute('${aws_conn_attr_name}');
-              option.value = connections[i].getAttribute('${aws_conn_attr_id}');
-              select.add(option);
-            }
-            toggleAvailableConnectionsSelect(true);
-            toggleErrors(false)
-          } else {
-            addError(
-              'There are no available AWS connections.<br>\
-              <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${connectorType}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
-              $j('.' + errorPrefix + availConnPrefix)
-            );
-            toggleErrors(true);
-            toggleAvailableConnectionsSelect(false);
-          }
-
-        } else {
-          for (let i = 0; i < errors.length; i++) {
-            addError(errors[i].childNodes[0].nodeValue, $j('.' + errors[i].getAttribute('id')));
-          }
-          toggleErrors(true);
-        }
-      }
-    });
-  };
-
-  var toggleAvailableConnectionsSelect = function (show){
-    if(show)
-      $j('.' + availConnPrefix).removeClass('hidden');
-    else
-      $j('.' + availConnPrefix).addClass('hidden');
-  };
-
-  var toggleErrors = function (show){
+  var toggleErrors = function (showErrors){
     _errorIds.forEach(errorId => {
-      if(show)
+      if(showErrors)
         $j('.' + errorId).removeClass('hidden');
       else
         $j('.' + errorId).addClass('hidden');
     });
+
+    if(showErrors)
+      $j('.' + availConnPrefix).addClass('hidden');
+    else
+      $j('.' + availConnPrefix).removeClass('hidden');
   };
 
 
@@ -141,5 +126,4 @@
     var target = $j('.error_' + errorId);
     target.empty();
   };
-
 </script>

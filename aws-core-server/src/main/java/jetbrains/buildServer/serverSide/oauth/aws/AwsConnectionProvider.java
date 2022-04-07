@@ -18,8 +18,8 @@ import org.jetbrains.annotations.Nullable;
 public class AwsConnectionProvider extends OAuthProvider {
 
   public static final String TYPE = AwsCloudConnectorConstants.CLOUD_TYPE;
+  public static final String EDIT_PARAMS_URL = "awsConnection/editAwsConnection.jsp";
 
-  private static final String EDIT_PARAMS_URL = "awsConnection/editAwsConnection.jsp";
   private final String myEditParametersUrl;
 
   private final AwsConnectorFactory myAwsConnectorFactory;

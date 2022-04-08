@@ -50,10 +50,10 @@
       <props:option value="${region_name_default}">
         <c:choose>
           <c:when test="${not empty regionName}">
-            Current region: <c:out value="${allRegions[regionName]}"/>
+            <c:out value="${allRegions[regionName]}"/>
           </c:when>
           <c:otherwise>
-            Default: <c:out value="${allRegions[region_name_default]}"/>
+            <c:out value="${allRegions[region_name_default]}"/>
           </c:otherwise>
         </c:choose>
       </props:option>

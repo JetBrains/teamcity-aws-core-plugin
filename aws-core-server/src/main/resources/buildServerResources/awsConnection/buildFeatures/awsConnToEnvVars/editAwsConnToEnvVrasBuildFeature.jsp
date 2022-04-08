@@ -31,7 +31,7 @@
   </td>
 </tr>
 <tr>
-  <jsp:include page="../../availableAwsConnections.jsp">
+  <jsp:include page="${buildFeature.availAwsConnsUrl}">
     <jsp:param name="projectId" value="${buildForm.project.externalId}"/>
   </jsp:include>
 </tr>

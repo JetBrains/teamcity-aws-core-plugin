@@ -36,4 +36,5 @@ public final class AwsCloudConnectorConstants {
   public static final String AWS_CONNECTION_ATTR_OWN_PROJ_ID = "ownerProjectId";
 
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.chosen.connection.id";
+  public static final String AVAIL_AWS_CONNS_JSP_FILE_NAME = "availableAwsConnections.jsp";
 }

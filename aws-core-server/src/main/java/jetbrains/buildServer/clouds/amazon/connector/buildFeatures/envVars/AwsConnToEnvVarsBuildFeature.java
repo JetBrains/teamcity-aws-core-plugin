@@ -13,9 +13,13 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNS_JSP_FILE_NAME;
+
 public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements PropertiesProcessor {
 
   private final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVrasBuildFeature.jsp";
+  private final String AVAIL_AWS_CONNS_URL = "../../" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
+
   private final String myPluginResourcesEditUrl;
   private final String displayName = "Expose AWS Credentials via Env Vars";
 
@@ -49,5 +53,9 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @Override
   public String getEditParametersUrl() {
     return myPluginResourcesEditUrl;
+  }
+
+  public String getAvailAwsConnsUrl() {
+    return AVAIL_AWS_CONNS_URL;
   }
 }

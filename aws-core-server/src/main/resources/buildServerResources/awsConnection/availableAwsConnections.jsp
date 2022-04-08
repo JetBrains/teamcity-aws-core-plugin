@@ -53,7 +53,7 @@
     function reload(selector, getValue, getLabel) {
 
       BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-        parameters: '&projectId=${param.projectId}&resource=${avail_connections_select_id}',
+        parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}',
 
         onComplete: function(response) {
           const json = response.responseJSON;

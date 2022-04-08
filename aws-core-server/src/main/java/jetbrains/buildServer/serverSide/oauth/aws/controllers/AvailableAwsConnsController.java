@@ -88,12 +88,12 @@ public class AvailableAwsConnsController extends BaseController {
 
         return mv;
 
-      } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_SELECT_ID)) {
+      } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME)) {
         List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
         writeAsJson(asPairs(awsConnections, c -> c.getId(), c -> c.getConnectionDisplayName()), response);
 
       } else {
-        throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_SELECT_ID + " is supported.");
+        throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
       }
 
     } catch (AwsConnectorException e) {

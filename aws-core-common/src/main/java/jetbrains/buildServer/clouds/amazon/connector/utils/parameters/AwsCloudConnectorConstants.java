@@ -25,7 +25,8 @@ public final class AwsCloudConnectorConstants {
 
   //AVAIL AWS CONNs
   public static final String AVAIL_AWS_CONNECTIONS_CONTROLLER_URL = "/admin/oauth/availAwsConnections.html";
-  public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availAwsConnectionsSelect";
+  public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
+  public static final String AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME = "availableAwsConnections";
 
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.chosen.connection.id";
 }

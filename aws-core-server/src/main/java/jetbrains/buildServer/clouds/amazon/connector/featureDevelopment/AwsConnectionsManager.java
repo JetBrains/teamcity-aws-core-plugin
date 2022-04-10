@@ -1,7 +1,9 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.NoLinkedAwsConnectionException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -15,11 +17,37 @@ import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionsManager {
   private final OAuthConnectionsManager myConnectionsManager;
+  private final AwsConnectorFactory myAwsConnectorFactory;
 
-  public AwsConnectionsManager(@NotNull final OAuthConnectionsManager connectionsManager) {
+  public AwsConnectionsManager(@NotNull final OAuthConnectionsManager connectionsManager,
+                               @NotNull final AwsConnectorFactory awsConnectorFactory) {
     myConnectionsManager = connectionsManager;
+    myAwsConnectorFactory = awsConnectorFactory;
   }
 
+  /**
+   * Will get AWS Connection ID from the properties, find corresponding AWS Connection
+   * and construct the AWSCredentialsProvider object
+   *
+   * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
+   * @param project    project which will be searched for the AWS Connection.
+   * @return AWSCredentialsProvider object with ready credentials.
+   */
+  @NotNull
+  public AWSCredentialsProvider getCredentialsFromLinkedConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project)
+    throws NoLinkedAwsConnectionException {
+    AwsConnectionBean awsConnectionBean = getLinkedAwsConnection(properties, project);
+    return myAwsConnectorFactory.buildAwsCredentialsProvider(awsConnectionBean.getProperties());
+  }
+
+  /**
+   * Will get AWS Connection ID from the properties, find corresponding AWS Connection
+   * and return a data bean with all properties like connectionId, providerType and all properties map.
+   *
+   * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
+   * @param project    project which will be searched for the AWS Connection.
+   * @return AwsConnectionBean data bean with all AWS Connection properties.
+   */
   @NotNull
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionException {
     String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);

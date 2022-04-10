@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.envVars;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
 
 import java.util.Collection;
 import java.util.Map;

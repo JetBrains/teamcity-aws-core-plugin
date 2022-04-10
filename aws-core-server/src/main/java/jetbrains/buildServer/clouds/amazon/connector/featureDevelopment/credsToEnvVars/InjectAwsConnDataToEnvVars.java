@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.envVars;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;

@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.errors;
+package jetbrains.buildServer.clouds.amazon.connector.errors.features;
 
 import org.jetbrains.annotations.NotNull;
 

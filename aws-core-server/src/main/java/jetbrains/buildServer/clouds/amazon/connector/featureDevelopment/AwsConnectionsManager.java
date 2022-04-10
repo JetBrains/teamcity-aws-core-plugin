@@ -1,10 +1,9 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsBuildFeatureException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.features.NoLinkedAwsConnectionException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
@@ -22,21 +21,23 @@ public class AwsConnectionsManager {
   }
 
   @NotNull
-  public List<AwsConnectionBean> getAwsConnectionsForBuild(@NotNull final SBuild build){
-    List<AwsConnectionBean> connectionBeans = new ArrayList<>();
-
-    List<OAuthConnectionDescriptor> connectionDescriptors = getAwsConnsDescriptorsForBuild(build);
-    for (OAuthConnectionDescriptor connectionDescriptor : connectionDescriptors) {
-      AwsConnectionBean connectionBean = new AwsConnectionBean(connectionDescriptor);
-      connectionBeans.add(connectionBean);
+  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionException {
+    String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
+    if (awsConnectionId == null) {
+      throw new NoLinkedAwsConnectionException("AWS Connetion ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
     }
 
-    return connectionBeans;
+    OAuthConnectionDescriptor connectionDescriptor = myConnectionsManager.findConnectionById(project, awsConnectionId);
+    if (connectionDescriptor == null) {
+      throw new NoLinkedAwsConnectionException("Could not find linked AWS Connection, Connection ID: " + awsConnectionId);
+    }
+
+    return new AwsConnectionBean(connectionDescriptor);
   }
 
   //TODO: TW-75618 Add support for several AWS Connections exposing
   @NotNull
-  private List<OAuthConnectionDescriptor> getAwsConnsDescriptorsForBuild(@NotNull final SBuild build) {
+  public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) {
     try {
       if (build.getBuildId() < 0) {
         throw new AwsBuildFeatureException("Dummy build with negative id does not have AWS Connections to expose.");
@@ -53,24 +54,14 @@ public class AwsConnectionsManager {
       try {
         configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
       } catch (NoSuchElementException nsee) {
-        return new ArrayList<>();
+        return new AwsConnectionBean();
       }
 
-      String awsConnectionId = configuredAwsConnBuildFeature.getParameters().get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
-      if (awsConnectionId == null) {
-        throw new AwsBuildFeatureException("AWS Connetion ID to expose is null.");
-      }
-
-      OAuthConnectionDescriptor connectionDescriptor = myConnectionsManager.findConnectionById(buildType.getProject(), awsConnectionId);
-      if (connectionDescriptor == null) {
-        throw new AwsBuildFeatureException("Could not find AWS Connection to expose, Connection ID: " + awsConnectionId);
-      }
-
-      return Arrays.asList(connectionDescriptor);
+      return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());
 
     } catch (AwsBuildFeatureException e) {
       Loggers.CLOUD.warn("Got an exception while getting AWS Connection to expose: " + e.getMessage());
-      return new ArrayList<>();
+      return new AwsConnectionBean();
     }
   }
 }

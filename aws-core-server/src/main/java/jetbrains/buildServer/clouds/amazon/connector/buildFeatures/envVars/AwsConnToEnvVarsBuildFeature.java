@@ -1,14 +1,12 @@
 package jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
-import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,11 +28,8 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @Override
   @NotNull
   public Collection<InvalidProperty> process(@NotNull final Map<String, String> properties) {
-    ArrayList<InvalidProperty> invalidProperties = new ArrayList<>();
-    if (StringUtil.nullIfEmpty(properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM)) == null) {
-      invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, "AWS Connection was not specified"));
-    }
-    return invalidProperties;
+    ChosenAwsConnPropertiesProcessor awsConnsPropertiesProcessor = new ChosenAwsConnPropertiesProcessor();
+    return awsConnsPropertiesProcessor.process(properties);
   }
 
   @NotNull

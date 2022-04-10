@@ -5,7 +5,6 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.AwsConnToEnvVarsBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.InjectAwsConnDataToEnvVars;
-import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.InjectSecretAwsConnDataToEnvVars;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
@@ -27,8 +26,9 @@ public class AwsConnectorExtensionRegistar {
       extensionHolder.registerExtension(BuildFeature.class, AwsConnToEnvVarsBuildFeature.class.getName(), new AwsConnToEnvVarsBuildFeature(pluginDescriptor));
 
       AwsConnectionsManager awsConnectionsManager = new AwsConnectionsManager(oAuthConnectionsManager);
-      extensionHolder.registerExtension(BuildStartContextProcessor.class, InjectAwsConnDataToEnvVars.class.getName(), new InjectAwsConnDataToEnvVars(awsConnectionsManager, awsConnectorFactory));
-      extensionHolder.registerExtension(PasswordsProvider.class, InjectSecretAwsConnDataToEnvVars.class.getName(), new InjectSecretAwsConnDataToEnvVars(awsConnectionsManager, awsConnectorFactory));
+      InjectAwsConnDataToEnvVars awsConnDataToEnvVars = new InjectAwsConnDataToEnvVars(awsConnectionsManager, awsConnectorFactory);
+      extensionHolder.registerExtension(BuildStartContextProcessor.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);
+      extensionHolder.registerExtension(PasswordsProvider.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);
     }
   }
 }

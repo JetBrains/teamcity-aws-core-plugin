@@ -1,8 +1,8 @@
-package jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.envVars;
 
 import java.util.Collection;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.ChosenAwsConnPropertiesProcessor;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.InvalidProperty;

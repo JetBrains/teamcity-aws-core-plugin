@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.buildFeatures;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -2,9 +2,9 @@ package jetbrains.buildServer.clouds.amazon.connector.backwardsCompat;
 
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.AwsConnectionsManager;
-import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.AwsConnToEnvVarsBuildFeature;
-import jetbrains.buildServer.clouds.amazon.connector.buildFeatures.envVars.InjectAwsConnDataToEnvVars;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.envVars.AwsConnToEnvVarsBuildFeature;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.envVars.InjectAwsConnDataToEnvVars;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;

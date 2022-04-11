@@ -32,6 +32,9 @@ public class AwsConnectionsManager {
    * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
    * @param project    project which will be searched for the AWS Connection.
    * @return AWSCredentialsProvider object with ready credentials.
+   * @throws NoLinkedAwsConnectionException
+   *             thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map
+   *             or when there is no AWS Connection with such ID.
    */
   @NotNull
   public AWSCredentialsProvider getCredentialsFromLinkedConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project)
@@ -47,6 +50,9 @@ public class AwsConnectionsManager {
    * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
    * @param project    project which will be searched for the AWS Connection.
    * @return AwsConnectionBean data bean with all AWS Connection properties.
+   * @throws NoLinkedAwsConnectionException
+   *             thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map
+   *             or when there is no AWS Connection with such ID.
    */
   @NotNull
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionException {

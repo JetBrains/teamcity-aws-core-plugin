@@ -24,14 +24,16 @@
 <%@include file="../awsConnectionConstants.jspf"%>
 
 <c:url var="availableAwsConnectionsControllerUrl" value="${avail_connections_controller_url}"/>
+<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
+<c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
 
 <l:settingsGroup title="AWS Connection">
   <tr class="noBorder">
     <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
     <td>
-        <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" onchange="onAwsConnectionSelectChange()" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
-        <span class="error error_${avail_connections_select_id} hidden"></span>
+      <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+      <span class="error error_${avail_connections_select_id} hidden"></span>
     </td>
   </tr>
 </l:settingsGroup>
@@ -44,15 +46,7 @@
   const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
   const availConnsSelector = $j(availConnsSelectorId);
 
-  var chosenAwsConnectionId;
-
-  onAwsConnectionSelectChange = function () {
-    const selectedOption = $j('#' + '${avail_connections_select_id}' + ' option:selected');
-    if (availConnsSelector.val() !== '') {
-      chosenAwsConnectionId = selectedOption.val();
-      console.log("SH: " + chosenAwsConnectionId)
-    }
-  };
+  const chosenAwsConnectionId = "${previouslyChosenAwsConnId}";
 
   var _errorIds = [
     errorPrefix + availConnPrefix
@@ -76,19 +70,19 @@
 
             selector.empty();
             if (json.length != 0) {
-              json.forEach(v => {
-                selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v)));
+              const previouslySelectedOptionIndex = json.findIndex(option => getValue(option) === chosenAwsConnectionId);
 
-                if(getValue(v) === chosenAwsConnectionId){
-                  console.log(getValue(v));
-                  selector.value = chosenAwsConnectionId;
-                }
-              });
+              json.forEach(v => selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v))));
               selector.prop('disabled', false);
               selector.val(selected).change();
               BS.enableJQueryDropDownFilter(selector.attr('id'), {});
               toggleErrors(false);
 
+              if(previouslySelectedOptionIndex != -1){
+                let newSelector = $(selector.attr('id'));
+                newSelector.selectedIndex = previouslySelectedOptionIndex;
+                BS.jQueryDropdown(newSelector).ufd("changeOptions")
+              }
 
             } else {
               addError(

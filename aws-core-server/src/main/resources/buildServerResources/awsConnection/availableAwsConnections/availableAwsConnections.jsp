@@ -21,7 +21,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
-<%@include file="awsConnectionConstants.jspf"%>
+<%@include file="../awsConnectionConstants.jspf"%>
 
 <c:url var="availableAwsConnectionsControllerUrl" value="${avail_connections_controller_url}"/>
 

@@ -30,7 +30,7 @@
   <tr class="noBorder">
     <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
     <td>
-        <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+        <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" onchange="onAwsConnectionSelectChange()" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
         <span class="error error_${avail_connections_select_id} hidden"></span>
     </td>
   </tr>
@@ -41,14 +41,25 @@
   const errorPrefix = 'error_';
   const availConnPrefix = '${avail_connections_select_id}';
 
+  const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
+  const availConnsSelector = $j(availConnsSelectorId);
+
+  var chosenAwsConnectionId;
+
+  onAwsConnectionSelectChange = function () {
+    const selectedOption = $j('#' + '${avail_connections_select_id}' + ' option:selected');
+    if (availConnsSelector.val() !== '') {
+      chosenAwsConnectionId = selectedOption.val();
+      console.log("SH: " + chosenAwsConnectionId)
+    }
+  };
+
   var _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
 
   $j(document).ready(function () {
-    const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
-    const availConnsSelector = $j(availConnsSelectorId);
 
     function reload(selector, getValue, getLabel) {
 
@@ -65,11 +76,19 @@
 
             selector.empty();
             if (json.length != 0) {
-              json.forEach(v => selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v))));
+              json.forEach(v => {
+                selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v)));
+
+                if(getValue(v) === chosenAwsConnectionId){
+                  console.log(getValue(v));
+                  selector.value = chosenAwsConnectionId;
+                }
+              });
               selector.prop('disabled', false);
               selector.val(selected).change();
               BS.enableJQueryDropDownFilter(selector.attr('id'), {});
               toggleErrors(false);
+
 
             } else {
               addError(

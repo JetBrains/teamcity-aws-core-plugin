@@ -58,7 +58,7 @@ public class AwsConnectionsManager {
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionException {
     String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
-      throw new NoLinkedAwsConnectionException("AWS Connetion ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
+      throw new NoLinkedAwsConnectionException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
     }
 
     OAuthConnectionDescriptor connectionDescriptor = myConnectionsManager.findConnectionById(project, awsConnectionId);

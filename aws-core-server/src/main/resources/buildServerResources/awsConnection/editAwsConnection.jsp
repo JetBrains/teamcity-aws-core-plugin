@@ -28,7 +28,7 @@
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
 
-<c:set var="regionName" value="${propertiesBean.properties[region_name_param]}"/>
+<c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
 
 <bs:linkScript>
   /js/bs/testConnection.js
@@ -47,18 +47,8 @@
   <th><label for="${region_name_param}">${region_name_label}: </label></th>
   <td>
     <props:selectProperty name="${region_name_param}" enableFilter="true">
-      <props:option value="${region_name_default}">
-        <c:choose>
-          <c:when test="${not empty regionName}">
-            <c:out value="${allRegions[regionName]}"/>
-          </c:when>
-          <c:otherwise>
-            <c:out value="${allRegions[region_name_default]}"/>
-          </c:otherwise>
-        </c:choose>
-      </props:option>
       <c:forEach var="region" items="${allRegions.keySet()}">
-        <props:option value="${region}">
+        <props:option value="${region}" selected="${region eq previouslyChosenRegion}">
           <c:out value="${allRegions[region]}"/>
         </props:option>
       </c:forEach>

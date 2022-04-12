@@ -75,7 +75,6 @@
               json.forEach(v => selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v))));
               selector.prop('disabled', false);
               selector.val(selected).change();
-              BS.enableJQueryDropDownFilter(selector.attr('id'), {});
               toggleErrors(false);
 
               if(previouslySelectedOptionIndex != -1){
@@ -108,6 +107,7 @@
     }
 
     getAvailableAwsConnections();
+    BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
   });
 
   var toggleErrors = function (showErrors){

@@ -5,15 +5,17 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.features.NoLinkedAwsConnectionException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.features.NoLinkedAwsConnectionIdParameter;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class AwsConnectionsManager {
   private final OAuthConnectionsManager myConnectionsManager;
@@ -27,50 +29,35 @@ public class AwsConnectionsManager {
 
   /**
    * Will get AWS Connection ID from the properties, find corresponding AWS Connection
-   * and construct the AWSCredentialsProvider object
-   *
-   * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
-   * @param project    project which will be searched for the AWS Connection.
-   * @return AWSCredentialsProvider object with ready credentials.
-   * @throws NoLinkedAwsConnectionException
-   *             thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map
-   *             or when there is no AWS Connection with such ID.
-   */
-  @NotNull
-  public AWSCredentialsProvider getCredentialsFromLinkedConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project)
-    throws NoLinkedAwsConnectionException {
-    AwsConnectionBean awsConnectionBean = getLinkedAwsConnection(properties, project);
-    return myAwsConnectorFactory.buildAwsCredentialsProvider(awsConnectionBean.getProperties());
-  }
-
-  /**
-   * Will get AWS Connection ID from the properties, find corresponding AWS Connection
    * and return a data bean with all properties like connectionId, providerType and all properties map.
    *
    * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
    * @param project    project which will be searched for the AWS Connection.
    * @return AwsConnectionBean data bean with all AWS Connection properties.
-   * @throws NoLinkedAwsConnectionException
-   *             thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map
-   *             or when there is no AWS Connection with such ID.
+   * @throws NoLinkedAwsConnectionIdParameter thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map.
    */
-  @NotNull
-  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionException {
+  @Nullable
+  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws NoLinkedAwsConnectionIdParameter {
     String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
-      throw new NoLinkedAwsConnectionException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
+      throw new NoLinkedAwsConnectionIdParameter("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
     }
 
     OAuthConnectionDescriptor connectionDescriptor = myConnectionsManager.findConnectionById(project, awsConnectionId);
     if (connectionDescriptor == null) {
-      throw new NoLinkedAwsConnectionException("Could not find linked AWS Connection, Connection ID: " + awsConnectionId);
+      return null;
     }
 
-    return new AwsConnectionBean(connectionDescriptor);
+    AWSCredentialsProvider credentials = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
+    return new AwsConnectionBean(connectionDescriptor.getId(),
+                                 credentials,
+                                 connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
+                                 ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
+    );
   }
 
   //TODO: TW-75618 Add support for several AWS Connections exposing
-  @NotNull
+  @Nullable
   public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) {
     try {
       if (build.getBuildId() < 0) {
@@ -88,14 +75,14 @@ public class AwsConnectionsManager {
       try {
         configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
       } catch (NoSuchElementException nsee) {
-        return new AwsConnectionBean();
+        return null;
       }
 
       return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());
 
     } catch (AwsBuildFeatureException e) {
       Loggers.CLOUD.warn("Got an exception while getting AWS Connection to expose: " + e.getMessage());
-      return new AwsConnectionBean();
+      return null;
     }
   }
 }

@@ -1,32 +1,22 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans;
 
-import java.util.HashMap;
-import java.util.Map;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
-import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import org.jetbrains.annotations.NotNull;
 
-import jetbrains.buildServer.controllers.BasePropertiesBean;
+public class AwsConnectionBean {
+  private final String myConnectionId;
+  private final AWSCredentialsProvider myCredentialsProvider;
+  private final String myRegion;
+  private final boolean myUsingSessionCredentials;
 
-public class AwsConnectionBean extends BasePropertiesBean {
-  private String myConnectionId = "";
-  private String myProviderType = "";
-
-  public AwsConnectionBean() {
-    super(new HashMap<String, String>(), new HashMap<String, String>());
-  }
-
-  public AwsConnectionBean(@NotNull final Map<String, String> properties, @NotNull final Map<String, String> defaultProperties) {
-    super(properties, defaultProperties);
-  }
-
-  public AwsConnectionBean(@NotNull final OAuthConnectionDescriptor connectionDescriptor) {
-    super(new HashMap<String, String>(), new HashMap<String, String>());
-    if(connectionDescriptor.getOauthProvider() instanceof AwsConnectionProvider){
-      setConnectionId(connectionDescriptor.getId());
-      setProviderType(connectionDescriptor.getOauthProvider().getType());
-      setProperties(connectionDescriptor.getParameters());
-    }
+  public AwsConnectionBean(@NotNull final String connectionId,
+                           @NotNull final AWSCredentialsProvider credentialsProvider,
+                           @NotNull final String region,
+                           final boolean usingSessionCredentials) {
+    myConnectionId = connectionId;
+    myCredentialsProvider = credentialsProvider;
+    myRegion = region;
+    myUsingSessionCredentials = usingSessionCredentials;
   }
 
   @NotNull
@@ -34,16 +24,17 @@ public class AwsConnectionBean extends BasePropertiesBean {
     return myConnectionId;
   }
 
-  public void setConnectionId(@NotNull final  String connectionId) {
-    myConnectionId = connectionId;
+  @NotNull
+  public AWSCredentialsProvider getCredentialsProvider() {
+    return myCredentialsProvider;
   }
 
   @NotNull
-  public String getProviderType() {
-    return myProviderType;
+  public String getRegion() {
+    return myRegion;
   }
 
-  public void setProviderType(@NotNull final  String providerType) {
-    myProviderType = providerType;
+  public boolean isUsingSessionCredentials() {
+    return myUsingSessionCredentials;
   }
 }

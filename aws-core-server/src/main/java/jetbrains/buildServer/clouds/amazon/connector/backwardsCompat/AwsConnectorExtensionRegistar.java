@@ -26,7 +26,7 @@ public class AwsConnectorExtensionRegistar {
       extensionHolder.registerExtension(BuildFeature.class, AwsConnToEnvVarsBuildFeature.class.getName(), new AwsConnToEnvVarsBuildFeature(pluginDescriptor));
 
       AwsConnectionsManager awsConnectionsManager = new AwsConnectionsManager(oAuthConnectionsManager, awsConnectorFactory);
-      InjectAwsConnDataToEnvVars awsConnDataToEnvVars = new InjectAwsConnDataToEnvVars(awsConnectionsManager, awsConnectorFactory);
+      InjectAwsConnDataToEnvVars awsConnDataToEnvVars = new InjectAwsConnDataToEnvVars(awsConnectionsManager);
       extensionHolder.registerExtension(BuildStartContextProcessor.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);
       extensionHolder.registerExtension(PasswordsProvider.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);
     }

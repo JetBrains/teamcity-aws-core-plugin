@@ -45,6 +45,7 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
 
   @Override
   public void refresh() {
+    Loggers.CLOUD.debug("Refreshing AWS Credentials...");
     try {
       currentSession = mySts.getSessionToken(mySessionConfiguration);
     } catch (Exception e) {
@@ -55,6 +56,7 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
   @Override
   @NotNull
   public Date getSessionExpirationDate() {
+    Loggers.CLOUD.debug("Requested Session expiration date.");
     return currentSession.getCredentials().getExpiration();
   }
 }

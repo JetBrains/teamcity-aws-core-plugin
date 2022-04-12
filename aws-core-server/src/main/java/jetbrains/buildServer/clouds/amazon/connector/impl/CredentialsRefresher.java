@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +29,7 @@ public abstract class CredentialsRefresher implements AWSCredentialsProvider {
 
     executorServices.getNormalExecutorService().scheduleWithFixedDelay(() -> {
       if (currentSessionExpired(getSessionExpirationDate())) {
+        Loggers.CLOUD.debug("Current Session of the temporary credentials has expired, refreshing...");
         refresh();
       }
     }, SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES, SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES, TimeUnit.MINUTES);

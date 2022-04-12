@@ -12,6 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
@@ -35,6 +36,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
     processInvalidProperties(invalidProperties);
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
+      Loggers.CLOUD.debug("Using Session credentials for the AWSCredentialsProvider.");
       return new StaticSessionCredentialsProvider(
         getBasicCredentialsProvider(cloudConnectorProperties),
         cloudConnectorProperties,

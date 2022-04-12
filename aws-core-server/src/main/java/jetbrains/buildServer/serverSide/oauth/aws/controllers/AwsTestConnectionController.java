@@ -41,6 +41,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
 
   @Override
   protected void doPost(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response, @NotNull final Element xmlResponse) {
+    Loggers.CLOUD.debug("AWS Connection testing has been requested.");
+
     ActionErrors errors = new ActionErrors();
 
     BasePropertiesBean basePropertiesBean = new BasePropertiesBean(null);

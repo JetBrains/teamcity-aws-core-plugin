@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.controllers.*;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
@@ -66,6 +67,8 @@ public class AvailableAwsConnsController extends BaseController {
   @Nullable
   @Override
   protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
+    Loggers.CLOUD.debug("Available AWS Connections have been requested for the project with id: " + request.getParameter("projectId"));
+
     final ActionErrors errors = new ActionErrors();
 
     try {

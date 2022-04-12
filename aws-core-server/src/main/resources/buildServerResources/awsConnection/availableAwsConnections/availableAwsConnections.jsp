@@ -46,67 +46,62 @@
   const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
   const availConnsSelector = $j(availConnsSelectorId);
 
-  const chosenAwsConnectionId = "${previouslyChosenAwsConnId}";
-
   var _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
 
   $j(document).ready(function () {
+    BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
+      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}',
 
-    function reload(selector, getValue, getLabel) {
+      onComplete: function(response) {
 
-      BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-        parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}',
+        const json = response.responseJSON;
+        const errors = json.errors;
 
-        onComplete: function(response) {
-          const json = response.responseJSON;
+        if(errors == null) {
+          availConnsSelector.empty();
 
-          const errors = json.errors;
-
-          if(errors == null) {
-            const selected = selector.val();
-
-            selector.empty();
-            if (json.length != 0) {
-              const previouslySelectedOptionIndex = json.findIndex(option => getValue(option) === chosenAwsConnectionId);
-
-              json.forEach(v => selector.append($j("<option></option>").attr("value", getValue(v)).text(getLabel(v))));
-              selector.prop('disabled', false);
-              selector.val(selected).change();
-              toggleErrors(false);
-
-              if(previouslySelectedOptionIndex != -1){
-                let newSelector = $(selector.attr('id'));
-                newSelector.selectedIndex = previouslySelectedOptionIndex;
-                BS.jQueryDropdown(newSelector).ufd("changeOptions")
+          if (json.length != 0) {
+            json.forEach(
+              connectionNameIdPair => {
+                availConnsSelector.append(
+                  $j("<option></option>")
+                  .attr("value", connectionNameIdPair.first)
+                  .text(`\${connectionNameIdPair.second}`)
+                );
               }
+            );
+            availConnsSelector.prop('disabled', false);
 
-            } else {
-              addError(
-                'There are no available AWS connections.<br>\
-                <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${aws_connection_type}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
-                $j('.' + errorPrefix + availConnPrefix)
-              );
-              toggleErrors(true);
+            const previouslySelectedOptionIndex = json.findIndex(option => option.first === '${previouslyChosenAwsConnId}');
+            if(previouslySelectedOptionIndex != -1){
+              let newSelector = $(availConnsSelector.attr('id'));
+              newSelector.selectedIndex = previouslySelectedOptionIndex;
+              BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
             }
+
+            toggleErrors(false);
 
           } else {
-            for (let i = 0; i < errors.length; i++) {
-              errors.forEach(({message, id}) => addError(message, $j('.' + id)));
-            }
+            addError(
+              'There are no available AWS connections.<br>\
+              <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${aws_connection_type}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
+              $j('.' + errorPrefix + availConnPrefix)
+            );
             toggleErrors(true);
           }
+
+        } else {
+          for (let i = 0; i < errors.length; i++) {
+            errors.forEach(({message, id}) => addError(message, $j('.' + id)));
+          }
+          toggleErrors(true);
         }
-      });
-    }
+      }
+    });
 
-    function getAvailableAwsConnections() {
-      reload(availConnsSelector, v => v.first, v => `\${v.second}`)
-    }
-
-    getAvailableAwsConnections();
     BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
   });
 

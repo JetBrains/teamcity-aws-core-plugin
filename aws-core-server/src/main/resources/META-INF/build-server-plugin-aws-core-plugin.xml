@@ -9,5 +9,7 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
 
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager"/>
+
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>
 </beans>

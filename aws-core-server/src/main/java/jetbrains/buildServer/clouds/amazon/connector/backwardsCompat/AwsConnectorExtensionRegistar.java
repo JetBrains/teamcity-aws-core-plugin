@@ -20,12 +20,11 @@ public class AwsConnectorExtensionRegistar {
   public AwsConnectorExtensionRegistar(@NotNull final ExtensionHolder extensionHolder,
                                        @NotNull final PluginDescriptor pluginDescriptor,
                                        @NotNull final AwsConnectorFactory awsConnectorFactory,
-                                       @NotNull final OAuthConnectionsManager oAuthConnectionsManager) {
+                                       @NotNull final AwsConnectionsManager awsConnectionsManager) {
     if (TeamCityProperties.getBoolean(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME)) {
       extensionHolder.registerExtension(OAuthProvider.class, AwsConnectionProvider.class.getName(), new AwsConnectionProvider(pluginDescriptor, awsConnectorFactory));
       extensionHolder.registerExtension(BuildFeature.class, AwsConnToEnvVarsBuildFeature.class.getName(), new AwsConnToEnvVarsBuildFeature(pluginDescriptor));
 
-      AwsConnectionsManager awsConnectionsManager = new AwsConnectionsManager(oAuthConnectionsManager, awsConnectorFactory);
       InjectAwsConnDataToEnvVars awsConnDataToEnvVars = new InjectAwsConnDataToEnvVars(awsConnectionsManager);
       extensionHolder.registerExtension(BuildStartContextProcessor.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);
       extensionHolder.registerExtension(PasswordsProvider.class, InjectAwsConnDataToEnvVars.class.getName(), awsConnDataToEnvVars);

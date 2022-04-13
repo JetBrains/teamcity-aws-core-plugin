@@ -28,7 +28,7 @@ dependencies {
 
     compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
 
-    compile "org.jetbrains.teamcity:oauth:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:oauth:${teamcityVersion}"
     compileOnly "org.jetbrains.teamcity:server-web-api:${teamcityVersion}"
     compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
     compileOnly "org.jetbrains.teamcity.internal:server:${teamcityVersion}"

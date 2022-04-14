@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import jetbrains.buildServer.agent.Constants;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -42,14 +43,14 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
   @NotNull
   @Override
   public Collection<Parameter> getPasswordParameters(@NotNull SBuild build) {
-    ArrayList<Parameter> secureParams = new ArrayList<>();
     AwsConnectionBean awsConnection = myAwsConnectionsManager.getAwsConnectionForBuild(build);
     if (awsConnection == null) {
-      return secureParams;
+      return Collections.emptyList();
     }
 
     AWSCredentialsProvider creds = awsConnection.getCredentialsProvider();
 
+    ArrayList<Parameter> secureParams = new ArrayList<>();
     secureParams.add(new SimpleParameter(
       Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SECRET_KEY_ENV_PARAM_DEFAULT,
       creds.getCredentials().getAWSSecretKey())

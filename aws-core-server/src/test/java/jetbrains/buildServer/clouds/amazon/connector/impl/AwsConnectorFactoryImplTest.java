@@ -51,6 +51,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
     myConnectorProperties.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretKey);
+    myConnectorProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
 
     AWSCredentialsProvider awsCredentialsProvider = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
 

@@ -60,7 +60,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
 
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
-    assertEquals("There should be two invalid properties", 2, invalidProperties.size());
+    assertEquals("There should be three invalid properties (access, secret keys and region)", 3, invalidProperties.size());
   }
 
   @Test
@@ -71,8 +71,6 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
 
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
-    assertEquals("There should be one invalid property (Secret Access Key)", 1, invalidProperties.size());
-    assertEquals("The ivalid property name sould be the secret access key", AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, invalidProperties.get(0).getPropertyName());
-    assertEquals("The ivalid property reason sould be as described", "Please provide the secret access key ", invalidProperties.get(0).getInvalidReason());
+    assertEquals("There should be two invalid properties (Secret Access Key and region name)", 2, invalidProperties.size());
   }
 }

@@ -48,9 +48,7 @@
   <td>
     <props:selectProperty name="${region_name_param}" enableFilter="true">
       <c:forEach var="region" items="${allRegions.keySet()}">
-        <props:option value="${region}" selected="${region eq previouslyChosenRegion}">
-          <c:out value="${allRegions[region]}"/>
-        </props:option>
+        <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>
     </props:selectProperty>
     <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>

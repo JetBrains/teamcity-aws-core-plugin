@@ -15,18 +15,24 @@ public final class AwsCloudConnectorConstants {
   public static final String STATIC_CREDENTIALS_TYPE = "aws.access.keys";
   public static final String ACCESS_KEYS_LABEL = "Access keys";
 
+  public static final String REGION_NAME_PARAM = "aws.region.name";
+  public static final String REGION_NAME_LABEL = "AWS region";
+  public static final String REGION_NAME_DEFAULT = "us-east-1";
+
+
+  //Test connection
   public static final String TEST_CONNECTION_CONTROLLER_URL = "/repo/aws-test-connection.html";
 
-  //XML
   public static final String AWS_CALLER_IDENTITY_ELEMENT = "callerIdentity";
   public static final String AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID = "accountId";
   public static final String AWS_CALLER_IDENTITY_ATTR_USER_ID = "userId";
   public static final String AWS_CALLER_IDENTITY_ATTR_USER_ARN = "userArn";
 
-  //AVAIL AWS CONNs
+  //Available connections
   public static final String AVAIL_AWS_CONNECTIONS_CONTROLLER_URL = "/admin/oauth/availAwsConnections.html";
-  public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME = "availableAwsConnections";
+  public static final String AVAIL_AWS_CONNS_JSP_FILE_NAME = "availableAwsConnections.jsp";
 
+  public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.chosen.connection.id";
 }

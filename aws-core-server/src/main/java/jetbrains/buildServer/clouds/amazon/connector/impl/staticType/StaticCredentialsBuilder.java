@@ -59,6 +59,10 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
       invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, "Please provide the secret access key "));
     }
 
+    if (StringUtil.isEmpty(StringUtil.emptyIfNull(properties.get(AwsCloudConnectorConstants.REGION_NAME_PARAM)))) {
+      invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.REGION_NAME_PARAM, "Please choose the region where this AWS Connection will be used"));
+    }
+
     if (!ParamUtil.isValidSessionDuration(properties.get(AwsAccessKeysParams.SESSION_DURATION_PARAM))) {
       invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
     }

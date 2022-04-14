@@ -79,9 +79,9 @@
             if(previouslySelectedOptionIndex != -1){
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
-              BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
             }
 
+            BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
             toggleErrors(false);
 
           } else {

@@ -16,7 +16,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements PropertiesProcessor {
 
   private final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVrasBuildFeature.jsp";
-  private final String AVAIL_AWS_CONNS_URL = "../../" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
+  private final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;
   private final String displayName = "Expose AWS Credentials via Env Vars";

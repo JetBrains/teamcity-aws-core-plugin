@@ -50,6 +50,7 @@ public class AwsConnectionsManager {
 
     AWSCredentialsProvider credentials = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
     return new AwsConnectionBean(connectionDescriptor.getId(),
+                                 connectionDescriptor.getDescription(),
                                  credentials,
                                  connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
                                  ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())

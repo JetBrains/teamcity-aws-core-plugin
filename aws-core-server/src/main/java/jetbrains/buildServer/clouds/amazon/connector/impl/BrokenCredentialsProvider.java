@@ -8,10 +8,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class BrokenCredentialsProvider implements AWSCredentialsProvider {
 
-  public BrokenCredentialsProvider(){
-    Loggers.CLOUD.info("Broken AWS Credentials provider has been created (with empty access and secret key).");
-  }
-
   @Override
   @NotNull
   public AWSCredentials getCredentials() {

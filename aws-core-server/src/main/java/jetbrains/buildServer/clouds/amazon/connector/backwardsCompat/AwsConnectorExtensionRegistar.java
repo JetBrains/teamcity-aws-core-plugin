@@ -37,7 +37,6 @@ public class AwsConnectorExtensionRegistar {
       registerAwsConnection();
       registerExposeToEnvVarsBuildFeature();
 
-      Loggers.CLOUD.info("AWS Core plugin is loaded.");
     } else {
       Loggers.CLOUD.debug("AWS Core plugin has not been loaded since the is no definied internal property or its turned off: " + AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME);
     }

@@ -56,7 +56,6 @@ public class StaticSessionCredentialsProvider extends CredentialsRefresher {
   @Override
   @NotNull
   public Date getSessionExpirationDate() {
-    Loggers.CLOUD.debug("Requested Session expiration date.");
     return currentSession.getCredentials().getExpiration();
   }
 }

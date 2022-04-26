@@ -86,7 +86,6 @@
     </orderEntry>
     <orderEntry type="library" exported="" name="aws-sdk-services" level="project" />
     <orderEntry type="library" exported="" name="jackson" level="project" />
-    <orderEntry type="module" module-name="server-common-api" scope="TEST" />
     <orderEntry type="module" module-name="server-common-api" />
     <orderEntry type="module" module-name="oauth-integration" />
   </component>

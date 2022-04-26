@@ -38,7 +38,7 @@ dependencies {
 
     compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
     compileOnly "org.jetbrains.teamcity:oauth:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
+    testCompileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
 
     testCompile "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
 

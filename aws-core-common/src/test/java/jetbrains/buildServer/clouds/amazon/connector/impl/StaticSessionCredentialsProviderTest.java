@@ -9,10 +9,13 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertNotEquals;
 
+@Ignore
+//TODO: TW-76067 AWS Core plugin: remove previous tests and improve test code coverage
 public class StaticSessionCredentialsProviderTest extends BaseTestCase {
 
   private ExecutorServices myExecutorServices;

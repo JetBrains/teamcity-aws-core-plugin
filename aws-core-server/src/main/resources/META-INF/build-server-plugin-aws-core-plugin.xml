@@ -5,9 +5,14 @@
        default-autowire="constructor">
 
 <!--    open-api beans-->
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager"/>
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
-    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
+    <bean id="awsConnectionsManagerProvider" class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManagerProvider"/>
+    <bean id="awsConnectionsManager" factory-bean="awsConnectionsManagerProvider" factory-method="getManager"/>
+
+    <bean id="awsConnectorFactoryProvider" class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryProvider"/>
+    <bean id="awsConnectorFactory" factory-bean="awsConnectorFactoryProvider" factory-method="getFactory"/>
+
+    <bean id="staticCredsBuilderProvider" class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredsBuilderProvider"/>
+    <bean id="staticCredsBuilder" factory-bean="staticCredsBuilderProvider" factory-method="getBuilder"/>
 <!--    ^-->
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.backwardsCompat.AwsConnectorExtensionRegistar"/>

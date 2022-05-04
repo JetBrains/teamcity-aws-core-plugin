@@ -19,6 +19,7 @@ package jetbrains.buildServer.util.amazon;
 import com.amazonaws.client.builder.ExecutorFactory;
 import com.amazonaws.services.cloudfront.AmazonCloudFront;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.transfer.AbortableTransfer;
 import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -206,6 +207,9 @@ public final class S3Util {
     private boolean myConsistencyCheckEnabled = DEFAULT_ENABLE_CONSISTENCY_CHECK;
 
     @NotNull
+    private CannedAccessControlList myAcl = CannedAccessControlList.BucketOwnerFullControl;
+
+    @NotNull
     public static S3AdvancedConfiguration defaultConfiguration() {
       return new S3AdvancedConfiguration();
     }
@@ -288,6 +292,14 @@ public final class S3Util {
       return this;
     }
 
+    @NotNull
+    public S3AdvancedConfiguration withAcl(@Nullable final CannedAccessControlList acl) {
+      if (acl != null) {
+        myAcl = acl;
+      }
+      return this;
+    }
+
     public int getPresignedUrlMaxChunkSize() {
       return myPresignedUrlMaxChunkSize;
     }
@@ -332,6 +344,11 @@ public final class S3Util {
       return myConsistencyCheckEnabled;
     }
 
+    @NotNull
+    public CannedAccessControlList getAcl() {
+      return myAcl;
+    }
+
     @Override
     public String toString() {
       return "S3Configuration{" +
@@ -346,6 +363,7 @@ public final class S3Util {
              ", myTtlSeconds=" + myTtlSeconds +
              ", myNThreads=" + myNThreads +
              ", myConsistencyCheckEnabled=" + myConsistencyCheckEnabled +
+             ", myAcl=" + myAcl +
              '}';
     }
   }

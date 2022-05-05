@@ -1,9 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -40,13 +41,18 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       return null;
     }
 
-    AWSCredentialsProvider credentials = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
-    return new AwsConnectionBean(connectionDescriptor.getId(),
-                                 connectionDescriptor.getDescription(),
-                                 credentials,
-                                 connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
-                                 ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
-    );
+    try {
+      AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
+
+      return new AwsConnectionBean(connectionDescriptor.getId(),
+        connectionDescriptor.getDescription(),
+        credentialsHolder,
+        connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
+        ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
+      );
+    } catch (AwsConnectorException awsConnectorException) {
+      throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage());
+    }
   }
 
   //TODO: TW-75618 Add support for several AWS Connections exposing

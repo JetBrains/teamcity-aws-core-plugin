@@ -1,23 +1,23 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionBean {
   private final String myConnectionId;
   private final String myDescription;
-  private final AWSCredentialsProvider myCredentialsProvider;
+  private final AwsCredentialsHolder myAwsCredentialsHolder;
   private final String myRegion;
   private final boolean myUsingSessionCredentials;
 
   public AwsConnectionBean(@NotNull final String connectionId,
                            @NotNull final String description,
-                           @NotNull final AWSCredentialsProvider credentialsProvider,
+                           @NotNull final AwsCredentialsHolder credentialsHolder,
                            @NotNull final String region,
                            final boolean usingSessionCredentials) {
     myConnectionId = connectionId;
     myDescription = description;
-    myCredentialsProvider = credentialsProvider;
+    myAwsCredentialsHolder = credentialsHolder;
     myRegion = region;
     myUsingSessionCredentials = usingSessionCredentials;
   }
@@ -28,8 +28,8 @@ public class AwsConnectionBean {
   }
 
   @NotNull
-  public AWSCredentialsProvider getCredentialsProvider() {
-    return myCredentialsProvider;
+  public AwsCredentialsHolder getAwsCredentialsHolder() {
+    return myAwsCredentialsHolder;
   }
 
   @NotNull

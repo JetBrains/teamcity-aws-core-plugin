@@ -16,7 +16,7 @@ import static org.testng.Assert.assertNotEquals;
 
 @Ignore
 //TODO: TW-76067 AWS Core plugin: remove previous tests and improve test code coverage
-public class StaticSessionCredentialsProviderTest extends BaseTestCase {
+public class StaticSessionCredentialsHolderTest extends BaseTestCase {
 
   private ExecutorServices myExecutorServices;
 

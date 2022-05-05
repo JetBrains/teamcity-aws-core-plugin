@@ -1,6 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -8,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -45,7 +46,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   }
 
   @Test
-  public void givenAwsConnBuilder_whenWithStaticCredsFactory_thenReturnConnectorWithTwoKeys() {
+  public void givenAwsConnBuilder_whenWithStaticCredsFactory_thenReturnConnectorWithTwoKeys() throws AwsConnectorException {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
@@ -53,18 +54,18 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
     myConnectorProperties.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretKey);
     myConnectorProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
 
-    AWSCredentialsProvider awsCredentialsProvider = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
+    AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
 
-    assertEquals("Access key should be equal", testAccessKey, awsCredentialsProvider.getCredentials().getAWSAccessKeyId());
-    assertEquals("Secret key should be equal", testSecretKey, awsCredentialsProvider.getCredentials().getAWSSecretKey());
+    assertEquals("Access key should be equal", testAccessKey, credentialsHolder.getAwsCredentials().getAccessKeyId());
+    assertEquals("Secret key should be equal", testSecretKey, credentialsHolder.getAwsCredentials().getSecretAccessKey());
   }
 
   @Test
-  public void givenAwsConnBuilder_whenWithUnknownCredsFactory_thenThrowException() {
+  public void givenAwsConnBuilder_whenWithUnknownCredsFactory_thenThrowException() throws AwsConnectorException {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "UNKNOWN");
-    AWSCredentialsProvider awsCredentialsProvider = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
-    assertEquals("Access key should be empty", "", awsCredentialsProvider.getCredentials().getAWSAccessKeyId());
-    assertEquals("Secret key should be empty", "", awsCredentialsProvider.getCredentials().getAWSSecretKey());
+    AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
+    assertEquals("Access key should be empty", "", credentialsHolder.getAwsCredentials().getAccessKeyId());
+    assertEquals("Secret key should be empty", "", credentialsHolder.getAwsCredentials().getSecretAccessKey());
   }
 
   @Test(expectedExceptions = {IllegalStateException.class})

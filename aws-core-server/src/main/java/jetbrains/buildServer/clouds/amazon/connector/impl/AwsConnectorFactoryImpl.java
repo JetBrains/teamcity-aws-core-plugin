@@ -1,19 +1,19 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
+import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.serverSide.InvalidProperty;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 
@@ -23,15 +23,11 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   @NotNull
   @Override
-  public AWSCredentialsProvider buildAwsCredentialsProvider(@NotNull final Map<String, String> connectionProperties) {
+  public AwsCredentialsHolder buildAwsCredentialsProvider(@NotNull final Map<String, String> connectionProperties) throws AwsConnectorException {
     String credentialsType = connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
-    try {
-      AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
-      return credentialsBuilder.constructConcreteCredentialsProvider(connectionProperties);
-    } catch (AwsConnectorException e) {
-      Loggers.CLOUD.warn("Failed to create AWSCredentialsProvider: " + e.getMessage());
-      return new BrokenCredentialsProvider();
-    }
+
+    AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
+    return credentialsBuilder.constructConcreteCredentialsProvider(connectionProperties);
   }
 
   @NotNull

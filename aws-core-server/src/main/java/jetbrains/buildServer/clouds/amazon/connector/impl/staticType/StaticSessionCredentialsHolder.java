@@ -3,7 +3,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
@@ -35,9 +35,9 @@ public class StaticSessionCredentialsHolder extends CredentialsRefresher {
 
   @NotNull
   @Override
-  public AwsCredentials getAwsCredentials() {
+  public AwsCredentialsData getAwsCredentials() {
     Credentials credentials = currentSession.getCredentials();
-    return new AwsCredentials() {
+    return new AwsCredentialsData() {
       @NotNull
       @Override
       public String getAccessKeyId() {

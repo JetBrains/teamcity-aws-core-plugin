@@ -16,7 +16,7 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,8 +34,8 @@ public class StaticCredentialsHolder implements AwsCredentialsHolder {
 
   @NotNull
   @Override
-  public AwsCredentials getAwsCredentials() {
-    return new AwsCredentials() {
+  public AwsCredentialsData getAwsCredentials() {
+    return new AwsCredentialsData() {
       @NotNull
       @Override
       public String getAccessKeyId() {

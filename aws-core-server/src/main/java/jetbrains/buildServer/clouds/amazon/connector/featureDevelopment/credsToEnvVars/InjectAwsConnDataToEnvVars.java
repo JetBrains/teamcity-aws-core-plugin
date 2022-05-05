@@ -1,7 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
 
 import jetbrains.buildServer.agent.Constants;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -33,7 +33,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     context.addSharedParameter(Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_REGION_ENV_PARAM_DEFAULT, awsConnection.getRegion());
 
     AwsCredentialsHolder credentialsHolder = awsConnection.getAwsCredentialsHolder();
-    AwsCredentials credentials = credentialsHolder.getAwsCredentials();
+    AwsCredentialsData credentials = credentialsHolder.getAwsCredentials();
 
     context.addSharedParameter(Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT, credentials.getAccessKeyId());
     context.addSharedParameter(Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_SECRET_KEY_ENV_PARAM_DEFAULT, credentials.getSecretAccessKey());
@@ -55,7 +55,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     }
 
     AwsCredentialsHolder credentialsHolder = awsConnection.getAwsCredentialsHolder();
-    AwsCredentials credentials = credentialsHolder.getAwsCredentials();
+    AwsCredentialsData credentials = credentialsHolder.getAwsCredentials();
 
     ArrayList<Parameter> secureParams = new ArrayList<>();
     secureParams.add(new SimpleParameter(

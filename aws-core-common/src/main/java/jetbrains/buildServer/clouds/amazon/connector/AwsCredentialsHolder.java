@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 public interface AwsCredentialsHolder {
 
   @NotNull
-  AwsCredentials getAwsCredentials();
+  AwsCredentialsData getAwsCredentials();
 
   void refreshCredentials();
 }

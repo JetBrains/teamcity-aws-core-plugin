@@ -87,13 +87,13 @@ public class AvailableAwsConnsController extends BaseController {
         ModelAndView mv = new ModelAndView(myDescriptor.getPluginResourcesPath(AwsConnectionProvider.EDIT_PARAMS_URL));
         mv.getModel().put("projectId", project.getProjectId());
         final List<OAuthConnectionDescriptor> connections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-        mv.getModel().put(availableAwsConnsBeanName, asPairs(connections, c -> c.getId(), c -> c.getConnectionDisplayName()));
+        mv.getModel().put(availableAwsConnsBeanName, asPairs(connections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName));
 
         return mv;
 
       } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME)) {
         List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-        writeAsJson(asPairs(awsConnections, c -> c.getId(), c -> c.getConnectionDisplayName()), response);
+        writeAsJson(asPairs(awsConnections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName), response);
 
       } else {
         throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
@@ -117,8 +117,8 @@ public class AvailableAwsConnsController extends BaseController {
   }
 
   @NotNull
-  private <T> List<Pair<String, String>> asPairs(@NotNull List<T> values, @NotNull Function<T, String> getValue, @NotNull Function<T, String> getLabel) {
-    return values.stream().map(c -> new Pair<String, String>(getValue.apply(c), getLabel.apply(c))).collect(Collectors.toList());
+  public <T> List<Pair<String, String>> asPairs(@NotNull List<T> values, @NotNull Function<T, String> getValue, @NotNull Function<T, String> getLabel) {
+    return values.stream().map(c -> new Pair<>(getValue.apply(c), getLabel.apply(c))).collect(Collectors.toList());
   }
 }
 

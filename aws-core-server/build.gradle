@@ -39,6 +39,8 @@ dependencies {
     server group: 'commons-codec', name: 'commons-codec', version: "1.11"
 
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.21.0'
+    testImplementation "org.jetbrains.teamcity:oauth:${teamcityVersion}"
+    testImplementation "org.jetbrains.teamcity.internal:web:${teamcityVersion}"
 }
 
 sourceCompatibility = "1.8"

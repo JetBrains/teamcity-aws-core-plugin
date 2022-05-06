@@ -9,6 +9,7 @@ import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -60,7 +61,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
     assertEquals("Secret key should be equal", testSecretKey, credentialsHolder.getAwsCredentials().getSecretAccessKey());
   }
 
-  @Test
+  @Test ( expectedExceptions = {NoSuchAwsCredentialsBuilderException.class} )
   public void givenAwsConnBuilder_whenWithUnknownCredsFactory_thenThrowException() throws AwsConnectorException {
     myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "UNKNOWN");
     AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);

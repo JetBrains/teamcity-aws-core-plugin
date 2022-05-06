@@ -35,4 +35,11 @@ public final class AwsAccessKeysParams {
   public static final String STS_ENDPOINT_PARAM = "aws.sts.endpoint";
   public static final String STS_ENDPOINT_LABEL = "STS endpoint:";
   public static final String STS_ENDPOINT_DEFAULT = "https://sts.amazonaws.com";
+
+
+  //errors
+  public static final String ACCESS_KEY_ID_ERROR = "Please provide the access key ID";
+  public static final String SECRET_ACCESS_KEY_ERROR = "Please provide the secret access key ";
+  public static final String REGION_ERROR = "Please choose the region where this AWS Connection will be used";
+  public static final String SESSION_DURATION_ERROR = "Session duration is not valid";
 }

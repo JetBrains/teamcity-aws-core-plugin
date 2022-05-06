@@ -37,6 +37,8 @@ dependencies {
 
     agent project(path: ':aws-core-agent', configuration: 'plugin')
     server group: 'commons-codec', name: 'commons-codec', version: "1.11"
+
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.21.0'
 }
 
 sourceCompatibility = "1.8"

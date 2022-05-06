@@ -18,28 +18,22 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
-import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,16 +43,10 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_SELECT_ID;
 import static org.mockito.Mockito.when;
 
-public class AvailableAwsConnsControllerTest extends BaseTestCase {
+public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
-  private HttpServletRequest request;
-  private HttpServletResponse response;
   private AvailableAwsConnsController availableAwsConnsController;
 
-  private ByteArrayOutputStream responseOutputStream;
-  private OutputStreamWriter responseStreamWriter;
-
-  private ProjectManager projectManager;
   private OAuthConnectionsManager connectionsManager;
   private SProject project;
 
@@ -67,27 +55,16 @@ public class AvailableAwsConnsControllerTest extends BaseTestCase {
 
   private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  private final String PROJECT_ID = "PROJECT_ID";
   private final String UNKNOWN_RESOURCE = "UNKNOWN";
   private final String AWS_CONNECTION_ID = "PROJECT_FEATURE_ID";
   private final String AWS_CONNECTION_DISPLAY_NAME = "Test AWS Connection";
 
   @BeforeMethod
   public void setUp() throws IOException {
+    super.setUp();
 
     setInternalProperty(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME, "true");
 
-    request = Mockito.mock(HttpServletRequest.class);
-    when(request.getParameter("projectId"))
-      .thenReturn(PROJECT_ID);
-
-    response = Mockito.mock(HttpServletResponse.class);
-    responseOutputStream = new ByteArrayOutputStream();
-    responseStreamWriter = new OutputStreamWriter(responseOutputStream);
-    when(response.getWriter()).thenReturn(new PrintWriter(responseStreamWriter));
-
-
-    projectManager = Mockito.mock(ProjectManager.class);
     project = Mockito.mock(SProject.class);
     when(projectManager.findProjectByExternalId(PROJECT_ID))
       .thenReturn(project);

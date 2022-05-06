@@ -1,13 +1,8 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -17,6 +12,10 @@ import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
@@ -30,14 +29,14 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
   @Override
   @NotNull
-  public AWSCredentialsProvider constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
+  public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
 
     List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
     processInvalidProperties(invalidProperties);
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWSCredentialsProvider.");
-      return new StaticSessionCredentialsProvider(
+      return new StaticSessionCredentialsHolder(
         getBasicCredentialsProvider(cloudConnectorProperties),
         cloudConnectorProperties,
         myExecutorServices
@@ -82,21 +81,8 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
   }
 
   @NotNull
-  private AWSCredentialsProvider getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) {
-    return new AWSCredentialsProvider() {
-      @Override
-      public AWSCredentials getCredentials() {
-        return new BasicAWSCredentials(
-          cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
-          cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
-        );
-      }
-
-      @Override
-      public void refresh() {
-        //
-      }
-    };
+  private AwsCredentialsHolder getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) {
+    return new StaticCredentialsHolder(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM), cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM));
   }
 
   @Override

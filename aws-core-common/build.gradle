@@ -35,8 +35,12 @@ dependencies {
     compile "com.amazonaws:aws-java-sdk-cloudfront:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-sts:${awsSDKVersion}"
     compile "com.amazonaws:aws-java-sdk-codebuild:${awsSDKVersion}"
+    compile "com.amazonaws:aws-java-sdk-lambda:${awsSDKVersion}"
 
     compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:oauth:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
+    testCompileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
 
     testCompile "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
 
@@ -178,7 +182,7 @@ publishing {
         mavenPrivate(MavenPublication) {
             groupId = 'org.jetbrains.teamcity'
             artifactId = 'aws-core-common'
-            version = "${libVersion}"
+            version = getPackageVersion()
             from components.java
             pom {
                 name = 'AWS Core Library'
@@ -189,7 +193,7 @@ publishing {
         mavenPrivateUtils(MavenPublication) {
             groupId = 'jetbrains.buildServer.util'
             artifactId = 'amazon-util'
-            version = "${libVersion}"
+            version = getPackageVersion()
             from components.java
             pom {
                 name = 'AWS Core Library'
@@ -209,4 +213,29 @@ publishing {
             }
         }
     }
+}
+
+def getPackageVersion() {
+    if (gitBranch() == "master")
+        getVersionName()
+    else
+        getVersionName() + "-SNAPSHOT"
+}
+
+static def gitBranch() {
+    def branch = ""
+    def proc = "git rev-parse --abbrev-ref HEAD".execute()
+    proc.in.eachLine{line->branch = line}
+    proc.err.eachLine{line->println line}
+    proc.waitFor()
+    branch
+}
+
+def getVersionName() {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
 }

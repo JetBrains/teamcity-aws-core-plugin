@@ -1,9 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -17,26 +18,18 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AwsConnectionsManager {
+public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   private final OAuthConnectionsManager myConnectionsManager;
   private final AwsConnectorFactory myAwsConnectorFactory;
 
-  public AwsConnectionsManager(@NotNull final OAuthConnectionsManager connectionsManager,
-                               @NotNull final AwsConnectorFactory awsConnectorFactory) {
+  public AwsConnectionsManagerImpl(@NotNull final OAuthConnectionsManager connectionsManager,
+                                   @NotNull final AwsConnectorFactory awsConnectorFactory) {
     myConnectionsManager = connectionsManager;
     myAwsConnectorFactory = awsConnectorFactory;
   }
 
-  /**
-   * Will get AWS Connection ID from the properties, find corresponding AWS Connection
-   * and return a data bean with all properties like connectionId, providerType and all properties map.
-   *
-   * @param properties properties Map where should be a parameter with chosen AWS Connection ID.
-   * @param project    project which will be searched for the AWS Connection.
-   * @return AwsConnectionBean data bean with all AWS Connection properties.
-   * @throws LinkedAwsConnNotFoundException thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map.
-   */
   @Nullable
+  @Override
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException {
     String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
@@ -48,17 +41,23 @@ public class AwsConnectionsManager {
       return null;
     }
 
-    AWSCredentialsProvider credentials = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
-    return new AwsConnectionBean(connectionDescriptor.getId(),
-                                 connectionDescriptor.getDescription(),
-                                 credentials,
-                                 connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
-                                 ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
-    );
+    try {
+      AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
+
+      return new AwsConnectionBean(connectionDescriptor.getId(),
+        connectionDescriptor.getDescription(),
+        credentialsHolder,
+        connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
+        ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
+      );
+    } catch (AwsConnectorException awsConnectorException) {
+      throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage());
+    }
   }
 
   //TODO: TW-75618 Add support for several AWS Connections exposing
   @Nullable
+  @Override
   public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) {
     try {
       if (build.getBuildId() < 0) {

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 
+@Deprecated
 public class AwsConnTempCredentialsProviderForTests implements AWSCredentialsProvider {
 
   private final long mySessionCredentialsValidThresholdMilis;

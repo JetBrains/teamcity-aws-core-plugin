@@ -1,11 +1,11 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import java.util.List;
-import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Map;
 
 public interface AwsCredentialsBuilder {
 
@@ -24,7 +24,7 @@ public interface AwsCredentialsBuilder {
    * @see    jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory#buildAwsCredentialsProvider(Map) buildAwsCredentialsProvider(connectionProperties).
    */
   @NotNull
-  AWSCredentialsProvider constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+  AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
 
   @NotNull
   List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties);

@@ -44,7 +44,6 @@ import static jetbrains.buildServer.util.amazon.AWSClients.*;
 /**
  * @author vbedrosova
  */
-@Deprecated
 public final class AWSCommonParams {
 
   // "codedeploy_" prefix is for backward compatibility

@@ -38,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author vbedrosova
  */
-@Deprecated
 public class AWSClients {
 
   @Nullable private final AWSCredentials myCredentials;

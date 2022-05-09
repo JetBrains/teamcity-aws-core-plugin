@@ -27,7 +27,6 @@ import java.util.Map;
 /**
  * @author vbedrosova
  */
-@Deprecated
 public final class AWSRegions {
   private static final Map<String, String> REGION_NAMES_FOR_WEB;
 

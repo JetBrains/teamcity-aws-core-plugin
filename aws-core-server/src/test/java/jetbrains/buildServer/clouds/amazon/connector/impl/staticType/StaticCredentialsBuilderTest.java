@@ -1,75 +1,117 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
-import org.jetbrains.annotations.NotNull;
+import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class StaticCredentialsBuilderTest extends BaseTestCase {
-  private final String testAccessKey = "TESTACCESS";
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
+
+public class StaticCredentialsBuilderTest extends BaseTestCase {
+
+  private final String testAccessKeyId = "TESTACCESS";
+  private final String testSecretAccessKey = "TESTSECRET";
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myConnectorProperties;
-
   private ExecutorServices myExecutorServices;
 
   @BeforeMethod
-  public void setup() {
+  public void setup() throws Exception {
+    super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
-    myConnectorProperties = new HashMap<>();
-    myExecutorServices = new ExecutorServices() {
-      @NotNull
-      @Override
-      public ScheduledExecutorService getNormalExecutorService() {
-        return Executors.newScheduledThreadPool(1);
-      }
-
-      @NotNull
-      @Override
-      public ExecutorService getLowPriorityExecutorService() {
-        return Executors.newSingleThreadExecutor();
-      }
-    };
+    myConnectorProperties = createDefaultProperties();
+    myExecutorServices = Mockito.mock(ExecutorServices.class);
   }
 
   @Test
-  public void givenAwsConnFactory_whenWithUnlnownCredentialsType_thenReturnThrowException() {
-    myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "UNKNOWN");
-    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
-    assertEquals("There should be one invalid property", 1, invalidProperties.size());
-    assertEquals("The ivalid property reason sould be as described", "The credentials type UNKNOWN is not supported.", invalidProperties.get(0).getInvalidReason());
-  }
-
-  @Test
-  public void givenAwsConnFactory_whenWithWithOnlyCredentialsTypeProp_thenReturnAllInvalidProps() {
+  public void givenAwsConnFactory_whenWithAllProperties_thenReturnAwsCredentialsProvider() {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
-    myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
-
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
-    assertEquals("There should be three invalid properties (access, secret keys and region)", 3, invalidProperties.size());
+    assertTrue(invalidProperties.isEmpty());
+
+    try {
+      AwsCredentialsHolder credentialsHolder = staticCredentialsFactory.constructConcreteCredentialsProvider(myConnectorProperties);
+      assertEquals(testAccessKeyId, credentialsHolder.getAwsCredentials().getAccessKeyId());
+      assertEquals(testSecretAccessKey, credentialsHolder.getAwsCredentials().getSecretAccessKey());
+    } catch (AwsConnectorException awsConnectorException) {
+      fail("Could not construct the credentials provider: " + awsConnectorException.getMessage());
+    }
   }
 
   @Test
-  public void givenAwsConnFactory_whenWithAccessKeyIdOnly_thenReturnOneInvalidProp() {
+  public void givenAwsConnFactory_withoutKeys_thenReturnInvalidPropsWithKeysErrors() {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
-    myConnectorProperties.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
-    myConnectorProperties.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, testAccessKey);
+    myConnectorProperties.remove(ACCESS_KEY_ID_PARAM);
+    myConnectorProperties.remove(SECURE_SECRET_ACCESS_KEY_PARAM);
 
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
-    assertEquals("There should be two invalid properties (Secret Access Key and region name)", 2, invalidProperties.size());
+
+    assertTrue(invalidProperties.containsAll(Arrays.asList(
+      new InvalidProperty(
+        ACCESS_KEY_ID_PARAM,
+        ACCESS_KEY_ID_ERROR
+      ),
+      new InvalidProperty(
+        SECURE_SECRET_ACCESS_KEY_PARAM,
+        SECRET_ACCESS_KEY_ERROR
+      )
+    )));
+  }
+
+  @Test
+  public void givenAwsConnFactory_withoutRegionParam_thenReturnInvalidPropsWithRegionError() {
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+
+    myConnectorProperties.remove(REGION_NAME_PARAM);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
+
+    assertTrue(invalidProperties.contains(
+      new InvalidProperty(
+        REGION_NAME_PARAM,
+        REGION_ERROR
+      )
+    ));
+  }
+
+  @Test
+  public void givenAwsConnFactory_withInvalidSessionDuration_thenReturnInvalidPropsWithSessionDurationError() {
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+
+    myConnectorProperties.put(SESSION_DURATION_PARAM, String.valueOf(MAX_SESSION_DURATION + 1));
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
+
+    assertTrue(invalidProperties.contains(
+      new InvalidProperty(
+        SESSION_DURATION_PARAM,
+        SESSION_DURATION_ERROR
+      )
+    ));
+  }
+
+  private Map<String, String> createDefaultProperties() {
+    Map<String, String> res = new HashMap<>();
+    res.put(ACCESS_KEY_ID_PARAM, testAccessKeyId);
+    res.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
+    res.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
+    res.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+    res.put(AwsAccessKeysParams.SESSION_DURATION_PARAM, AwsAccessKeysParams.SESSION_DURATION_DEFAULT);
+    res.put(AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsAccessKeysParams.STS_ENDPOINT_DEFAULT);
+    return res;
   }
 }

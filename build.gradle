@@ -24,7 +24,13 @@ allprojects {
   repositories {
     mavenLocal()
     maven { url "https://download.jetbrains.com/teamcity-repository" }
-    maven { url 'https://packages.jetbrains.team/maven/p/tc/maven' }
+    maven {
+      url "https://packages.jetbrains.team/maven/p/tc/maven"
+      credentials {
+        username System.getenv("SPACE_APP_CLIENTID")
+        password System.getenv("SPACE_APP_SECRET")
+      }
+    }
     mavenCentral()
   }
 }

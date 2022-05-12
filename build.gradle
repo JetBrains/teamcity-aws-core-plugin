@@ -18,23 +18,6 @@ plugins {
   id 'idea'
 }
 
-allprojects {
-  project.repositories.clear()
-
-  repositories {
-    mavenLocal()
-    maven { url "https://download.jetbrains.com/teamcity-repository" }
-    maven {
-      url "https://packages.jetbrains.team/maven/p/tc/maven"
-      credentials {
-        username System.getenv("SPACE_APP_CLIENTID")
-        password System.getenv("SPACE_APP_SECRET")
-      }
-    }
-    mavenCentral()
-  }
-}
-
 ext {
   teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1'
 
@@ -48,6 +31,23 @@ ext {
 
   spaceUsername = findProperty('space.repository.user') ?: findProperty('spaceUsername')
   spacePassword = findProperty('space.repository.password') ?: findProperty('spacePassword')
+}
+
+allprojects {
+  project.repositories.clear()
+
+  repositories {
+    mavenLocal()
+    maven { url "https://download.jetbrains.com/teamcity-repository" }
+    maven {
+      url "https://packages.jetbrains.team/maven/p/tc/maven"
+      credentials {
+        username spaceUsername
+        password spacePassword
+      }
+    }
+    mavenCentral()
+  }
 }
 
 idea {

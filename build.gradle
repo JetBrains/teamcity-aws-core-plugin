@@ -21,7 +21,6 @@ plugins {
 
 ext {
   teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2021.1'
-
   teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/servers/TeamCity-${teamcityVersion}"
   teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
   teamcityJavaHome = System.properties['java.home']
@@ -29,11 +28,10 @@ ext {
   awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.199'
 
   libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
+  providedPluginVersion = findProperty('versionNumber')
 
   spaceUsername = findProperty('space.repository.user') ?: findProperty('spaceUsername')
   spacePassword = findProperty('space.repository.password') ?: findProperty('spacePassword')
-
-  providedPluginVersion = rootProject.getProperties()["plugin.version"]
 
   buildUtils = new BuildUtils(ext)
 }

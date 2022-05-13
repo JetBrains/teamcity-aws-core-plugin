@@ -16,6 +16,7 @@
 
 plugins {
   id 'idea'
+  id 'groovy'
 }
 
 ext {
@@ -69,6 +70,10 @@ configure(subprojects) {
   test {
     useTestNG()
     testLogging.showStandardStreams = true
+  }
+
+  dependencies {
+    implementation "org.codehaus.groovy:groovy-all:2.2.1"
   }
 }
 

@@ -77,7 +77,7 @@ configure(subprojects) {
   }
 
   dependencies {
-    implementation "org.codehaus.groovy:groovy-all:2.2.1"
+    compileOnly "org.codehaus.groovy:groovy-all:2.2.1"
   }
 }
 

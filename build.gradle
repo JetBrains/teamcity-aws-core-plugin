@@ -32,6 +32,10 @@ ext {
 
   spaceUsername = findProperty('space.repository.user') ?: findProperty('spaceUsername')
   spacePassword = findProperty('space.repository.password') ?: findProperty('spacePassword')
+
+  providedPluginVersion = rootProject.getProperties()["plugin.version"]
+
+  buildUtils = new BuildUtils(ext)
 }
 
 allprojects {

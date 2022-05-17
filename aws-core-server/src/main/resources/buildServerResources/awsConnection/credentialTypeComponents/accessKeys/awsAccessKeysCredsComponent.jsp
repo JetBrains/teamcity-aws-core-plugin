@@ -19,19 +19,12 @@
 
 <%@include file="awsAccessKeysCredsConstants.jspf" %>
 
-<c:choose>
-    <c:when test = "${param.connectionId != ''}">
-        <c:set var="useSessionCreds" value="${param.useSessionCreds}"/>
-        <c:set var="sessionCredsDuration" value="${param.sessionCredsDuration}"/>
-        <c:set var="stsEndpoint" value="${param.stsEndpoint}"/>
-    </c:when>
+<jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
+<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
+<c:set var="useSessionCreds" value="${propertiesBean.properties[use_session_credentials_param]}"/>
+<c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
+<c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 
-    <c:otherwise>
-        <c:set var="useSessionCreds" value="${use_session_credentials_default}"/>
-        <c:set var="sessionCredsDuration" value="${session_duration_default}"/>
-        <c:set var="stsEndpoint" value="${sts_endpoint_default}"/>
-    </c:otherwise>
-</c:choose>
 
 <l:settingsGroup title="Access Key">
     <tr id="${access_key_id_param}_row">
@@ -52,14 +45,16 @@
     <tr>
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>
-            <props:checkboxProperty name="${use_session_credentials_param}" checked="${useSessionCreds}"/>
+            <props:checkboxProperty name="${use_session_credentials_param}"
+                                    checked="${param.connectionId == '' ? use_session_credentials_default : useSessionCreds}"/>
             <span>Issue temporary credentials by request</span>
         </td>
     </tr>
 
     <tr id="${session_duration_param}_row">
         <th><label for="${session_duration_param}">${session_duration_label}</label></th>
-        <td><props:textProperty name="${session_duration_param}" value="${sessionCredsDuration}" className="longField" maxlength="256"/>
+        <td><props:textProperty name="${session_duration_param}"
+                                value="${empty sessionCredsDuration ? session_duration_default : sessionCredsDuration}" className="longField" maxlength="256"/>
             <span class="smallNote">In minutes. From 15 to 2160 (36 h). </span>
             <span class="error" id="error_${session_duration_param}"></span>
         </td>
@@ -67,7 +62,8 @@
 
     <tr id="${sts_endpoint_param}_row">
         <th><label for="${sts_endpoint_param}">${sts_endpoint_label}</label></th>
-        <td><props:textProperty name="${sts_endpoint_param}" value="${stsEndpoint}" className="longField" maxlength="256"/>
+        <td><props:textProperty name="${sts_endpoint_param}"
+                                value="${empty stsEndpoint ? sts_endpoint_default : stsEndpoint}" className="longField" maxlength="256"/>
             <span class="smallNote">Default is: ${sts_endpoint_default}</span>
             <span class="error" id="error_${sts_endpoint_param}"></span>
         </td>

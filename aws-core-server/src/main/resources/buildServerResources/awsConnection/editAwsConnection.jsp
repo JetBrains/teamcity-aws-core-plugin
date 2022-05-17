@@ -23,7 +23,7 @@
 
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean"/>
-<jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
+
 
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
@@ -61,10 +61,6 @@
   <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="Access Key">
     <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
       <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-      <jsp:param name="useSessionCreds" value="${param.propertiesBean.getProperties().get(use_session_credentials_param)}"/>
-      <jsp:param name="sessionCredsDuration" value="${param.propertiesBean.getProperties().get(session_duration_param)}"/>
-      <jsp:param name="stsEndpoint" value="${param.propertiesBean.getProperties().get(sts_endpoint_param)}"/>
-      <jsp:param name="projectId" value="${project.externalId}"/>
     </jsp:include>
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>

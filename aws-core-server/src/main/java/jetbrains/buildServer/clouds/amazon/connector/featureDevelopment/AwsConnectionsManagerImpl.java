@@ -3,14 +3,13 @@ package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
+import jetbrains.buildServer.clouds.amazon.connector.utils.credentials.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
@@ -42,14 +41,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     }
 
     try {
-      AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
-
-      return new AwsConnectionBean(connectionDescriptor.getId(),
-        connectionDescriptor.getDescription(),
-        credentialsHolder,
-        connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
-        ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
-      );
+      return AwsConnectionUtils.awsConnBeanFromDescriptor(connectionDescriptor, myAwsConnectorFactory);
     } catch (AwsConnectorException awsConnectorException) {
       throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage());
     }

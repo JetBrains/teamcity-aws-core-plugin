@@ -25,6 +25,9 @@
 <c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 
+<c:set var="rotateKeyControllerUrl"><c:url value="${rotate_key_controller_url}"/></c:set>
+<c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
+<c:set var="rotateKeySpinnerId" value="spinner_${rotate_key_button_id}"/>
 
 <l:settingsGroup title="Access Key">
     <tr id="${access_key_id_param}_row">
@@ -39,6 +42,25 @@
             <span class="error" id="error_${secure_secret_access_key_param}"></span>
         </td>
     </tr>
+
+    <c:choose>
+        <c:when test = "${param.connectionId != ''}">
+            <tr>
+                <td>
+                    <forms:button id="${rotate_key_button_id}"
+                                  onclick="return BS.OAuthConnectionDialog.rotateKey('${param.connectionId}');">Rotate key</forms:button>
+                    <forms:saving id="${rotateKeySpinnerId}" className="progressRingInline"/>
+                </td>
+                <td>
+                    <span id="error_${rotate_key_button_id}" class="error error_${rotate_key_button_id}"></span>
+                    <div class="hidden successMessage" id="${keyRotatedInfoId}"></div>
+                </td>
+            </tr>
+        </c:when>
+
+        <c:otherwise/>
+    </c:choose>
+
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
@@ -69,3 +91,67 @@
         </td>
     </tr>
 </l:settingsGroup>
+
+
+<script>
+
+    BS.OAuthConnectionDialog._errorIds = [
+        '${rotate_key_button_id}'
+    ];
+
+    BS.OAuthConnectionDialog.rotateKey = function (connectionId){
+        this.toggleKeyRotationState(true);
+
+        BS.ajaxRequest("${rotateKeyControllerUrl}", {
+            parameters: 'connectionId=' + connectionId + "&projectId=${project.externalId}",
+
+            onSuccess: function(response) {
+                const jsonResponse = response.responseJSON;
+                const errors = jsonResponse.errors;
+
+                if (errors.length == 0) {
+                    this.close();
+
+                    this.showEditDialog(connectionId, "${aws_connection_dialog_name}", false);
+
+                    //TODO find a better solution to fix the race condition
+                    setTimeout(() => {
+                        $j("#${keyRotatedInfoId}").append("New key has been saved.");
+                        $j("#${keyRotatedInfoId}").removeClass("hidden");
+                    }, 200);
+
+                } else {
+                    for(var i = 0; i < errors.length; i ++) {
+                        addError(errors[i].message, $j(".error_" + errors[i].id))
+                    }
+                }
+            }.bind(this),
+
+            onComplete: function() {
+                this.toggleKeyRotationState(false);
+            }.bind(this),
+        });
+    };
+
+    BS.OAuthConnectionDialog.toggleKeyRotationState = function (keyIsRotating){
+        if(keyIsRotating){
+            $j('#${rotateKeySpinnerId}').show();
+
+            this.clearAllErrors(this._errorIds);
+            $j('#${keyRotatedInfoId}').empty();
+            $j("#${keyRotatedInfoId}").addClass("hidden");
+
+            $j('#${rotate_key_button_id}').attr('disabled','disabled');
+            $j('#testConnectionButton').attr('disabled','disabled');
+
+            this.disable();
+
+        } else {
+            $j('#${rotateKeySpinnerId}').hide();
+
+            this.enable();
+            $j('#${rotate_key_button_id}').removeAttr('disabled');
+            $j('#testConnectionButton').removeAttr('disabled');
+        }
+    };
+</script>

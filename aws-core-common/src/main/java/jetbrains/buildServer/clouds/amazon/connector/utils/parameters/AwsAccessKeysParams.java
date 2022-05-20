@@ -8,8 +8,9 @@ public final class AwsAccessKeysParams {
   public static final String SECURE_SECRET_ACCESS_KEY_PARAM = "secure:aws.secret.access.key";
   public static final String SECRET_ACCESS_KEY_PARAM = "aws.secret.access.key";
   public static final String SECRET_ACCESS_KEY_LABEL = "Secret Access Key";
-  public static final String ROTATE_KEY_CONTROLLER_URL = "/repo/aws-rotate-keys.html";
+  public static final String ROTATE_KEY_CONTROLLER_URL = "/aws-rotate-keys.html";
   public static final String ROTATE_KEY_BTTN_ID = "rotateKeyButton";
+  public static final String AWS_CONN_DIALOG_NAME = "Amazon Web Services";
 
   public static final String KEY_ROTATION_PARAM = "aws.key.rotation";
   public static final String KEY_ROTATION_LABEL = "Rotate key periodically:";

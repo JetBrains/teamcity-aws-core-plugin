@@ -109,10 +109,25 @@
     $j('.testConnectionButton').remove();
     afterClose()
   };
+
+  BS.OAuthConnectionDialog.addError = function (errorHTML, target){
+    target.append(errorHTML);
+  };
+  BS.OAuthConnectionDialog.clearError = function (errorId){
+    var target = $j('.error_' + errorId);
+    target.empty();
+  };
+  BS.OAuthConnectionDialog.clearAllErrors = function (errorIdsArray){
+    console.log(errorIdsArray.length);
+    errorIdsArray.forEach(errorId => {
+      this.clearError(errorId);
+      console.log(errorId);
+    })
+  };
 </script>
 
-<forms:submit id="testConnectionButton" type="button" label="Test Connection" className="testConnectionButton"
-              onclick="return BS.OAuthConnectionDialog.submitTestConnection();"/>
+<forms:button id="testConnectionButton" className="testConnectionButton"
+              onclick="return BS.OAuthConnectionDialog.submitTestConnection();">Test Connection</forms:button>
 
 <bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="BS.TestConnectionDialog.close();"
            closeAttrs="showdiscardchangesmessage='false'">

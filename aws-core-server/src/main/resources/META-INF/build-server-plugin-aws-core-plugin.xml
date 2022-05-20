@@ -17,4 +17,8 @@
 
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsTestConnectionController"/>
+
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsRotateKeysController"/>
 </beans>

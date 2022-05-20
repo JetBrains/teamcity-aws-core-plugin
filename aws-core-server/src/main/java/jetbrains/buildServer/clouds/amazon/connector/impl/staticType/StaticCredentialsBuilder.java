@@ -90,4 +90,13 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
   public String getCredentialsType() {
     return AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE;
   }
+
+  @Override
+  @NotNull
+  public String getPropertiesDescription(@NotNull final Map<String, String> properties){
+    return String.format(
+      "Static key %s",
+      properties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)
+    );
+  }
 }

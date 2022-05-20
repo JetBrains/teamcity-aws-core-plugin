@@ -52,10 +52,16 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
   @NotNull
   @Override
   public String describeAwsConnection(@NotNull final Map<String, String> connectionProperties) {
-    return String.format(
-      "Credentials Type: %s",
-      connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM)
-    );
+    String credentialsType = connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
+    try {
+      AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
+      return String.format(
+        "Credentials Type: %s",
+        credentialsBuilder.getPropertiesDescription(connectionProperties)
+      );
+    } catch (NoSuchAwsCredentialsBuilderException e) {
+      return "Unsupported credentials type: " + credentialsType;
+    }
   }
 
   @Override

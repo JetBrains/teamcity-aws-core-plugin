@@ -50,6 +50,12 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
     return myPluginResourcesEditUrl;
   }
 
+  @NotNull
+  @Override
+  public String describeParameters(@NotNull final Map<String, String> params) {
+    return "AWS Connection ID - the id of Connection which AWS Credentials will be exposed to environment variables.";
+  }
+
   public String getAvailAwsConnsUrl() {
     return AVAIL_AWS_CONNS_URL;
   }

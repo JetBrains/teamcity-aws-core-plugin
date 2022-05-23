@@ -18,7 +18,8 @@ package jetbrains.buildServer.clouds.amazon.connector.keyRotation;
 
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.SProject;
+import org.jetbrains.annotations.NotNull;
 
 public interface AwsKeyRotator {
-  void rotateConnectionKeys(String conectionId, SProject project) throws AwsConnectorException;
+  void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws AwsConnectorException;
 }

@@ -92,12 +92,12 @@ public class AwsRotateKeysController extends BaseController {
   }
 
   private void handleException(@NotNull final Exception exception, @NotNull ActionErrors errors) {
-    String actionDesription = "Unable to rotate keys: ";
-    Loggers.CLOUD.debug(actionDesription, exception);
+    String actionDescription = "Unable to rotate keys: ";
+    Loggers.CLOUD.debug(actionDescription, exception);
     if (exception instanceof AmazonServiceException) {
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDesription + ((AmazonServiceException)exception).getErrorMessage()));
+      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + ((AmazonServiceException)exception).getErrorMessage()));
     } else {
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDesription + exception.getMessage()));
+      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
     }
   }
 

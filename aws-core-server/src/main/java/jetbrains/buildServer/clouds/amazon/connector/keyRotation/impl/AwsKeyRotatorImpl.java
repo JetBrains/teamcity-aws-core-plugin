@@ -162,9 +162,10 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       try {
         Thread.sleep(waitPerTrySec * 1000);
         awsConnectionDescriptor = myOAuthConnectionsManager.findConnectionById(project, connectionId);
+        assert awsConnectionDescriptor != null;
         String currentKeyInSavedConnection = awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-        String newAccesskeyId = credentials.getCredentials().getAWSAccessKeyId();
-        if (!currentKeyInSavedConnection.equals(newAccesskeyId)) {
+        String newAccessKeyId = credentials.getCredentials().getAWSAccessKeyId();
+        if (!currentKeyInSavedConnection.equals(newAccessKeyId)) {
           throw new IllegalStateException(
             "The rotated key has not been updated in the project: " + project.getExternalId() + ", connection ID: " + awsConnectionDescriptor.getId());
         }

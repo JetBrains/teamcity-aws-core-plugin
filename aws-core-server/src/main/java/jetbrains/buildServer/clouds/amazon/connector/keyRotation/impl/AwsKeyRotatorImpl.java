@@ -65,7 +65,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     AmazonIdentityManagement iam = createIamClient(currentCredentials);
     AWSSecurityTokenService sts = StsClientBuilder.buildStsClientWithCredentials(awsConnectionDescriptor.getParameters(), currentCredentials);
 
-    String iamUserName = getIamUserName(sts);
+    String iamUserName = getIamUserName(iam);
     CreateAccessKeyResult createAccessKeyResult = createAccessKey(iam, iamUserName);
 
     AWSCredentialsProvider newCredentials = new AWSStaticCredentialsProvider(
@@ -82,20 +82,8 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   }
 
   @NotNull
-  private String getIamUserName(@NotNull final AWSSecurityTokenService sts) {
-    return extractUserNameFromArn(
-      sts.getCallerIdentity(new GetCallerIdentityRequest())
-         .getArn()
-    );
-  }
-
-  @NotNull
-  private String extractUserNameFromArn(@NotNull String arn) {
-    try {
-      return arn.split("/")[1];
-    } catch (Exception e) {
-      throw new ParseException("Could not extract the username from arn, arn is: " + arn + ". Error message is: " + e.getMessage());
-    }
+  private String getIamUserName(@NotNull final AmazonIdentityManagement iam) {
+    return iam.getUser().getUser().getUserName();
   }
 
   @NotNull

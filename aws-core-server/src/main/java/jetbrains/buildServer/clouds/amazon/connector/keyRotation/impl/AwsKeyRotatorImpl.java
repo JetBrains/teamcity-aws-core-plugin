@@ -36,7 +36,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import org.apache.http.ParseException;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsKeyRotatorImpl implements AwsKeyRotator {
@@ -63,7 +62,6 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     );
 
     AmazonIdentityManagement iam = createIamClient(currentCredentials);
-    AWSSecurityTokenService sts = StsClientBuilder.buildStsClientWithCredentials(awsConnectionDescriptor.getParameters(), currentCredentials);
 
     String iamUserName = getIamUserName(iam);
     CreateAccessKeyResult createAccessKeyResult = createAccessKey(iam, iamUserName);

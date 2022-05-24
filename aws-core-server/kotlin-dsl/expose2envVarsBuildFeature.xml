@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dsl-extension kind="buildFeature" type="AWS_CREDS_TO_ENV_VARS" generateDslJar="true">
+  <class name="ExposeAwsCredentialsToEnvVars">
+    <description>
+      Exposes AWS Credentials of chosen AWS Connection to be available in the environment variables.
+    </description>
+  </class>
+
+  <function name="exposeAwsCredentialsToEnvVars">
+    <description>
+      @see ExposeAwsCredentialsToEnvVars
+    </description>
+  </function>
+
+  <params>
+    <param name="aws.connection.id" dslName="awsConnectionId" type="string" mandatory="true">
+      <description>
+        AWS Connection ID.
+        @see AwsConnection
+      </description>
+    </param>
+  </params>
+</dsl-extension>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dsl-extension kind="projectFeature" type="OAuthProvider" generateDslJar="true" applicable="params['providerType'] == 'AWS'">
+  <class name="AwsConnection">
+    <description>
+      Stores information and configuration for the access to Amazon Web Services.
+    </description>
+  </class>
+
+  <init>
+    <param name="providerType" value="AWS" />
+  </init>
+
+  <function name="awsConnection">
+    <description>
+      @see AwsConnection
+    </description>
+  </function>
+
+  <params>
+    <param name="displayName" dslName="name">
+      <description>
+        AWS connection display name
+      </description>
+    </param>
+    <param name="aws.credentials.type" dslName="credentialsType" type="compound">
+      <description>
+        The way how to obtain credentials (just provide the keys, assume IAM role or other)
+      </description>
+      <option name="static" value="aws.access.keys">
+        <param name="aws.access.key.id" dslName="accessKeyId" type="string" mandatory="true">
+          <description>
+            Access Key ID
+          </description>
+        </param>
+        <param name="secure:aws.secret.access.key" dslName="secretAccessKey" type="string" mandatory="true">
+          <description>
+            Secret Access Key
+          </description>
+        </param>
+        <param name="aws.region.name" dslName="regionName" type="string">
+          <description>
+            Region where this connection will be used.
+          </description>
+        </param>
+        <param name="aws.session.credentials" dslName="useSessionCredentials" type="boolean" trueValue="true" falseValue="false">
+          <description>
+            Whether to use temoirary credentials provided by STS service
+          </description>
+        </param>
+        <param name="aws.session.duration" dslName="sessionDuration" type="string">
+          <description>
+            Session duration in minutes
+          </description>
+        </param>
+        <param name="aws.sts.endpoint" dslName="stsEndpoint" type="string">
+          <description>
+            Endpoint from where to obtain session credentials
+          </description>
+        </param>
+      </option>
+    </param>
+  </params>
+</dsl-extension>

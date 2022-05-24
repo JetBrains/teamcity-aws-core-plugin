@@ -53,7 +53,7 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @NotNull
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
-    return "AWS Connection ID - the id of Connection which AWS Credentials will be exposed to environment variables.";
+    return "AWS Connection ID - an id of a connection whose AWS credentials will be available on an agent via environment variables.";
   }
 
   public String getAvailAwsConnsUrl() {

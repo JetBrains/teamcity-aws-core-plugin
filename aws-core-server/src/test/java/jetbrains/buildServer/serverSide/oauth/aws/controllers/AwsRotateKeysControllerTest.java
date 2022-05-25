@@ -19,6 +19,7 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -95,7 +96,7 @@ public class AwsRotateKeysControllerTest extends AbstractControllerTest {
     return (connectionId, project) -> {
       OAuthConnectionDescriptor connection = connectionsManager.findConnectionById(project, connectionId);
       if (connection == null) {
-        throw new AwsConnectorException("Connection to rotate was not found, ID is: " + connectionId);
+        throw new KeyRotationException("Connection to rotate was not found, ID is: " + connectionId);
       }
 
       Map<String, String> rotatedProperties = createDefaultProperties();

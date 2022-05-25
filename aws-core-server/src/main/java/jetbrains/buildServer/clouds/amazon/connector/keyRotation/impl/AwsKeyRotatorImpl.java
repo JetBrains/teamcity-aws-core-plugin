@@ -32,6 +32,8 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.util.amazon.retry.impl.DelayListener;
+import jetbrains.buildServer.util.amazon.retry.impl.RetrierImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -39,7 +41,7 @@ import java.util.Map;
 
 public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
-  private static final long ROTATE_TIMEOUT_SEC = 30;
+  private static final int ROTATE_TIMEOUT_SEC = 30;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
 
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager) {
@@ -108,22 +110,14 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     throws KeyRotationException {
     AWSSecurityTokenService sts = StsClientBuilder.buildStsClientWithCredentials(connectionProperties, credentials);
 
-    long elapsedTimeSec = 0;
-    int waitPerTrySec = 3;
-    Exception rotatedConnectionException = new Exception();
+    try {
+      new RetrierImpl(ROTATE_TIMEOUT_SEC)
+        .registerListener(new DelayListener(1000))
+        .execute(() -> sts.getCallerIdentity(new GetCallerIdentityRequest()));
 
-    while (elapsedTimeSec <= ROTATE_TIMEOUT_SEC) {
-      try {
-        Thread.sleep(waitPerTrySec * 1000);
-        sts.getCallerIdentity(new GetCallerIdentityRequest());
-        return;
-      } catch (Exception e) {
-        rotatedConnectionException = e;
-        elapsedTimeSec += waitPerTrySec;
-      }
+    } catch (RuntimeException e) {
+      throw new KeyRotationException("Rotated connection is invalid after " + ROTATE_TIMEOUT_SEC + " seconds: " + e.getCause().getMessage(), e);
     }
-
-    throw new KeyRotationException("Rotated connection is invalid: " + rotatedConnectionException.getMessage());
   }
 
   private void updateConnection(@NotNull final String connectionId,

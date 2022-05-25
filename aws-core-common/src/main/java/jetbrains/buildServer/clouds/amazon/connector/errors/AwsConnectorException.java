@@ -16,8 +16,13 @@ public class AwsConnectorException extends Exception {
     myParameterName = "";
   }
 
-  public AwsConnectorException(@NotNull final Exception cause, @NotNull final String parameterName) {
-    super(cause);
+  public AwsConnectorException(@NotNull final String message, @NotNull final Exception cause) {
+    super(message, cause);
+    myParameterName = "";
+  }
+
+  public AwsConnectorException(@NotNull final String message, @NotNull final Exception cause, @NotNull final String parameterName) {
+    super(message, cause);
     myParameterName = parameterName;
   }
 

@@ -40,7 +40,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
-  private static final long waitUntilRotatedKeyIsAvailableTimeOutSec = 30;
+  private static final long ROTATE_TIMEOUT_SEC = 30;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
 
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager) {
@@ -108,7 +108,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     int waitPerTrySec = 3;
     Exception rotatedConnectionException = new Exception();
 
-    while (elapsedTimeSec <= waitUntilRotatedKeyIsAvailableTimeOutSec) {
+    while (elapsedTimeSec <= ROTATE_TIMEOUT_SEC) {
       try {
         Thread.sleep(waitPerTrySec * 1000);
         sts.getCallerIdentity(new GetCallerIdentityRequest());
@@ -144,7 +144,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     int waitPerTrySec = 3;
     Exception rotatedConnectionException = new Exception();
 
-    while (elapsedTimeSec <= waitUntilRotatedKeyIsAvailableTimeOutSec) {
+    while (elapsedTimeSec <= ROTATE_TIMEOUT_SEC) {
       try {
         Thread.sleep(waitPerTrySec * 1000);
         awsConnectionDescriptor = myOAuthConnectionsManager.findConnectionById(project, connectionId);
@@ -162,7 +162,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       }
     }
 
-    throw new AwsConnectorException("Rotated connection is invalid after " + waitUntilRotatedKeyIsAvailableTimeOutSec + " seconds: " + rotatedConnectionException.getMessage());
+    throw new AwsConnectorException("Rotated connection is invalid after " + ROTATE_TIMEOUT_SEC + " seconds: " + rotatedConnectionException.getMessage());
   }
 
   private void deleteAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName, @NotNull final AWSCredentialsProvider currentCredentials) {

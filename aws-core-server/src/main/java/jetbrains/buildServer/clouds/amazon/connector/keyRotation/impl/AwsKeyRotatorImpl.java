@@ -54,14 +54,14 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       return;
     }
 
-    AWSCredentialsProvider currentCredentials = new AWSStaticCredentialsProvider(
+    AWSCredentialsProvider previousCredentials = new AWSStaticCredentialsProvider(
       new BasicAWSCredentials(
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
       )
     );
 
-    AmazonIdentityManagement iam = createIamClient(currentCredentials);
+    AmazonIdentityManagement iam = createIamClient(previousCredentials);
 
     String iamUserName = getIamUserName(iam);
     CreateAccessKeyResult createAccessKeyResult = createAccessKey(iam, iamUserName);
@@ -76,7 +76,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     waitUntilRotatedKeyIsAvailable(awsConnectionDescriptor.getParameters(), newCredentials);
     updateConnection(awsConnectionDescriptor.getId(), newCredentials, project);
     waitUntilRotatedKeyIsSaved(awsConnectionDescriptor.getId(), newCredentials, project);
-    deleteAccessKey(iam, iamUserName, currentCredentials);
+    deleteAccessKey(iam, iamUserName, previousCredentials);
   }
 
   @NotNull
@@ -165,10 +165,10 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     throw new AwsConnectorException("Rotated connection is invalid after " + ROTATE_TIMEOUT_SEC + " seconds: " + rotatedConnectionException.getMessage());
   }
 
-  private void deleteAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName, @NotNull final AWSCredentialsProvider currentCredentials) {
+  private void deleteAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName, @NotNull final AWSCredentialsProvider previousCredentials) {
     DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
       .withUserName(iamUserName)
-      .withAccessKeyId(currentCredentials.getCredentials().getAWSAccessKeyId());
+      .withAccessKeyId(previousCredentials.getCredentials().getAWSAccessKeyId());
     iam.deleteAccessKey(deleteAccessKeyRequest);
   }
 }

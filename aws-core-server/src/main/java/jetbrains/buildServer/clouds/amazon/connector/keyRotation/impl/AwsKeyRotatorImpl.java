@@ -21,14 +21,10 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
-import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
-import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
-import com.amazonaws.services.identitymanagement.model.DeleteAccessKeyRequest;
+import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
-import java.util.HashMap;
-import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.ClientConfigurationBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
@@ -37,6 +33,9 @@ import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
@@ -48,7 +47,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   }
 
   @Override
-  public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws AwsConnectorException {
+  public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws KeyRotationException {
     OAuthConnectionDescriptor awsConnectionDescriptor = myOAuthConnectionsManager.findConnectionById(project, connectionId);
     if (awsConnectionDescriptor == null) {
       return;
@@ -94,14 +93,19 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   }
 
   @NotNull
-  private CreateAccessKeyResult createAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName) {
+  private CreateAccessKeyResult createAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName)
+    throws KeyRotationException {
     CreateAccessKeyRequest createAccessKeyRequest = new CreateAccessKeyRequest()
       .withUserName(iamUserName);
-    return iam.createAccessKey(createAccessKeyRequest);
+    try {
+      return iam.createAccessKey(createAccessKeyRequest);
+    } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
+      throw new KeyRotationException(e);
+    }
   }
 
   private void waitUntilRotatedKeyIsAvailable(@NotNull final Map<String, String> connectionProperties, @NotNull final AWSCredentialsProvider credentials)
-    throws AwsConnectorException {
+    throws KeyRotationException {
     AWSSecurityTokenService sts = StsClientBuilder.buildStsClientWithCredentials(connectionProperties, credentials);
 
     long elapsedTimeSec = 0;
@@ -119,13 +123,16 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       }
     }
 
-    throw new AwsConnectorException("Rotated connection is invalid: " + rotatedConnectionException.getMessage());
+    throw new KeyRotationException("Rotated connection is invalid: " + rotatedConnectionException.getMessage());
   }
 
-  private void updateConnection(@NotNull final String connectionId, @NotNull final AWSCredentialsProvider newCredentials, @NotNull SProject project) throws AwsConnectorException {
+  private void updateConnection(@NotNull final String connectionId,
+                                @NotNull final AWSCredentialsProvider newCredentials,
+                                @NotNull SProject project)
+    throws KeyRotationException {
     OAuthConnectionDescriptor currentConnection = myOAuthConnectionsManager.findConnectionById(project, connectionId);
     if (currentConnection == null) {
-      throw new AwsConnectorException("The connection has been deleted while it was being rotated. Cannot update connection with ID: " + connectionId);
+      throw new KeyRotationException("The connection has been deleted while it was being rotated. Cannot update connection with ID: " + connectionId);
     }
 
     Map<String, String> newParameters = new HashMap<>(currentConnection.getParameters());
@@ -137,7 +144,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   }
 
   private void waitUntilRotatedKeyIsSaved(@NotNull final String connectionId, @NotNull final AWSCredentialsProvider credentials, @NotNull final SProject project)
-    throws AwsConnectorException {
+    throws KeyRotationException {
     OAuthConnectionDescriptor awsConnectionDescriptor;
 
     long elapsedTimeSec = 0;
@@ -162,13 +169,20 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       }
     }
 
-    throw new AwsConnectorException("Rotated connection is invalid after " + ROTATE_TIMEOUT_SEC + " seconds: " + rotatedConnectionException.getMessage());
+    throw new KeyRotationException("Rotated connection is invalid after " + ROTATE_TIMEOUT_SEC + " seconds: " + rotatedConnectionException.getMessage());
   }
 
-  private void deleteAccessKey(@NotNull final AmazonIdentityManagement iam, @NotNull final String iamUserName, @NotNull final AWSCredentialsProvider previousCredentials) {
+  private void deleteAccessKey(@NotNull final AmazonIdentityManagement iam,
+                               @NotNull final String iamUserName,
+                               @NotNull final AWSCredentialsProvider previousCredentials)
+    throws KeyRotationException {
     DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
       .withUserName(iamUserName)
       .withAccessKeyId(previousCredentials.getCredentials().getAWSAccessKeyId());
-    iam.deleteAccessKey(deleteAccessKeyRequest);
+    try {
+      iam.deleteAccessKey(deleteAccessKeyRequest);
+    } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
+      throw new KeyRotationException(e);
+    }
   }
 }

@@ -44,7 +44,7 @@
         </param>
         <param name="aws.session.credentials" dslName="useSessionCredentials" type="boolean" trueValue="true" falseValue="false">
           <description>
-            Whether to use temoirary credentials provided by STS service
+            Whether to use temporary credentials provided by STS service
           </description>
         </param>
         <param name="aws.session.duration" dslName="sessionDuration" type="string">

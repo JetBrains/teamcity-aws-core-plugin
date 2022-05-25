@@ -9,8 +9,8 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.utils.credentials.AwsCredsHolderToProvider;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +45,7 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
   private GetCallerIdentityRequest createGetCallerIdentityRequest(@NotNull final AwsCredentialsHolder awsCredentialsHolder) {
     GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest();
     getCallerIdentityRequest.withRequestCredentialsProvider(
-      AwsCredsHolderToProvider.convert(awsCredentialsHolder)
+      AwsConnectionUtils.awsCredsProviderFromHolder(awsCredentialsHolder)
     );
     return getCallerIdentityRequest;
   }

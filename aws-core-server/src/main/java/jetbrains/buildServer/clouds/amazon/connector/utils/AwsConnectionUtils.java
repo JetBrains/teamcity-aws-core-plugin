@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.clouds.amazon.connector.utils.credentials;
+package jetbrains.buildServer.clouds.amazon.connector.utils;
 
+import com.amazonaws.auth.*;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
@@ -36,5 +37,24 @@ public class AwsConnectionUtils {
       connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
       ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
     );
+  }
+
+  @NotNull
+  public static AWSCredentialsProvider awsCredsProviderFromHolder(@NotNull final AwsCredentialsHolder credentialsHolder) {
+    AWSCredentials credentials;
+    if (credentialsHolder.getAwsCredentials().getSessionToken() == null) {
+      credentials = new BasicAWSCredentials(
+        credentialsHolder.getAwsCredentials().getAccessKeyId(),
+        credentialsHolder.getAwsCredentials().getSecretAccessKey()
+      );
+    } else {
+      credentials = new BasicSessionCredentials(
+        credentialsHolder.getAwsCredentials().getAccessKeyId(),
+        credentialsHolder.getAwsCredentials().getSecretAccessKey(),
+        credentialsHolder.getAwsCredentials().getSessionToken()
+      );
+    }
+
+    return new AWSStaticCredentialsProvider(credentials);
   }
 }

@@ -19,29 +19,15 @@ plugins{
 }
 
 dependencies {
-    provided(group: 'org.jetbrains.teamcity.internal', name: 'server', version: "${teamcityVersion}") {
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
-        exclude group: 'commons-codec', module: 'commons-codec'
-    }
     compile project(':aws-core-common')
     compile "com.amazonaws:aws-java-sdk-iam:${awsSDKVersion}"
 
-    compileOnly "org.jetbrains.teamcity:common-api:${teamcityVersion}"
-
-    compileOnly "org.jetbrains.teamcity:oauth:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity:server-web-api:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity.internal:server:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity.internal:web:${teamcityVersion}"
-    compileOnly "org.jetbrains.teamcity.internal:plugins:${teamcityVersion}"
+    compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 
     agent project(path: ':aws-core-agent', configuration: 'plugin')
     server group: 'commons-codec', name: 'commons-codec', version: "1.11"
 
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.21.0'
-    testImplementation "org.jetbrains.teamcity:oauth:${teamcityVersion}"
-    testImplementation "org.jetbrains.teamcity.internal:web:${teamcityVersion}"
 }
 
 sourceCompatibility = "1.8"

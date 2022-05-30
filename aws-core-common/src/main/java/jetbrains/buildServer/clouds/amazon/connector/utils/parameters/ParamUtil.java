@@ -14,6 +14,13 @@ public class ParamUtil {
     return "true".equals(properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM));
   }
 
+  public static String maskKey(String value) {
+    if (value.length() > AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS)
+      return AwsAccessKeysParams.KEY_MASK + value.substring(value.length() - AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS);
+    else
+      return AwsAccessKeysParams.KEY_MASK + value;
+  }
+
   public static boolean isValidSessionDuration(@Nullable final String strSessionDuration) {
     if(strSessionDuration == null || isEmptyOrSpaces(strSessionDuration)){
       return true;

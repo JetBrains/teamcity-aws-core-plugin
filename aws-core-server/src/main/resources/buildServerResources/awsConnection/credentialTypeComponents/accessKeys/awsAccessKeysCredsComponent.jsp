@@ -109,7 +109,7 @@
                 const jsonResponse = response.responseJSON;
                 const errors = jsonResponse.errors;
 
-                if (errors.length == 0) {
+                if (errors.length === 0) {
                     this.close();
 
                     this.showEditDialog(connectionId, "${aws_connection_dialog_name}", false);
@@ -143,7 +143,7 @@
 
             $j('#${rotate_key_button_id}').attr('disabled','disabled');
             $j('#testConnectionButton').attr('disabled','disabled');
-
+            $j('.cancel').attr('disabled','disabled');
             this.disable();
 
         } else {
@@ -152,6 +152,7 @@
             this.enable();
             $j('#${rotate_key_button_id}').removeAttr('disabled');
             $j('#testConnectionButton').removeAttr('disabled');
+            $j('.cancel').removeAttr('disabled');
         }
     };
 </script>

@@ -118,10 +118,8 @@
     target.empty();
   };
   BS.OAuthConnectionDialog.clearAllErrors = function (errorIdsArray){
-    console.log(errorIdsArray.length);
     errorIdsArray.forEach(errorId => {
       this.clearError(errorId);
-      console.log(errorId);
     })
   };
 </script>

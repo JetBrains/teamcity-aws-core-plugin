@@ -122,7 +122,7 @@
 
                 } else {
                     for(var i = 0; i < errors.length; i ++) {
-                        addError(errors[i].message, $j(".error_" + errors[i].id))
+                        this.addError(errors[i].message, $j(".error_" + errors[i].id))
                     }
                 }
             }.bind(this),

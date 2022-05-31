@@ -16,6 +16,8 @@
 
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
@@ -39,6 +41,7 @@ import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotateKeysController> {
@@ -116,6 +119,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
     return new AwsKeyRotatorImpl(
       myOAuthConnectionsManager,
       myFixture.getEventDispatcher(),
+      myFixture.getSecurityContext(),
+      myFixture.getConfigActionFactory(),
       iam,
       sts
     );
@@ -147,6 +152,14 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    Mockito.verify(iam, times(1)).deleteAccessKey(new DeleteAccessKeyRequest()
+      .withAccessKeyId(CURRENT_ACCESS_KEY)
+      .withRequestCredentialsProvider(new AWSStaticCredentialsProvider(new BasicAWSCredentials(
+        ROTATED_ACCESS_KEY,
+        ROTATED_SECRET_KEY
+      )))
+    );
   }
 
   @Test
@@ -176,6 +189,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
   }
 
   @Test
@@ -208,6 +223,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
   }
 
   @Test
@@ -240,6 +257,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
   }
 
   @Test
@@ -272,5 +291,7 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
   }
 }

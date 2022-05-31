@@ -32,12 +32,12 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.clients.ClientConfigu
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.BuildServerAdapter;
-import jetbrains.buildServer.serverSide.BuildServerListener;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.auth.AuthorityHolder;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.util.EventDispatcher;
 import jetbrains.buildServer.util.amazon.retry.impl.DelayListener;
 import jetbrains.buildServer.util.amazon.retry.impl.RetrierImpl;
@@ -45,19 +45,28 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class AwsKeyRotatorImpl implements AwsKeyRotator {
+public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotator {
 
   private static int ROTATE_TIMEOUT_SEC = 30;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
-  private final EventDispatcher<BuildServerListener> myBuildServerEventDispatcher;
+  private final SecurityContextEx mySecurityContext;
+  private final ConfigActionFactory myConfigActionFactory;
+
   private final AmazonIdentityManagement myIam;
   private final AWSSecurityTokenService mySts;
 
+  private final ConcurrentLinkedQueue<String> scheduledForDeletionKeys = new ConcurrentLinkedQueue<>();
+
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher) {
+                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
+                           @NotNull final SecurityContextEx securityContext,
+                           @NotNull final ConfigActionFactory configActionFactory) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
-    myBuildServerEventDispatcher = buildServerEventDispatcher;
+    mySecurityContext = securityContext;
+    myConfigActionFactory = configActionFactory;
+    buildServerEventDispatcher.addListener(this);
 
     myIam = AmazonIdentityManagementClientBuilder
       .standard()
@@ -97,38 +106,8 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     waitUntilRotatedKeyIsAvailable(newCredentials);
 
     Loggers.CLOUD.debug("Updating the AWS Connection...");
+    scheduledForDeletionKeys.add(previousCredentials.getCredentials().getAWSAccessKeyId());
     updateConnection(awsConnectionDescriptor.getId(), newCredentials, project);
-
-    myBuildServerEventDispatcher.addListener(new BuildServerAdapter() {
-      private final EventDispatcher<BuildServerListener> myEventDispatcher = myBuildServerEventDispatcher;
-      private final String myPreviousAccessKeyId = awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-      private final String myNewAccessKeyId = createAccessKeyResult.getAccessKey().getSecretAccessKey();
-      private final String myProjectFeatureId = awsConnectionDescriptor.getId();
-      private final String myProjectId = project.getExternalId();
-
-      @Override
-      public void projectFeatureChanged(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor before, @NotNull final SProjectFeatureDescriptor after) {
-
-        if (!myProjectId.equals(project.getExternalId()) || !myProjectFeatureId.equals(after.getId())) {
-          return;
-        }
-
-        String previousAccessKeyId = before.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-        String newAccessKeyId = after.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-        if (myPreviousAccessKeyId.equals(previousAccessKeyId) && myNewAccessKeyId.equals(newAccessKeyId)) {
-          try {
-            Loggers.CLOUD.info("Deleting the previous key " + ParamUtil.maskKey(previousAccessKeyId));
-            deleteAccessKey(previousAccessKeyId);
-          } catch (KeyRotationException keyRotationException) {
-            Loggers.CLOUD.warn("Failed to delete old AWS key after rotation: " + keyRotationException.getMessage());
-          }
-        } else {
-          Loggers.CLOUD.warn("Something tried to change the key " + ParamUtil.maskKey(previousAccessKeyId) + " when it is being rotated!");
-        }
-
-        myEventDispatcher.removeListener(this);
-      }
-    });
   }
 
   @NotNull
@@ -180,13 +159,23 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     newParameters.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, newCredentials.getCredentials().getAWSSecretKey());
 
     myOAuthConnectionsManager.updateConnection(project, currentConnection.getId(), currentConnection.getOauthProvider().getType(), newParameters);
-    project.schedulePersisting("Connection updated");
+    persist(project, "Connection updated");
   }
 
-  private void deleteAccessKey(@NotNull final String accessKeyId)
+  private void persist(@NotNull final SProject project, @NotNull final String text) {
+    final AuthorityHolder authHolder = mySecurityContext.getAuthorityHolder();
+    if (authHolder instanceof SUser) {
+      project.schedulePersisting(myConfigActionFactory.createAction((SUser) authHolder, project, text));
+    } else {
+      project.schedulePersisting(myConfigActionFactory.createAction(project, text));
+    }
+  }
+
+  private void deleteAccessKey(@NotNull final String accessKeyId, @NotNull final AWSCredentialsProvider credentials)
     throws KeyRotationException {
     DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
-      .withAccessKeyId(accessKeyId);
+      .withAccessKeyId(accessKeyId)
+      .withRequestCredentialsProvider(credentials);
     try {
       myIam.deleteAccessKey(deleteAccessKeyRequest);
     } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
@@ -194,14 +183,44 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     }
   }
 
+  @Override
+  public void projectFeatureChanged(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor before, @NotNull final SProjectFeatureDescriptor after) {
+    if (!OAuthConstants.FEATURE_TYPE.equals(after.getType())) {
+      return;
+    }
+
+    String previousAccessKeyId = before.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
+    String newAccessKeyId = after.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
+    String newSecretKey = after.getParameters().get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM);
+
+    if (previousAccessKeyId != null
+      && !newAccessKeyId.equals(previousAccessKeyId)
+      && scheduledForDeletionKeys.contains(previousAccessKeyId)) {
+      try {
+        Loggers.CLOUD.info("Deleting the previous key " + ParamUtil.maskKey(previousAccessKeyId));
+        AWSCredentialsProvider newCredentials = new AWSStaticCredentialsProvider(new BasicAWSCredentials(newAccessKeyId, newSecretKey));
+        deleteAccessKey(previousAccessKeyId, newCredentials);
+
+      } catch (KeyRotationException keyRotationException) {
+        Loggers.CLOUD.warn("Failed to delete old AWS key after rotation: " + keyRotationException.getMessage());
+      }
+    }
+    scheduledForDeletionKeys.remove(previousAccessKeyId);
+  }
+
+
   @Used("tests")
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                       @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
-                       @NotNull final AmazonIdentityManagement iam,
-                       @NotNull final AWSSecurityTokenService sts) {
+                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
+                           @NotNull final SecurityContextEx securityContext,
+                           @NotNull final ConfigActionFactory configActionFactory,
+                           @NotNull final AmazonIdentityManagement iam,
+                           @NotNull final AWSSecurityTokenService sts) {
+    mySecurityContext = securityContext;
+    myConfigActionFactory = configActionFactory;
     ROTATE_TIMEOUT_SEC = 1;
     myOAuthConnectionsManager = oAuthConnectionsManager;
-    myBuildServerEventDispatcher = buildServerEventDispatcher;
+    buildServerEventDispatcher.addListener(this);
     myIam = iam;
     mySts = sts;
   }

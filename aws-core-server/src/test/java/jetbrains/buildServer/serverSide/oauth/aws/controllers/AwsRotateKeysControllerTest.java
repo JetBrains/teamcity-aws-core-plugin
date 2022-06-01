@@ -260,38 +260,4 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
 
     Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
   }
-
-  @Test
-  public void givenProjectWithManyConnections_whenAwsRotateAllKeysRequested_thenReturnRotatedConnections() throws Exception {
-
-    when(sts.getCallerIdentity(any()))
-      .thenThrow(new RuntimeException("Dummy timeout."));
-
-    doPost("projectId", myProject.getExternalId(),
-      "connectionId", TEST_CONN_FEATURE_ID);
-
-    ActionErrors expectedErrors = new ActionErrors();
-    expectedErrors.addError(ROTATE_KEY_BTTN_ID, "Unable to rotate keys: Rotated connection is invalid after 1 seconds: Dummy timeout.");
-    assertEquals(OBJECT_MAPPER.writeValueAsString(expectedErrors), myResponse.getReturnedContent());
-
-    OAuthConnectionDescriptor connection = myOAuthConnectionsManager.findConnectionById(myProject, TEST_CONN_FEATURE_ID);
-    if (connection == null)
-      fail("Rotated connection was not found");
-
-    assertEquals(
-      CURRENT_ACCESS_KEY,
-      connection
-        .getParameters()
-        .get(ACCESS_KEY_ID_PARAM)
-    );
-
-    assertEquals(
-      CURRENT_SECRET_KEY,
-      connection
-        .getParameters()
-        .get(SECURE_SECRET_ACCESS_KEY_PARAM)
-    );
-
-    Mockito.verify(iam, Mockito.never()).deleteAccessKey(any());
-  }
 }

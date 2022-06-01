@@ -190,12 +190,14 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     }
 
     String previousAccessKeyId = before.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
+
+    if (previousAccessKeyId == null || ! scheduledForDeletionKeys.contains(previousAccessKeyId)) {
+      return;
+    }
     String newAccessKeyId = after.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
     String newSecretKey = after.getParameters().get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM);
 
-    if (previousAccessKeyId != null
-      && !newAccessKeyId.equals(previousAccessKeyId)
-      && scheduledForDeletionKeys.contains(previousAccessKeyId)) {
+    if (! newAccessKeyId.equals(previousAccessKeyId)) {
       try {
         Loggers.CLOUD.info("Deleting the previous key " + ParamUtil.maskKey(previousAccessKeyId));
         AWSCredentialsProvider newCredentials = new AWSStaticCredentialsProvider(new BasicAWSCredentials(newAccessKeyId, newSecretKey));
@@ -204,8 +206,9 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
       } catch (KeyRotationException keyRotationException) {
         Loggers.CLOUD.warn("Failed to delete old AWS key after rotation: " + keyRotationException.getMessage());
       }
+
+      scheduledForDeletionKeys.remove(previousAccessKeyId);
     }
-    scheduledForDeletionKeys.remove(previousAccessKeyId);
   }
 
 

@@ -13,13 +13,12 @@ public class AwsConnectionBean {
   public AwsConnectionBean(@NotNull final String connectionId,
                            @NotNull final String description,
                            @NotNull final AwsCredentialsHolder credentialsHolder,
-                           @NotNull final String region,
-                           final boolean usingSessionCredentials) {
+                           @NotNull final String region) {
     myConnectionId = connectionId;
     myDescription = description;
     myAwsCredentialsHolder = credentialsHolder;
     myRegion = region;
-    myUsingSessionCredentials = usingSessionCredentials;
+    myUsingSessionCredentials = credentialsHolder.getAwsCredentials().getSessionToken() != null;
   }
 
   @NotNull

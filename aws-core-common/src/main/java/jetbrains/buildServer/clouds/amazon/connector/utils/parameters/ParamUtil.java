@@ -1,17 +1,23 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
 import java.util.Map;
+
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.openapi.util.text.StringUtil.isEmptyOrSpaces;
 import static com.intellij.openapi.util.text.StringUtil.parseInt;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SESSION_DURATION_DEFAULT_NUMBER;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
-    return "true".equals(properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM));
+    String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
+    if(StringUtil.isEmptyOrSpaces(useSessionCredentials)){
+      return true;
+    }
+    return "true".equals(useSessionCredentials);
   }
 
   public static String maskKey(String value) {
@@ -27,7 +33,7 @@ public class ParamUtil {
     }
     try {
       int sessionDurationNumber = parseInt(strSessionDuration, SESSION_DURATION_DEFAULT_NUMBER);
-      if(sessionDurationNumber <= 0 || sessionDurationNumber < AwsAccessKeysParams.MIN_SESSION_DURATION || sessionDurationNumber > AwsAccessKeysParams.MAX_SESSION_DURATION)
+      if(sessionDurationNumber <= 0 || sessionDurationNumber < AwsSessionCredentialsParams.MIN_SESSION_DURATION || sessionDurationNumber > AwsSessionCredentialsParams.MAX_SESSION_DURATION)
         return false;
     } catch (NumberFormatException nfe) {
       return false;
@@ -36,11 +42,11 @@ public class ParamUtil {
   }
 
   public static int getSessionDurationMinutes(@NotNull final Map<String, String> cloudConnectorProperties) {
-    String sessionDurationStr = cloudConnectorProperties.get(AwsAccessKeysParams.SESSION_DURATION_PARAM);
-    if(! isValidSessionDuration(sessionDurationStr)) {
+    String sessionDurationStr = cloudConnectorProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
+    if(sessionDurationStr == null || ! isValidSessionDuration(sessionDurationStr)) {
       return SESSION_DURATION_DEFAULT_NUMBER;
     } else {
-      return Integer.parseInt(sessionDurationStr);
+      return parseInt(sessionDurationStr, SESSION_DURATION_DEFAULT_NUMBER);
     }
   }
 }

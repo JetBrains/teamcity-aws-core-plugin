@@ -32,6 +32,7 @@ public final class AwsCloudConnectorConstants {
   public static final String AVAIL_AWS_CONNECTIONS_CONTROLLER_URL = "/admin/oauth/availAwsConnections.html";
   public static final String AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME = "availableAwsConnections";
   public static final String AVAIL_AWS_CONNS_JSP_FILE_NAME = "availableAwsConnections.jsp";
+  public static final String SESSION_CREDS_CONFIG_JSP_FILE_NAME = "sessionCredentialsConfig.jsp";
 
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.connection.id";

@@ -22,7 +22,6 @@
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <c:set var="useSessionCreds" value="${propertiesBean.properties[use_session_credentials_param]}"/>
-<c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 
 <c:set var="rotateKeyControllerUrl"><c:url value="${rotate_key_controller_url}"/></c:set>
@@ -70,15 +69,6 @@
             <props:checkboxProperty name="${use_session_credentials_param}"
                                     checked="${param.connectionId == '' ? use_session_credentials_default : useSessionCreds}"/>
             <span>Issue temporary credentials by request</span>
-        </td>
-    </tr>
-
-    <tr id="${session_duration_param}_row">
-        <th><label for="${session_duration_param}">${session_duration_label}</label></th>
-        <td><props:textProperty name="${session_duration_param}"
-                                value="${empty sessionCredsDuration ? session_duration_default : sessionCredsDuration}" className="longField" maxlength="256"/>
-            <span class="smallNote">In minutes. From 15 to 2160 (36 h). </span>
-            <span class="error" id="error_${session_duration_param}"></span>
         </td>
     </tr>
 

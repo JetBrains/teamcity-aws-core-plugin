@@ -14,25 +14,22 @@
   ~ limitations under the License.
   --%>
 
+<%@ include file="/include-internal.jsp"%>
+<%@ taglib prefix="intprop" uri="/WEB-INF/functions/intprop" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
-<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
-<%@ taglib prefix="intprop" uri="/WEB-INF/functions/intprop" %>
-<%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
-<jsp:useBean id="buildForm"  scope="request" type="jetbrains.buildServer.controllers.admin.projects.EditableBuildTypeSettingsForm"/>
-<jsp:useBean id="buildFeature"  scope="request" type="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars.AwsConnToEnvVarsBuildFeature"/>
+<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
-<tr>
-  <td colspan="2">
-    <em>Please, choose the AWS Connection to be exposed to the Build via Environment Variables</em>
+<%@include file="sessionCredentialsConst.jspf"%>
+<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
+<c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
+
+<tr id="${session_duration_param}_row">
+  <th><label for="${session_duration_param}">${session_duration_label}</label></th>
+  <td><props:textProperty name="${session_duration_param}"
+                          value="${empty sessionCredsDuration ? session_duration_default : sessionCredsDuration}" className="longField" maxlength="256"/>
+    <span class="smallNote">In minutes. From 15 to 2160 (36 h). </span>
+    <span class="error" id="error_${session_duration_param}"></span>
   </td>
-</tr>
-<tr>
-  <jsp:include page="${buildFeature.availAwsConnsUrl}">
-    <jsp:param name="projectId" value="${buildForm.project.externalId}"/>
-  </jsp:include>
-  <jsp:include page="${buildFeature.sessionCredsConfigUrl}"/>
 </tr>

@@ -1,7 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import java.util.Map;
-import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
@@ -17,6 +15,9 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   private final OAuthConnectionsManager myConnectionsManager;
   private final AwsConnectorFactory myAwsConnectorFactory;
@@ -29,8 +30,8 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   @Nullable
   @Override
-  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException {
-    String awsConnectionId = properties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
+  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> featureProperties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException {
+    String awsConnectionId = featureProperties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
       throw new LinkedAwsConnNotFoundException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property.");
     }
@@ -41,7 +42,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     }
 
     try {
-      return AwsConnectionUtils.awsConnBeanFromDescriptor(connectionDescriptor, myAwsConnectorFactory);
+      return AwsConnectionUtils.awsConnBeanFromDescriptor(connectionDescriptor, myAwsConnectorFactory, featureProperties);
     } catch (AwsConnectorException awsConnectorException) {
       throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage());
     }

@@ -22,20 +22,33 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
+
 public class AwsConnectionUtils {
+
   @NotNull
-  public static AwsConnectionBean awsConnBeanFromDescriptor(@NotNull final OAuthConnectionDescriptor connectionDescriptor, @NotNull final AwsConnectorFactory awsConnectorFactory) throws AwsConnectorException {
-    AwsCredentialsHolder credentialsHolder = awsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
+  public static AwsConnectionBean awsConnBeanFromDescriptor(@NotNull final OAuthConnectionDescriptor connectionDescriptor,
+                                                             @NotNull final AwsConnectorFactory awsConnectorFactory,
+                                                             @NotNull final Map<String, String> featureProperties) throws AwsConnectorException {
+    Map<String, String> connectionProperties = new HashMap<>(connectionDescriptor.getParameters());
+
+    String sessionDuration = featureProperties.get(SESSION_DURATION_PARAM);
+    if(sessionDuration != null){
+      connectionProperties.put(SESSION_DURATION_PARAM, sessionDuration);
+    }
+
+    AwsCredentialsHolder credentialsHolder = awsConnectorFactory.buildAwsCredentialsProvider(connectionProperties);
     return new AwsConnectionBean(
       connectionDescriptor.getId(),
       connectionDescriptor.getDescription(),
       credentialsHolder,
-      connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM),
-      ParamUtil.useSessionCredentials(connectionDescriptor.getParameters())
+      connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM)
     );
   }
 

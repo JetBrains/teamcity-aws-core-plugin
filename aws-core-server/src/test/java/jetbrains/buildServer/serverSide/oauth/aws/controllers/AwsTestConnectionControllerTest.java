@@ -10,6 +10,7 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImp
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
@@ -27,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.ACCESS_KEY_ID_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static org.mockito.Mockito.when;
 
@@ -128,8 +129,8 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     res.put(propertyPrefix + AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
     res.put(propertyPrefix + AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     res.put(propertyPrefix + AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
-    res.put(propertyPrefix + AwsAccessKeysParams.SESSION_DURATION_PARAM, AwsAccessKeysParams.SESSION_DURATION_DEFAULT);
-    res.put(propertyPrefix + AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsAccessKeysParams.STS_ENDPOINT_DEFAULT);
+    res.put(propertyPrefix + AwsSessionCredentialsParams.SESSION_DURATION_PARAM, AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT);
+    res.put(propertyPrefix + STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
     return res;
   }
 }

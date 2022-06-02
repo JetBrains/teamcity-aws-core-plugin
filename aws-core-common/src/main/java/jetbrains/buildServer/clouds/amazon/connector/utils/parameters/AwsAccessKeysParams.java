@@ -24,14 +24,6 @@ public final class AwsAccessKeysParams {
   public static final String SESSION_CREDENTIALS_LABEL = "Use session credentials:";
   public static final String SESSION_CREDENTIALS_DEFAULT = "true";
 
-  public static final String SESSION_DURATION_PARAM = "aws.session.duration";
-  public static final String SESSION_DURATION_LABEL = "Session duration:";
-  public static final String SESSION_DURATION_DEFAULT = "60";
-  public static final int SESSION_DURATION_DEFAULT_NUMBER = 60;
-
-  public static final int MIN_SESSION_DURATION = 15;
-  public static final int MAX_SESSION_DURATION = 2160;
-
 
   public static final String STS_ENDPOINT_PARAM = "aws.sts.endpoint";
   public static final String STS_ENDPOINT_LABEL = "STS endpoint:";

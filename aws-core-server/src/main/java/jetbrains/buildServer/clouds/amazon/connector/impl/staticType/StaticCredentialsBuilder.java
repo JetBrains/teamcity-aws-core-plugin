@@ -6,6 +6,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
@@ -35,7 +36,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
     processInvalidProperties(invalidProperties);
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
-      Loggers.CLOUD.debug("Using Session credentials for the AWSCredentialsProvider.");
+      Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
       return new StaticSessionCredentialsHolder(
         getBasicCredentialsProvider(cloudConnectorProperties),
         cloudConnectorProperties,
@@ -62,8 +63,8 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
       invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.REGION_NAME_PARAM, "Please choose the region where this AWS Connection will be used"));
     }
 
-    if (!ParamUtil.isValidSessionDuration(properties.get(AwsAccessKeysParams.SESSION_DURATION_PARAM))) {
-      invalidProperties.add(new InvalidProperty(AwsAccessKeysParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
+    if (!ParamUtil.isValidSessionDuration(properties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM))) {
+      invalidProperties.add(new InvalidProperty(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
     }
 
     return invalidProperties;

@@ -90,7 +90,7 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     String connectionRegion = awsConnectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
     myIam = myIamClientBuilder
       .withRegion(Regions.fromName(connectionRegion))
-        .build();
+      .build();
     mySts = myStsClientBuilder
       .withRegion(Regions.fromName(connectionRegion))
       .build();
@@ -219,5 +219,21 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
 
       scheduledForDeletionKeys.remove(previousAccessKeyId);
     }
+  }
+
+  @Used("tests")
+  public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
+                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
+                           @NotNull final SecurityContextEx securityContext,
+                           @NotNull final ConfigActionFactory configActionFactory,
+                           @NotNull final AmazonIdentityManagementClientBuilder iamBuilder,
+                           @NotNull final AWSSecurityTokenServiceClientBuilder stsBuilder) {
+    mySecurityContext = securityContext;
+    myConfigActionFactory = configActionFactory;
+    ROTATE_TIMEOUT_SEC = 1;
+    myOAuthConnectionsManager = oAuthConnectionsManager;
+    buildServerEventDispatcher.addListener(this);
+    myIamClientBuilder = iamBuilder;
+    myStsClientBuilder = stsBuilder;
   }
 }

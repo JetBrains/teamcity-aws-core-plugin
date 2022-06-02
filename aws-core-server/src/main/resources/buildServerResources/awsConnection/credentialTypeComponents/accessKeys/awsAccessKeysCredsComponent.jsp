@@ -63,11 +63,20 @@
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
-    <tr>
+    <tr id="${use_session_credentials_param}_row">
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>
-            <props:checkboxProperty name="${use_session_credentials_param}"
-                                    checked="${param.connectionId == '' ? use_session_credentials_default : useSessionCreds}"/>
+            <c:set var="onclick">{
+                var hiddenElem = $('${use_session_credentials_param}');
+                var checkBox = $('${use_session_credentials_param}_checkbox');
+                if (checkBox.checked === false) {
+                hiddenElem.value = false;
+                } else {
+                hiddenElem.value = true;
+                }
+                }</c:set>
+            <props:checkboxProperty name="${use_session_credentials_param}_checkbox" onclick="${onclick}" checked="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
+            <props:hiddenProperty name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
             <span>Issue temporary credentials by request</span>
         </td>
     </tr>

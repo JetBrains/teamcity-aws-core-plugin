@@ -19,6 +19,7 @@ package jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
 import com.amazonaws.services.identitymanagement.model.*;
@@ -30,6 +31,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.ClientConfigurationBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
@@ -54,8 +56,10 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
   private final SecurityContextEx mySecurityContext;
   private final ConfigActionFactory myConfigActionFactory;
 
-  private final AmazonIdentityManagement myIam;
-  private final AWSSecurityTokenService mySts;
+  private AmazonIdentityManagement myIam;
+  private final AmazonIdentityManagementClientBuilder myIamClientBuilder;
+  private AWSSecurityTokenService mySts;
+  private final AWSSecurityTokenServiceClientBuilder myStsClientBuilder;
 
   private final ConcurrentLinkedQueue<String> scheduledForDeletionKeys = new ConcurrentLinkedQueue<>();
 
@@ -68,15 +72,13 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     myConfigActionFactory = configActionFactory;
     buildServerEventDispatcher.addListener(this);
 
-    myIam = AmazonIdentityManagementClientBuilder
+    myIamClientBuilder = AmazonIdentityManagementClientBuilder
       .standard()
-      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("iam"))
-      .build();
+      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("iam"));
 
-    mySts = AWSSecurityTokenServiceClientBuilder
+    myStsClientBuilder = AWSSecurityTokenServiceClientBuilder
       .standard()
-      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("sts"))
-      .build();
+      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("sts"));
   }
 
   public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws KeyRotationException {
@@ -84,6 +86,14 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     if (awsConnectionDescriptor == null) {
       throw new KeyRotationException("The AWS Connection with ID " + connectionId + " was not found.");
     }
+
+    String connectionRegion = awsConnectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
+    myIam = myIamClientBuilder
+      .withRegion(Regions.fromName(connectionRegion))
+        .build();
+    mySts = myStsClientBuilder
+      .withRegion(Regions.fromName(connectionRegion))
+      .build();
 
     Loggers.CLOUD.info("Key rotation initiated for the AWS key: " + ParamUtil.maskKey(awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
     AWSCredentialsProvider previousCredentials = new AWSStaticCredentialsProvider(
@@ -209,22 +219,5 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
 
       scheduledForDeletionKeys.remove(previousAccessKeyId);
     }
-  }
-
-
-  @Used("tests")
-  public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
-                           @NotNull final SecurityContextEx securityContext,
-                           @NotNull final ConfigActionFactory configActionFactory,
-                           @NotNull final AmazonIdentityManagement iam,
-                           @NotNull final AWSSecurityTokenService sts) {
-    mySecurityContext = securityContext;
-    myConfigActionFactory = configActionFactory;
-    ROTATE_TIMEOUT_SEC = 1;
-    myOAuthConnectionsManager = oAuthConnectionsManager;
-    buildServerEventDispatcher.addListener(this);
-    myIam = iam;
-    mySts = sts;
   }
 }

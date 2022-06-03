@@ -18,23 +18,23 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
 import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyActions;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseControllerTestCase;
+import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -122,26 +122,26 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
       .thenReturn(
         new GetCallerIdentityResult());
 
-    AmazonIdentityManagementClientBuilder iamBuilder = Mockito.mock(AmazonIdentityManagementClientBuilder.class);
-    when(iamBuilder.build())
-      .thenReturn(iam);
-    when(iamBuilder.withRegion((Regions) any()))
-      .thenReturn(iamBuilder);
-
-    AWSSecurityTokenServiceClientBuilder stsBuilder = Mockito.mock(AWSSecurityTokenServiceClientBuilder.class);
-    when(stsBuilder.build())
-      .thenReturn(sts);
-    when(stsBuilder.withRegion((Regions) any()))
-      .thenReturn(stsBuilder);
-
     return new AwsKeyRotatorImpl(
       myOAuthConnectionsManager,
       myFixture.getEventDispatcher(),
       myFixture.getSecurityContext(),
-      myFixture.getConfigActionFactory(),
-      iamBuilder,
-      stsBuilder
-    );
+      myFixture.getConfigActionFactory()
+    ) {
+      @NotNull
+      @Override
+      protected AwsRotateKeyActions createRotateKeyActions(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
+        return new AwsRotateKeyActions(
+          myOAuthConnectionsManager,
+          myFixture.getSecurityContext(),
+          myFixture.getConfigActionFactory(),
+          awsConnectionDescriptor,
+          iam,
+          sts,
+          project
+        );
+      }
+    };
   }
 
   @Test

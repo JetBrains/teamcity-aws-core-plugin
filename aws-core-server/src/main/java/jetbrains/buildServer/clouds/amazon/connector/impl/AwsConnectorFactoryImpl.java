@@ -8,6 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentials
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,12 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
   }
 
   @NotNull
-  private AwsCredentialsBuilder getAwsCredentialsBuilderOfType(@NotNull final String type) throws NoSuchAwsCredentialsBuilderException {
+  private AwsCredentialsBuilder getAwsCredentialsBuilderOfType(@Nullable final String type) throws NoSuchAwsCredentialsBuilderException {
+    if(type == null){
+      String errMsg = "There is no credentials type property in the AWS Connection, cannot construct Credentials Provider of type null.";
+      throw new NoSuchAwsCredentialsBuilderException(errMsg);
+    }
+
     AwsCredentialsBuilder builder = myCredentialBuilders.get(type);
     if (builder == null) {
       String errMsg = "Failed to find registered AwsCredentialsBuilder for type " + type + ".";

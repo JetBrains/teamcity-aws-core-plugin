@@ -4,6 +4,7 @@ import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
@@ -105,11 +107,19 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     ));
   }
 
+  @Test ( expectedExceptions = { NoSuchAwsCredentialsBuilderException.class } )
+  public void givenAwsConnFactory_withoutCredentialsType_thenThrowException() throws AwsConnectorException {
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+
+    myConnectorProperties.remove(CREDENTIALS_TYPE_PARAM);
+    AwsCredentialsHolder awsCredentials = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
+  }
+
   private Map<String, String> createDefaultProperties() {
     Map<String, String> res = new HashMap<>();
     res.put(ACCESS_KEY_ID_PARAM, testAccessKeyId);
     res.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
-    res.put(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
+    res.put(CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     res.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
     res.put(SESSION_CREDENTIALS_PARAM, "false");
     return res;

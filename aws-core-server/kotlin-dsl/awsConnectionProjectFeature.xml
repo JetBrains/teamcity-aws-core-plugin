@@ -47,11 +47,6 @@
             Whether to use temporary credentials provided by STS service
           </description>
         </param>
-        <param name="aws.session.duration" dslName="sessionDuration" type="string">
-          <description>
-            Session duration in minutes
-          </description>
-        </param>
         <param name="aws.sts.endpoint" dslName="stsEndpoint" type="string">
           <description>
             Endpoint from where to obtain session credentials

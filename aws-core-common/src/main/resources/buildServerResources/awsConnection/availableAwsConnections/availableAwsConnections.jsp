@@ -28,15 +28,21 @@
 
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
 
-<l:settingsGroup title="AWS Connection">
-  <tr class="noBorder">
-    <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
-    <td>
-      <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
-      <span class="error error_${avail_connections_select_id} hidden"></span>
-    </td>
-  </tr>
-</l:settingsGroup>
+<tr class="noBorder">
+  <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
+  <td>
+    <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+    <span class="error error_${avail_connections_select_id} hidden"></span>
+  </td>
+</tr>
+
+<c:choose>
+  <c:when test = "${param.configurableSessionDuration == 'true'}">
+    <jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp"/>
+  </c:when>
+
+  <c:otherwise/>
+</c:choose>
 
 <script type="text/javascript">
 

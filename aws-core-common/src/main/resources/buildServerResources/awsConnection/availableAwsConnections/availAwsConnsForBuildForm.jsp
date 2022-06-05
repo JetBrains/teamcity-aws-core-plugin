@@ -18,4 +18,5 @@
 
 <jsp:include page="availableAwsConnections.jsp">
   <jsp:param name="projectId" value="${buildForm.project.externalId}"/>
+  <jsp:param name="configurableSessionDuration" value="true"/>
 </jsp:include>

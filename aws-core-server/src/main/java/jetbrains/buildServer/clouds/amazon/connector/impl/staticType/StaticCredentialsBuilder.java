@@ -4,6 +4,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
@@ -37,11 +38,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
-      return new StaticSessionCredentialsHolder(
-        getBasicCredentialsProvider(cloudConnectorProperties),
-        cloudConnectorProperties,
-        myExecutorServices
-      );
+      return createSessionCredentialsHolder(cloudConnectorProperties);
     } else {
       return getBasicCredentialsProvider(cloudConnectorProperties);
     }
@@ -96,5 +93,14 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
   @NotNull
   public String getPropertiesDescription(@NotNull final Map<String, String> properties){
     return "Static IAM Access Key";
+  }
+
+  @NotNull
+  protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties){
+    return new StaticSessionCredentialsHolder(
+      getBasicCredentialsProvider(cloudConnectorProperties),
+      cloudConnectorProperties,
+      myExecutorServices
+    );
   }
 }

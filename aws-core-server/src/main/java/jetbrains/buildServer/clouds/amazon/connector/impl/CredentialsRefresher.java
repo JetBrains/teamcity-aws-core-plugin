@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import jetbrains.buildServer.Used;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.log.Loggers;
@@ -39,6 +40,9 @@ public abstract class CredentialsRefresher implements AwsCredentialsHolder {
       }
     }, SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES, SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES, TimeUnit.MINUTES);
   }
+
+  @Used("Tests")
+  public CredentialsRefresher(){}
 
   @NotNull
   public abstract Date getSessionExpirationDate();

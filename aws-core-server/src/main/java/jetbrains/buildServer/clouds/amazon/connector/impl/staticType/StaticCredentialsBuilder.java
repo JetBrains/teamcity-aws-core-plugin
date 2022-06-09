@@ -95,9 +95,6 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
   @Override
   @NotNull
   public String getPropertiesDescription(@NotNull final Map<String, String> properties){
-    return String.format(
-      "Static key %s",
-      properties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)
-    );
+    return "Static IAM Access Key";
   }
 }

@@ -23,9 +23,9 @@
 
 <%@include file="sessionCredentialsConst.jspf"%>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
-<c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
+<c:set var="sessionCredsDuration" value="${empty param.sessionDuration ? propertiesBean.properties[session_duration_param] : param.sessionDuration}"/>
 
-<tr id="${session_duration_param}_row">
+<tr id="${session_duration_param}_row" class="${param.sessionConfigVisibility}">
   <th><label for="${session_duration_param}">${session_duration_label}</label></th>
   <td><props:textProperty name="${session_duration_param}"
                           value="${empty sessionCredsDuration ? session_duration_default : sessionCredsDuration}" className="longField" maxlength="256"/>

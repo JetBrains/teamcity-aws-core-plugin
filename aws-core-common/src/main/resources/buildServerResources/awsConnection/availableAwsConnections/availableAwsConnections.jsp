@@ -27,6 +27,7 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
+<c:set var="awsCredsType" value="${propertiesBean.properties[aws_creds_type_param]}"/>
 
 <tr class="noBorder">
   <th><label for="${chosen_aws_conn_id}">${chosen_aws_conn_label}: <l:star/></label></th>
@@ -37,12 +38,18 @@
 </tr>
 
 <c:choose>
-  <c:when test = "${param.configurableSessionDuration == 'true'}">
-    <jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp"/>
+  <c:when test = "${not empty param.sessionDuration}">
+    <c:set var="sessionConfigVisibility" value="hidden"/>
   </c:when>
 
   <c:otherwise/>
 </c:choose>
+
+<jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp">
+  <jsp:param name="sessionDuration" value="${param.sessionDuration}"/>
+  <jsp:param name="sessionConfigVisibility" value="${sessionConfigVisibility}"/>
+</jsp:include>
+
 
 <script type="text/javascript">
 

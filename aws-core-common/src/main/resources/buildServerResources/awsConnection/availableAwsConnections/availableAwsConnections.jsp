@@ -29,7 +29,7 @@
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
 
 <tr class="noBorder">
-  <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
+  <th><label for="${chosen_aws_conn_id}">${chosen_aws_conn_label}: <l:star/></label></th>
   <td>
     <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
     <span class="error error_${avail_connections_select_id} hidden"></span>

@@ -7,6 +7,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -24,6 +25,6 @@ public interface AwsConnectionsManager {
   @NotNull
   AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException;
 
-  @NotNull
+  @Nullable
   AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException;
 }

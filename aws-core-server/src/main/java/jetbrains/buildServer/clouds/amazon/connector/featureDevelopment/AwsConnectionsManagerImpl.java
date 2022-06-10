@@ -12,6 +12,7 @@ import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -47,7 +48,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   }
 
   //TODO: TW-75618 Add support for several AWS Connections exposing
-  @NotNull
+  @Nullable
   @Override
   public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException {
     if (build.getBuildId() < 0) {
@@ -64,8 +65,8 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     SBuildFeatureDescriptor configuredAwsConnBuildFeature;
     try {
       configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
-    } catch (NoSuchElementException nsee) {
-      throw new AwsBuildFeatureException("There is no registered BuildFeature for exposing AWS Connection in this build");
+    } catch (NoSuchElementException noExposeAwsConnBuildFeaturesException) {
+      return null;
     }
 
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());

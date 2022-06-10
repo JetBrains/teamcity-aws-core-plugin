@@ -59,7 +59,7 @@
   const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
   const availConnsSelector = $j(availConnsSelectorId);
 
-  var _errorIds = [
+  const _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
@@ -76,7 +76,7 @@
         if(errors == null) {
           availConnsSelector.empty();
 
-          if (json.length != 0) {
+          if (json.length !== 0) {
             json.forEach(
               connectionNameIdPair => {
                 availConnsSelector.append(
@@ -89,7 +89,7 @@
             availConnsSelector.prop('disabled', false);
 
             const previouslySelectedOptionIndex = json.findIndex(option => option.first === '${previouslyChosenAwsConnId}');
-            if(previouslySelectedOptionIndex != -1){
+            if(previouslySelectedOptionIndex !== -1){
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
             }
@@ -118,7 +118,7 @@
     BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
   });
 
-  var toggleErrors = function (showErrors){
+  let toggleErrors = function (showErrors){
     _errorIds.forEach(errorId => {
       if(showErrors)
         $j('.' + errorId).removeClass('hidden');
@@ -133,18 +133,18 @@
   };
 
 
-  var addError = function (errorHTML, target) {
+  let addError = function (errorHTML, target) {
     target.append($j('<div>').html(errorHTML));
   };
 
-  var clearAllErrors = function (){
+  const clearAllErrors = function () {
     _errorIds.forEach(errorId => {
       clearError(errorId)
     })
   };
 
-  var clearError = function(errorId) {
-    var target = $j('.error_' + errorId);
+  let clearError = function(errorId) {
+    const target = $j('.error_' + errorId);
     target.empty();
   };
 </script>

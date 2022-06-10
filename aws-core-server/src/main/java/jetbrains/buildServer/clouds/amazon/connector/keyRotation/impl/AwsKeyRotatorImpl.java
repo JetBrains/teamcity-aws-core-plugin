@@ -169,15 +169,15 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     newParameters.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, newCredentials.getCredentials().getAWSSecretKey());
 
     myOAuthConnectionsManager.updateConnection(project, currentConnection.getId(), currentConnection.getOauthProvider().getType(), newParameters);
-    persist(project, "Connection updated");
+    persist(project);
   }
 
-  private void persist(@NotNull final SProject project, @NotNull final String text) {
+  private void persist(@NotNull final SProject project) {
     final AuthorityHolder authHolder = mySecurityContext.getAuthorityHolder();
     if (authHolder instanceof SUser) {
-      project.schedulePersisting(myConfigActionFactory.createAction((SUser) authHolder, project, text));
+      project.schedulePersisting(myConfigActionFactory.createAction((SUser) authHolder, project, "Connection updated"));
     } else {
-      project.schedulePersisting(myConfigActionFactory.createAction(project, text));
+      project.schedulePersisting(myConfigActionFactory.createAction(project, "Connection updated"));
     }
   }
 

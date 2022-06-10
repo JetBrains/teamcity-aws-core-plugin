@@ -20,8 +20,8 @@ public interface AwsConnectionsManager {
    * @throws LinkedAwsConnNotFoundException thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map.
    */
   @Nullable
-  public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException;
+  AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException;
 
   @Nullable
-  public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build);
+  AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build);
 }

@@ -50,14 +50,14 @@ import static org.mockito.Mockito.when;
 
 public class AwsConnectionsManagerImplTest extends BaseTestCase {
 
-  private final String testAccessKeyId = "TESTACCESS";
-  private final String testSecretAccessKey = "TESTSECRET";
+  private final String testAccessKeyId = "TEST_ACCESS";
+  private final String testSecretAccessKey = "TEST_SECRET";
 
   private final String testSessionAccessKeyId = "TEST_SESSION_ACCESS";
   private final String testSessionSecretAccessKey = "TEST_SESSION_SECRET";
   private final String testSessionToken = "TEST_SESSION_TOKEN";
   private final String testConnectionId = "PROJECT_FEATURE_ID";
-  private final String testConnectionDescription = "Test Conneciton";
+  private final String testConnectionDescription = "Test Connection";
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myAwsConnectionProperties;
   private ExecutorServices myExecutorServices;

@@ -34,8 +34,8 @@ import static org.mockito.Mockito.when;
 
 public class AwsTestConnectionControllerTest extends AbstractControllerTest {
 
-  private final String testAccessKeyId = "TESTACCESS";
-  private final String testSecretAccessKey = "TESTSECRET";
+  private final String testAccessKeyId = "TEST_ACCESS";
+  private final String testSecretAccessKey = "TEST_SECRET";
 
   private final String testAccountId = "TEST ACCOUNT";
   private final String testArn = "TEST ARN";
@@ -92,10 +92,8 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     when(parametersMapMock.keySet())
       .thenReturn(defaultProperties.keySet());
 
-    defaultProperties.forEach((k, v) -> {
-      when(request.getParameter(k))
-        .thenReturn(v);
-    });
+    defaultProperties.forEach((k, v) -> when(request.getParameter(k))
+      .thenReturn(v));
 
     when(request.getParameterMap())
       .thenReturn(parametersMapMock);

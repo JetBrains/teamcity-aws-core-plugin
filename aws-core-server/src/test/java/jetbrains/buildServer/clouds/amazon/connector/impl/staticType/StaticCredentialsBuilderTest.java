@@ -26,8 +26,8 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class StaticCredentialsBuilderTest extends BaseTestCase {
 
-  private final String testAccessKeyId = "TESTACCESS";
-  private final String testSecretAccessKey = "TESTSECRET";
+  private final String testAccessKeyId = "TEST_ACCESS";
+  private final String testSecretAccessKey = "TEST_SECRET";
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myConnectorProperties;
   private ExecutorServices myExecutorServices;

@@ -120,7 +120,7 @@
                     }, 200);
 
                 } else {
-                    for(var i = 0; i < errors.length; i ++) {
+                    for(let i = 0; i < errors.length; i ++) {
                         this.addError(errors[i].message, $j(".error_" + errors[i].id))
                     }
                 }

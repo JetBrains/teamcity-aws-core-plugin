@@ -21,6 +21,7 @@ import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
@@ -93,7 +94,10 @@ public class AvailableAwsConnsController extends BaseController {
 
       } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME)) {
         List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-        writeAsJson(asPairs(awsConnections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName), response);
+        writeAsJson(
+          asPairs(processAvailableAwsConnections(awsConnections, request), OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName),
+          response
+        );
 
       } else {
         throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
@@ -105,6 +109,17 @@ public class AvailableAwsConnsController extends BaseController {
     }
 
     return null;
+  }
+
+  private List<OAuthConnectionDescriptor> processAvailableAwsConnections(List<OAuthConnectionDescriptor> awsConnections, HttpServletRequest request) {
+    String principalAwsConnId = request.getParameter(PRINCIPAL_AWS_CONNECTION_ID);
+    if(StringUtil.nullIfEmpty(principalAwsConnId) != null){
+      return awsConnections.stream().filter(connectionDescriptor -> {
+        return !connectionDescriptor.getId().equals(principalAwsConnId);
+      }).collect(Collectors.toList());
+    }
+
+    return awsConnections;
   }
 
   private <T> void writeAsJson(@NotNull T value, @NotNull HttpServletResponse response) throws IOException {

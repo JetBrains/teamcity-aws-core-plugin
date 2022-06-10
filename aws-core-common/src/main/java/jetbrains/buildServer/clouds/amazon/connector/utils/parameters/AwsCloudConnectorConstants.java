@@ -36,6 +36,7 @@ public final class AwsCloudConnectorConstants {
   public static final String AVAIL_AWS_CONNS_PROJ_FEATURE_JSP_FILE_NAME = "availAwsConnsForProjectFeature.jsp";
   public static final String SESSION_CREDS_CONFIG_JSP_FILE_NAME = "sessionCredentialsConfig.jsp";
 
+  public static final String PRINCIPAL_AWS_CONNECTION_ID = "principalAwsConnId";
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.connection.id";
   public static final String CHOSEN_AWS_CONN_ID_LABEL = "AWS Connection";

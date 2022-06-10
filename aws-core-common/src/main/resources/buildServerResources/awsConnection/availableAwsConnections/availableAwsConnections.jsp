@@ -66,7 +66,7 @@
 
   $j(document).ready(function () {
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}',
+      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${principal_aws_conn_id}=${param.principalAwsConnId}',
 
       onComplete: function(response) {
 

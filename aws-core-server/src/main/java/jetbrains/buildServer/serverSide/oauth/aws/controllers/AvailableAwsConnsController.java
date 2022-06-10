@@ -30,10 +30,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
-public class AvailableAwsConnsController extends BaseController {
+public class AvailableAwsConnsController extends BaseAwsConnectionController {
   public static final String PATH = AVAIL_AWS_CONNECTIONS_CONTROLLER_URL;
-
-  private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final String availableAwsConnsBeanName = "awsConnections";
 
   private final OAuthConnectionsManager myConnectionsManager;
@@ -120,15 +118,6 @@ public class AvailableAwsConnsController extends BaseController {
     }
 
     return awsConnections;
-  }
-
-  private <T> void writeAsJson(@NotNull T value, @NotNull HttpServletResponse response) throws IOException {
-    final String json = OBJECT_MAPPER.writeValueAsString(value);
-    response.setContentType("application/json");
-    response.setCharacterEncoding(Charsets.UTF_8.name());
-    final PrintWriter writer = response.getWriter();
-    writer.write(json);
-    writer.flush();
   }
 
   @NotNull

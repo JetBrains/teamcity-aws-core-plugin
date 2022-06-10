@@ -1,11 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
@@ -27,9 +26,7 @@ public abstract class CredentialsRefresher implements AwsCredentialsHolder {
                               @NotNull final ExecutorServices executorServices) {
     AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
       .standard()
-      .withCredentials(new AWSStaticCredentialsProvider(
-        new BasicAWSCredentials(credentialsHolder.getAwsCredentials().getAccessKeyId(), credentialsHolder.getAwsCredentials().getSecretAccessKey())
-      ));
+      .withCredentials(AwsConnectionUtils.awsCredsProviderFromHolder(credentialsHolder));
     StsClientBuilder.addConfiguration(stsBuilder, connectionProperties);
     mySts = stsBuilder.build();
 

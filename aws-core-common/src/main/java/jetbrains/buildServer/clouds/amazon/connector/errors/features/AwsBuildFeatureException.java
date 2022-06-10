@@ -1,8 +1,9 @@
 package jetbrains.buildServer.clouds.amazon.connector.errors.features;
 
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import org.jetbrains.annotations.NotNull;
 
-public class AwsBuildFeatureException extends Exception {
+public class AwsBuildFeatureException extends AwsConnectorException {
   public AwsBuildFeatureException(@NotNull final String message) {
     super(message);
   }

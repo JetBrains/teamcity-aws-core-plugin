@@ -30,8 +30,5 @@
     <em>Please, choose the AWS Connection to be exposed to the Build via Environment Variables</em>
   </td>
 </tr>
-<tr>
-  <jsp:include page="${buildFeature.availAwsConnsUrl}">
-    <jsp:param name="projectId" value="${buildForm.project.externalId}"/>
-  </jsp:include>
-</tr>
+
+<jsp:include page="${buildFeature.availAwsConnsUrl}"/>

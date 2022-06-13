@@ -28,7 +28,7 @@
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
 
-<c:url var="testAwsConnctionControllerUrl" value="${test_connection_controller_url}"/>
+<c:url var="testAwsConnectionControllerUrl" value="${test_connection_controller_url}"/>
 
 <c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
 
@@ -67,17 +67,17 @@
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {
-    var enableForm = this.enable.bind(this);
-    BS.PasswordFormSaver.save(this, '${testAwsConnctionControllerUrl}', OO.extend(BS.ErrorsAwareListener, {
+    const enableForm = this.enable.bind(this);
+    BS.PasswordFormSaver.save(this, '${testAwsConnectionControllerUrl}', OO.extend(BS.ErrorsAwareListener, {
       onFailedTestConnectionError: function (elem) {
-        var text = "";
+        let text = "";
         if (elem.firstChild) {
           text = elem.firstChild.nodeValue;
         }
         BS.TestConnectionDialog.show(false, text, $('testConnectionButton'));
       },
       onCompleteSave: function (form, responseXML) {
-        var err = BS.XMLResponse.processErrors(responseXML, this, form.propertiesErrorsHandler);
+        const err = BS.XMLResponse.processErrors(responseXML, this, form.propertiesErrorsHandler);
         BS.ErrorsAwareListener.onCompleteSave(form, responseXML, err);
         if (!err) {
           this.onSuccessfulSave(responseXML);
@@ -85,12 +85,12 @@
       },
       onSuccessfulSave: function (responseXML) {
         enableForm();
-        var testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
+        const testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
 
-        var additionalInfo;
+        let additionalInfo;
         if (testConnectionResultNodes.length > 0) {
           additionalInfo = "Caller Identity:";
-          var testConnectionResult = testConnectionResultNodes.item(0);
+          const testConnectionResult = testConnectionResultNodes.item(0);
           additionalInfo += "\n Account ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_account_id}');
           additionalInfo += "\n User ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_id}');
           additionalInfo += "\n ARN: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_arn}');
@@ -104,7 +104,7 @@
     return false;
   };
 
-  var afterClose = BS.OAuthConnectionDialog.afterClose;
+  const afterClose = BS.OAuthConnectionDialog.afterClose;
   BS.OAuthConnectionDialog.afterClose = function () {
     $j('.testConnectionButton').remove();
     afterClose()
@@ -114,7 +114,7 @@
     target.append(errorHTML);
   };
   BS.OAuthConnectionDialog.clearError = function (errorId){
-    var target = $j('.error_' + errorId);
+    const target = $j('.error_' + errorId);
     target.empty();
   };
   BS.OAuthConnectionDialog.clearAllErrors = function (errorIdsArray){

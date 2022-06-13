@@ -49,5 +49,8 @@
 <c:set var="avail_connections_rest_resource_name" value="<%=AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME%>"/>
 
 <c:set var="chosen_aws_conn_id" value="<%=AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM%>"/>
+<c:set var="chosen_aws_conn_label" value="<%=AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_LABEL%>"/>
 
 <c:set var="aws_connection_type" value="<%=AwsConnectionProvider.TYPE%>"/>
+
+<c:set var="principal_aws_conn_id" value="<%=AwsCloudConnectorConstants.PRINCIPAL_AWS_CONNECTION_ID%>"/>

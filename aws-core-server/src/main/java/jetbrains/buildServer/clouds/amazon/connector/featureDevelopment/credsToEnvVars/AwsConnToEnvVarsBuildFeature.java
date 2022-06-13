@@ -11,12 +11,12 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNS_JSP_FILE_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
 public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements PropertiesProcessor {
 
-  private final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVrasBuildFeature.jsp";
-  private final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
+  private final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVarsBuildFeature.jsp";
+  private final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;
   private final String displayName = "Expose AWS Credentials via Env Vars";
@@ -30,6 +30,11 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   public Collection<InvalidProperty> process(@NotNull final Map<String, String> properties) {
     ChosenAwsConnPropertiesProcessor awsConnsPropertiesProcessor = new ChosenAwsConnPropertiesProcessor();
     return awsConnsPropertiesProcessor.process(properties);
+  }
+
+  @Override
+  public PropertiesProcessor getParametersProcessor() {
+    return this;
   }
 
   @NotNull
@@ -53,7 +58,7 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @NotNull
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
-    return "AWS Connection ID - an id of a connection whose AWS credentials will be available on an agent via environment variables.";
+    return "Expose chosen AWS Connection parameters via default environment variables (keys, region and session token if applicable).";
   }
 
   public String getAvailAwsConnsUrl() {

@@ -22,7 +22,6 @@
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <c:set var="useSessionCreds" value="${propertiesBean.properties[use_session_credentials_param]}"/>
-<c:set var="sessionCredsDuration" value="${propertiesBean.properties[session_duration_param]}"/>
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 
 <c:set var="rotateKeyControllerUrl"><c:url value="${rotate_key_controller_url}"/></c:set>
@@ -64,21 +63,21 @@
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
-    <tr>
+    <tr id="${use_session_credentials_param}_row">
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>
-            <props:checkboxProperty name="${use_session_credentials_param}"
-                                    checked="${param.connectionId == '' ? use_session_credentials_default : useSessionCreds}"/>
+            <c:set var="onclick">{
+                var hiddenElem = $('${use_session_credentials_param}');
+                var checkBox = $('${use_session_credentials_param}_checkbox');
+                if (checkBox.checked === false) {
+                hiddenElem.value = false;
+                } else {
+                hiddenElem.value = true;
+                }
+                }</c:set>
+            <props:checkboxProperty name="${use_session_credentials_param}_checkbox" onclick="${onclick}" checked="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
+            <props:hiddenProperty name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
             <span>Issue temporary credentials by request</span>
-        </td>
-    </tr>
-
-    <tr id="${session_duration_param}_row">
-        <th><label for="${session_duration_param}">${session_duration_label}</label></th>
-        <td><props:textProperty name="${session_duration_param}"
-                                value="${empty sessionCredsDuration ? session_duration_default : sessionCredsDuration}" className="longField" maxlength="256"/>
-            <span class="smallNote">In minutes. From 15 to 2160 (36 h). </span>
-            <span class="error" id="error_${session_duration_param}"></span>
         </td>
     </tr>
 
@@ -121,7 +120,7 @@
                     }, 200);
 
                 } else {
-                    for(var i = 0; i < errors.length; i ++) {
+                    for(let i = 0; i < errors.length; i ++) {
                         this.addError(errors[i].message, $j(".error_" + errors[i].id))
                     }
                 }

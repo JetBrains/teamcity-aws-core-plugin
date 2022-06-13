@@ -19,5 +19,11 @@
         @see AwsConnection
       </description>
     </param>
+
+    <param name="aws.session.duration" dslName="sessionDuration" type="string">
+      <description>
+        Session duration in minutes
+      </description>
+    </param>
   </params>
 </dsl-extension>

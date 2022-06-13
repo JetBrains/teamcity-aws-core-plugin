@@ -13,7 +13,7 @@ public interface AwsCredentialsBuilder {
    * Implemented in each AwsCredentialsBuilder in a different way to support
    * various types of obtaining credentials.
    * The {@link jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants#CREDENTIALS_TYPE_PARAM Credentials Type property}
-   * should exist in cloudConnectorProperties argument to destinguish which AwsCredentialsBuilder should be used to build the AWSCredentialsProvider object.
+   * should exist in cloudConnectorProperties argument to distinguish which AwsCredentialsBuilder should be used to build the AWSCredentialsProvider object.
    * <p>
    * <b>Do not use this method directly</b>,
    * instead, call the {@link jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory#buildAwsCredentialsProvider(Map) AwsConnectorFactory#buildAwsCredentialsProvider(connectionProperties)}

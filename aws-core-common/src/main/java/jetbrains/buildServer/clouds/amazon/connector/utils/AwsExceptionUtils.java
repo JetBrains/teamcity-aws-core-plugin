@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.clouds.amazon.connector.errors;
+package jetbrains.buildServer.clouds.amazon.connector.utils;
 
 import com.amazonaws.AmazonServiceException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class AwsExceptionUtils {
-  public static boolean isAmazonServiceException(Throwable e){
+public final class AwsExceptionUtils {
+  @Nullable
+  public static String getAwsErrorMessage(@NotNull final Throwable exception){
+    if (isAmazonServiceException(exception)) {
+      return ((AmazonServiceException)exception).getErrorMessage();
+    } else {
+      return exception.getMessage();
+    }
+  }
+
+  public static boolean isAmazonServiceException(@Nullable final Throwable e){
     if(e == null)
       return false;
     return AmazonServiceException.class.isAssignableFrom(e.getClass());

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
@@ -80,13 +81,9 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   }
 
   private void handleException(@NotNull final Exception exception, @NotNull ActionErrors errors) {
-    String actionDesription = "Unable to run AmazonSts.getCallerIdentity: ";
-    Loggers.CLOUD.debug(actionDesription, exception);
-    if (exception instanceof AmazonServiceException) {
-      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + ((AmazonServiceException)exception).getErrorMessage()));
-    } else {
-      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDesription + exception.getMessage()));
-    }
+    String actionDescription = "Unable to run AmazonSts.getCallerIdentity: ";
+    Loggers.CLOUD.debug(actionDescription, exception);
+    errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AwsExceptionUtils.getAwsErrorMessage(exception)));
   }
 
   @Override

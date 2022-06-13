@@ -21,6 +21,7 @@ import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +30,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
-public class AvailableAwsConnsController extends BaseController {
+public class AvailableAwsConnsController extends BaseAwsConnectionController {
   public static final String PATH = AVAIL_AWS_CONNECTIONS_CONTROLLER_URL;
-
-  private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private final String availableAwsConnsBeanName = "awsConnections";
 
   private final OAuthConnectionsManager myConnectionsManager;
@@ -93,7 +92,10 @@ public class AvailableAwsConnsController extends BaseController {
 
       } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME)) {
         List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-        writeAsJson(asPairs(awsConnections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName), response);
+        writeAsJson(
+          asPairs(processAvailableAwsConnections(awsConnections, request), OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName),
+          response
+        );
 
       } else {
         throw new AwsConnectorException("Resource " + resourceName + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
@@ -107,13 +109,15 @@ public class AvailableAwsConnsController extends BaseController {
     return null;
   }
 
-  private <T> void writeAsJson(@NotNull T value, @NotNull HttpServletResponse response) throws IOException {
-    final String json = OBJECT_MAPPER.writeValueAsString(value);
-    response.setContentType("application/json");
-    response.setCharacterEncoding(Charsets.UTF_8.name());
-    final PrintWriter writer = response.getWriter();
-    writer.write(json);
-    writer.flush();
+  private List<OAuthConnectionDescriptor> processAvailableAwsConnections(List<OAuthConnectionDescriptor> awsConnections, HttpServletRequest request) {
+    String principalAwsConnId = request.getParameter(PRINCIPAL_AWS_CONNECTION_ID);
+    if(StringUtil.nullIfEmpty(principalAwsConnId) != null){
+      return awsConnections.stream().filter(connectionDescriptor -> {
+        return !connectionDescriptor.getId().equals(principalAwsConnId);
+      }).collect(Collectors.toList());
+    }
+
+    return awsConnections;
   }
 
   @NotNull

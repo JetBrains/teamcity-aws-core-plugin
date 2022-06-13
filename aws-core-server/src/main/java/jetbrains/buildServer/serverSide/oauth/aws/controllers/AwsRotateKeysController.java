@@ -17,15 +17,12 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.amazonaws.AmazonServiceException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
-import java.io.IOException;
-import java.io.PrintWriter;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.controllers.*;
 import jetbrains.buildServer.log.Loggers;
@@ -38,8 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME;
 
-public class AwsRotateKeysController extends BaseController {
-  private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+public class AwsRotateKeysController extends BaseAwsConnectionController {
   private final AwsKeyRotator myAwsKeyRotator;
   private final ProjectManager myProjectManager;
 
@@ -104,14 +100,5 @@ public class AwsRotateKeysController extends BaseController {
     } else {
       errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
     }
-  }
-
-  private <T> void writeAsJson(@NotNull T value, @NotNull HttpServletResponse response) throws IOException {
-    final String json = OBJECT_MAPPER.writeValueAsString(value);
-    response.setContentType("application/json");
-    response.setCharacterEncoding(Charsets.UTF_8.name());
-    final PrintWriter writer = response.getWriter();
-    writer.write(json);
-    writer.flush();
   }
 }

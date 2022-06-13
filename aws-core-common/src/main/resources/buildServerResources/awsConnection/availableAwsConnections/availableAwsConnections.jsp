@@ -27,16 +27,29 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
+<c:set var="awsCredsType" value="${propertiesBean.properties[aws_creds_type_param]}"/>
 
-<l:settingsGroup title="AWS Connection">
-  <tr class="noBorder">
-    <th><label for="${chosen_aws_conn_id}">Connection: <l:star/></label></th>
-    <td>
-      <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
-      <span class="error error_${avail_connections_select_id} hidden"></span>
-    </td>
-  </tr>
-</l:settingsGroup>
+<tr class="noBorder">
+  <th><label for="${chosen_aws_conn_id}">${chosen_aws_conn_label}: <l:star/></label></th>
+  <td>
+    <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+    <span class="error error_${avail_connections_select_id} hidden"></span>
+  </td>
+</tr>
+
+<c:choose>
+  <c:when test = "${not empty param.sessionDuration}">
+    <c:set var="sessionConfigVisibility" value="hidden"/>
+  </c:when>
+
+  <c:otherwise/>
+</c:choose>
+
+<jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp">
+  <jsp:param name="sessionDuration" value="${param.sessionDuration}"/>
+  <jsp:param name="sessionConfigVisibility" value="${sessionConfigVisibility}"/>
+</jsp:include>
+
 
 <script type="text/javascript">
 
@@ -46,14 +59,14 @@
   const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
   const availConnsSelector = $j(availConnsSelectorId);
 
-  var _errorIds = [
+  const _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
 
   $j(document).ready(function () {
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}',
+      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${principal_aws_conn_id}=${param.principalAwsConnId}',
 
       onComplete: function(response) {
 
@@ -63,7 +76,7 @@
         if(errors == null) {
           availConnsSelector.empty();
 
-          if (json.length != 0) {
+          if (json.length !== 0) {
             json.forEach(
               connectionNameIdPair => {
                 availConnsSelector.append(
@@ -76,7 +89,7 @@
             availConnsSelector.prop('disabled', false);
 
             const previouslySelectedOptionIndex = json.findIndex(option => option.first === '${previouslyChosenAwsConnId}');
-            if(previouslySelectedOptionIndex != -1){
+            if(previouslySelectedOptionIndex !== -1){
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
             }
@@ -105,7 +118,7 @@
     BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
   });
 
-  var toggleErrors = function (showErrors){
+  let toggleErrors = function (showErrors){
     _errorIds.forEach(errorId => {
       if(showErrors)
         $j('.' + errorId).removeClass('hidden');
@@ -120,18 +133,18 @@
   };
 
 
-  var addError = function (errorHTML, target) {
+  let addError = function (errorHTML, target) {
     target.append($j('<div>').html(errorHTML));
   };
 
-  var clearAllErrors = function (){
+  const clearAllErrors = function () {
     _errorIds.forEach(errorId => {
       clearError(errorId)
     })
   };
 
-  var clearError = function(errorId) {
-    var target = $j('.error_' + errorId);
+  let clearError = function(errorId) {
+    const target = $j('.error_' + errorId);
     target.empty();
   };
 </script>

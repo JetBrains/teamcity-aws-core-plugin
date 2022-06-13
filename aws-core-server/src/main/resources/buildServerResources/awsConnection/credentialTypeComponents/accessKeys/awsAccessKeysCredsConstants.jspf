@@ -30,10 +30,6 @@
 <c:set var="use_session_credentials_label" value="<%=AwsAccessKeysParams.SESSION_CREDENTIALS_LABEL%>"/>
 <c:set var="use_session_credentials_default" value="<%=AwsAccessKeysParams.SESSION_CREDENTIALS_DEFAULT%>"/>
 
-<c:set var="session_duration_param" value="<%=AwsAccessKeysParams.SESSION_DURATION_PARAM%>"/>
-<c:set var="session_duration_label" value="<%=AwsAccessKeysParams.SESSION_DURATION_LABEL%>"/>
-<c:set var="session_duration_default" value="<%=AwsAccessKeysParams.SESSION_DURATION_DEFAULT%>"/>
-
 <c:set var="sts_endpoint_param" value="<%=AwsAccessKeysParams.STS_ENDPOINT_PARAM%>"/>
 <c:set var="sts_endpoint_label" value="<%=AwsAccessKeysParams.STS_ENDPOINT_LABEL%>"/>
 <c:set var="sts_endpoint_default" value="<%=AwsAccessKeysParams.STS_ENDPOINT_DEFAULT%>"/>

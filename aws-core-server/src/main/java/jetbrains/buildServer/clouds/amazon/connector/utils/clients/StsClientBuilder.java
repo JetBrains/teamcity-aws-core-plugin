@@ -7,13 +7,17 @@ import jetbrains.buildServer.log.Loggers;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import org.jetbrains.annotations.Nullable;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.STS_ENDPOINT_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.STS_ENDPOINT_PARAM_IAM_ROLE;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
 
 public class StsClientBuilder {
   public static void addConfiguration(@NotNull AWSSecurityTokenServiceClientBuilder stsBuilder, @NotNull final Map<String, String> properties) {
-    String stsEndpoint = properties.get(STS_ENDPOINT_PARAM);
+    String stsEndpoint = getStsEndpoint(properties);
     AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
       STS_GLOBAL_ENDPOINT,
       Regions.US_EAST_1.getName()
@@ -34,5 +38,16 @@ public class StsClientBuilder {
 
     stsBuilder.withEndpointConfiguration(endpointConfiguration);
     stsBuilder.withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("sts"));
+  }
+
+  @Nullable
+  private static String getStsEndpoint(@NotNull final Map<String, String> properties) {
+    if (STATIC_CREDENTIALS_TYPE.equals(properties.get(CREDENTIALS_TYPE_PARAM))) {
+      return properties.get(STS_ENDPOINT_PARAM);
+    }
+    if (IAM_ROLE_CREDENTIALS_TYPE.equals(properties.get(CREDENTIALS_TYPE_PARAM))) {
+      return properties.get(STS_ENDPOINT_PARAM_IAM_ROLE);
+    }
+    return null;
   }
 }

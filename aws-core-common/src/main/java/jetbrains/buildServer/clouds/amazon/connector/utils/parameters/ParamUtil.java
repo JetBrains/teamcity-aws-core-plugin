@@ -2,11 +2,13 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
 import java.util.Map;
 
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.openapi.util.text.StringUtil.isEmptyOrSpaces;
 import static com.intellij.openapi.util.text.StringUtil.parseInt;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
@@ -38,6 +40,13 @@ public class ParamUtil {
       return false;
     }
     return true;
+  }
+
+  public static boolean isValidSessionName(@Nullable final String sessionName) {
+    if(sessionName == null)
+      return false;
+    Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
+    return validAwsSessionNamePattern.matcher(sessionName).matches();
   }
 
   public static int getSessionDurationMinutes(@NotNull final Map<String, String> cloudConnectorProperties) {

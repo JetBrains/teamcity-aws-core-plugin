@@ -13,7 +13,10 @@ public final class AwsCloudConnectorConstants {
   public static final String CREDENTIALS_TYPE_LABEL = "Type";
 
   public static final String STATIC_CREDENTIALS_TYPE = "awsAccessKeys";
-  public static final String ACCESS_KEYS_LABEL = "Access keys";
+  public static final String ACCESS_KEYS_LABEL = "Access Keys";
+
+  public static final String IAM_ROLE_CREDENTIALS_TYPE = "awsAssumeIamRole";
+
 
   public static final String REGION_NAME_PARAM = "awsRegionName";
   public static final String REGION_NAME_LABEL = "AWS region";

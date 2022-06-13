@@ -58,10 +58,13 @@
 </tr>
 
 <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
-  <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="Access Key">
+  <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
     <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
       <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
     </jsp:include>
+  </props:selectSectionPropertyContent>
+  <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
+    <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
 

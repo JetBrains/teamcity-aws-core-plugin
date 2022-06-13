@@ -37,25 +37,7 @@ public class StaticSessionCredentialsHolder extends CredentialsRefresher {
   @Override
   public AwsCredentialsData getAwsCredentials() {
     Credentials credentials = currentSession.getCredentials();
-    return new AwsCredentialsData() {
-      @NotNull
-      @Override
-      public String getAccessKeyId() {
-        return credentials.getAccessKeyId();
-      }
-
-      @NotNull
-      @Override
-      public String getSecretAccessKey() {
-        return credentials.getSecretAccessKey();
-      }
-
-      @Nullable
-      @Override
-      public String getSessionToken() {
-        return credentials.getSessionToken();
-      }
-    };
+    return getDataFromCredentials(credentials);
   }
 
   @Override

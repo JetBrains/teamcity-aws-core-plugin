@@ -4,6 +4,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
+public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
 
   private final ExecutorServices myExecutorServices;
 
@@ -33,8 +34,7 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
   @NotNull
   public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
 
-    List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
-    processInvalidProperties(invalidProperties);
+    throwExceptionIfPropertiesInvalid(validateProperties(cloudConnectorProperties));
 
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
@@ -65,17 +65,6 @@ public class StaticCredentialsBuilder implements AwsCredentialsBuilder {
     }
 
     return invalidProperties;
-  }
-
-  private void processInvalidProperties(@NotNull final List<InvalidProperty> invalidProperties) throws AwsConnectorException {
-    if (invalidProperties.size() > 0) {
-      InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
-      String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
-      throw new AwsConnectorException(
-        errorDescription,
-        lastInvalidProperty.getPropertyName()
-      );
-    }
   }
 
   @NotNull

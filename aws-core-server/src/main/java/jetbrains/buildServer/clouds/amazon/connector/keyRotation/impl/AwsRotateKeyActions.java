@@ -127,7 +127,7 @@ public class AwsRotateKeyActions {
     newParameters.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, myNewCredentials.getCredentials().getAWSSecretKey());
 
     myOAuthConnectionsManager.updateConnection(myProject, currentConnection.getId(), currentConnection.getOauthProvider().getType(), newParameters);
-    persist(myProject, "Connection updated");
+    persist(myProject);
   }
 
   public void deletePreviousAccessKey() throws KeyRotationException {
@@ -141,12 +141,12 @@ public class AwsRotateKeyActions {
     }
   }
 
-  private void persist(@NotNull final SProject project, @NotNull final String text) {
+  private void persist(@NotNull final SProject project) {
     final AuthorityHolder authHolder = mySecurityContext.getAuthorityHolder();
     if (authHolder instanceof SUser) {
-      project.schedulePersisting(myConfigActionFactory.createAction((SUser) authHolder, project, text));
+      project.schedulePersisting(myConfigActionFactory.createAction((SUser) authHolder, project, "Connection updated"));
     } else {
-      project.schedulePersisting(myConfigActionFactory.createAction(project, text));
+      project.schedulePersisting(myConfigActionFactory.createAction(project, "Connection updated"));
     }
   }
 

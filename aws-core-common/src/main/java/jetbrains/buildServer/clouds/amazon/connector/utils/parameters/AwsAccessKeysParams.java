@@ -27,7 +27,8 @@ public final class AwsAccessKeysParams {
 
   public static final String STS_ENDPOINT_PARAM = "aws.sts.endpoint";
   public static final String STS_ENDPOINT_LABEL = "STS endpoint:";
-  public static final String STS_ENDPOINT_DEFAULT = "https://sts.amazonaws.com";
+  public static final String STS_ENDPOINT_DEFAULT = "(Regional)";
+  public static final String STS_GLOBAL_ENDPOINT = "https://sts.amazonaws.com";
 
   public static final String KEY_MASK = "************";
   public static final byte KEY_MASK_VISIBLE_SYMBOLS = 4;

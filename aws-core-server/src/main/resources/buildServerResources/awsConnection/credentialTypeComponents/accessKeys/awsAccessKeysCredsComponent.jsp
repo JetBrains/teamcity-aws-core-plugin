@@ -103,12 +103,14 @@
     };
 
     $j(document).ready(function () {
-        $j('#${sts_endpoint_field_id}').val('https://sts.' + $regionSelectObject.value + '.amazonaws.com')
-        toggleStsEndpint();
+        if (${empty stsEndpoint}) {
+            $j('#${sts_endpoint_field_id}').val('https://sts.' + $regionSelectObject.value + '.amazonaws.com')
+            toggleStsEndpint();
+        }
     });
 
     let toggleStsEndpint = function () {
-        if($useSessionCredentialsObject.checked){
+        if ($useSessionCredentialsObject.checked){
             $j('.stsEndpointClass').removeClass('hidden');
         } else {
             $j('.stsEndpointClass').addClass('hidden');

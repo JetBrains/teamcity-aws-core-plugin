@@ -18,6 +18,9 @@ public final class AwsCloudConnectorConstants {
   public static final String REGION_NAME_PARAM = "aws.region.name";
   public static final String REGION_NAME_LABEL = "AWS region";
   public static final String REGION_NAME_DEFAULT = "us-east-1";
+  public static final String REGION_SELECT_ID = "regionSelect";
+
+  public static final String STS_ENDPOINT_FIELD_ID = "stsEndpointField";
 
 
   //Test connection

@@ -2,7 +2,6 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
 import java.util.Map;
 
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,10 +13,10 @@ public class ParamUtil {
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
     String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
-    if(StringUtil.isEmptyOrSpaces(useSessionCredentials)){
-      return true;
-    }
-    return "true".equals(useSessionCredentials);
+    if("false".equals(useSessionCredentials))
+      return false;
+
+    return true;
   }
 
   public static String maskKey(String value) {

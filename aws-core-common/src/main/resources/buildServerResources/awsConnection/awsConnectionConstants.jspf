@@ -37,6 +37,8 @@
 <c:set var="region_name_param" value="<%=AwsCloudConnectorConstants.REGION_NAME_PARAM%>"/>
 <c:set var="region_name_label" value="<%=AwsCloudConnectorConstants.REGION_NAME_LABEL%>"/>
 <c:set var="region_name_default" value="<%=AwsCloudConnectorConstants.REGION_NAME_DEFAULT%>"/>
+<c:set var="region_select_id" value="<%=AwsCloudConnectorConstants.REGION_SELECT_ID%>"/>
+<c:set var="sts_endpoint_field_id" value="<%=AwsCloudConnectorConstants.STS_ENDPOINT_FIELD_ID%>"/>
 
 
 <c:set var="test_connection_controller_url" value="<%=AwsCloudConnectorConstants.TEST_CONNECTION_CONTROLLER_URL%>"/>

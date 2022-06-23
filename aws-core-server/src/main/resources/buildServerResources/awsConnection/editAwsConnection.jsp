@@ -48,7 +48,7 @@
 <tr>
   <th><label for="${region_name_param}">${region_name_label}: </label></th>
   <td>
-    <props:selectProperty name="${region_name_param}" enableFilter="true">
+    <props:selectProperty id="${region_select_id}" name="${region_name_param}" enableFilter="true">
       <c:forEach var="region" items="${allRegions.keySet()}">
         <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>

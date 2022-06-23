@@ -128,7 +128,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     res.put(propertyPrefix + AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     res.put(propertyPrefix + AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
     res.put(propertyPrefix + AwsSessionCredentialsParams.SESSION_DURATION_PARAM, AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT);
-    res.put(propertyPrefix + STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
+    res.put(propertyPrefix + STS_ENDPOINT_PARAM, STS_GLOBAL_ENDPOINT);
     return res;
   }
 }

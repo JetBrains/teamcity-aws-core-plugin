@@ -24,7 +24,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
-import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyActions;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner;
 import jetbrains.buildServer.controllers.ActionErrors;
@@ -134,8 +134,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
     ) {
       @NotNull
       @Override
-      protected AwsRotateKeyActions createRotateKeyActions(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
-        return new AwsRotateKeyActions(
+      protected AwsRotateKeyApi createRotateKeyApi(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
+        return new AwsRotateKeyApi(
           myOAuthConnectionsManager,
           myFixture.getSecurityContext(),
           myFixture.getConfigActionFactory(),

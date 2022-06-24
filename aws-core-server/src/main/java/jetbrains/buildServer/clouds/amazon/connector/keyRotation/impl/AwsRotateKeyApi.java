@@ -45,7 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AwsRotateKeyActions {
+public class AwsRotateKeyApi {
 
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final SecurityContextEx mySecurityContext;
@@ -58,12 +58,12 @@ public class AwsRotateKeyActions {
   private final AWSCredentialsProvider myPreviousCredentials;
   private AWSCredentialsProvider myNewCredentials;
 
-  public AwsRotateKeyActions(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                             @NotNull final SecurityContextEx securityContext,
-                             @NotNull final ConfigActionFactory configActionFactory,
-                             @NotNull final OAuthConnectionDescriptor awsConnectionDescriptor,
-                             @NotNull final SProject project,
-                             final int rotateTimeoutSec) {
+  public AwsRotateKeyApi(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
+                         @NotNull final SecurityContextEx securityContext,
+                         @NotNull final ConfigActionFactory configActionFactory,
+                         @NotNull final OAuthConnectionDescriptor awsConnectionDescriptor,
+                         @NotNull final SProject project,
+                         final int rotateTimeoutSec) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
     myConfigActionFactory = configActionFactory;
@@ -173,13 +173,13 @@ public class AwsRotateKeyActions {
 
 
   @Used("tests")
-  public AwsRotateKeyActions(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                             @NotNull final SecurityContextEx securityContext,
-                             @NotNull final ConfigActionFactory configActionFactory,
-                             @NotNull final OAuthConnectionDescriptor awsConnectionDescriptor,
-                             @NotNull final AmazonIdentityManagement iam,
-                             @NotNull final AWSSecurityTokenService sts,
-                             @NotNull final SProject project) {
+  public AwsRotateKeyApi(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
+                         @NotNull final SecurityContextEx securityContext,
+                         @NotNull final ConfigActionFactory configActionFactory,
+                         @NotNull final OAuthConnectionDescriptor awsConnectionDescriptor,
+                         @NotNull final AmazonIdentityManagement iam,
+                         @NotNull final AWSSecurityTokenService sts,
+                         @NotNull final SProject project) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
     myConfigActionFactory = configActionFactory;

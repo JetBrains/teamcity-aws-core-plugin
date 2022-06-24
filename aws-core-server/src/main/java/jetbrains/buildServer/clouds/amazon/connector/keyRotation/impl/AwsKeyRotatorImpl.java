@@ -60,23 +60,23 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
     String previousAccessKey = awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
     Loggers.CLOUD.info("Key rotation initiated for the AWS key: " + ParamUtil.maskKey(previousAccessKey));
-    AwsRotateKeyActions rotateActions = createRotateKeyActions(awsConnectionDescriptor, project);
+    AwsRotateKeyApi rotateKeyApi = createRotateKeyApi(awsConnectionDescriptor, project);
 
     Loggers.CLOUD.debug("Creating a new key...");
-    rotateActions.createNewKey();
+    rotateKeyApi.createNewKey();
 
     Loggers.CLOUD.debug("Waiting for the new key to become available...");
-    rotateActions.waitUntilRotatedKeyIsAvailable();
+    rotateKeyApi.waitUntilRotatedKeyIsAvailable();
 
     Loggers.CLOUD.debug("Updating the AWS Connection...");
-    rotateActions.updateConnection();
+    rotateKeyApi.updateConnection();
 
-    myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, rotateActions);
+    myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, rotateKeyApi);
   }
 
   @NotNull
-  protected AwsRotateKeyActions createRotateKeyActions(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
-    return new AwsRotateKeyActions(
+  protected AwsRotateKeyApi createRotateKeyApi(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
+    return new AwsRotateKeyApi(
       myOAuthConnectionsManager,
       mySecurityContext,
       myConfigActionFactory,

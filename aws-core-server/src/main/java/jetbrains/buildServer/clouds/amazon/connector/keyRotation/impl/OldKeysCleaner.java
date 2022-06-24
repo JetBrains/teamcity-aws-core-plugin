@@ -19,7 +19,7 @@ public class OldKeysCleaner {
   private final MultiNodeTasks myMultiNodeTasks;
   private final TemporalAmount myOldKeyPreserveTime;
 
-  private final ConcurrentHashMap<String, AwsRotateKeyActions> oldKeysRotateApis = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, AwsRotateKeyApi> oldKeysRotateApis = new ConcurrentHashMap<>();
 
   public OldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
                         @NotNull final TemporalAmount oldKeyPreserveTime) {
@@ -57,7 +57,7 @@ public class OldKeysCleaner {
     });
   }
 
-  public void scheduleAwsKeyForDeletion(@NotNull final String awsAccessKeyId, @NotNull final AwsRotateKeyActions awsRotateApi) {
+  public void scheduleAwsKeyForDeletion(@NotNull final String awsAccessKeyId, @NotNull final AwsRotateKeyApi awsRotateApi) {
     oldKeysRotateApis.put(awsAccessKeyId, awsRotateApi);
 
     ZonedDateTime keyDeletionTime = ZonedDateTime

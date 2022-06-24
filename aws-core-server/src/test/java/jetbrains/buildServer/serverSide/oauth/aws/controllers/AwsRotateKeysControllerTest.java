@@ -26,8 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyActions;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseControllerTestCase;
+import jetbrains.buildServer.serverSide.MultiNodeTasks;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
@@ -39,11 +41,13 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -124,9 +128,9 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
 
     return new AwsKeyRotatorImpl(
       myOAuthConnectionsManager,
-      myFixture.getEventDispatcher(),
       myFixture.getSecurityContext(),
-      myFixture.getConfigActionFactory()
+      myFixture.getConfigActionFactory(),
+      myFixture.getMultiNodeTasks()
     ) {
       @NotNull
       @Override
@@ -139,6 +143,15 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
           iam,
           sts,
           project
+        );
+      }
+
+      @NotNull
+      @Override
+      protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks) {
+        return new OldKeysCleaner(
+          multiNodeTasks,
+          Duration.ofMillis(0)
         );
       }
     };
@@ -170,6 +183,12 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .getParameters()
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
+
+    await().until(() ->
+      myFixture.getMultiNodeTasks().findInProgressTasks().stream()
+        .noneMatch(submittedTask ->
+          CURRENT_ACCESS_KEY.equals(submittedTask.getIdentity())
+    ));
 
     Mockito.verify(iam, times(1)).deleteAccessKey(new DeleteAccessKeyRequest()
       .withAccessKeyId(CURRENT_ACCESS_KEY)

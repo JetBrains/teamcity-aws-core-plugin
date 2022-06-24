@@ -13,14 +13,14 @@
   </function>
 
   <params>
-    <param name="aws.connection.id" dslName="awsConnectionId" type="string" mandatory="true">
+    <param name="awsConnectionId" dslName="awsConnectionId" type="string" mandatory="true">
       <description>
         AWS Connection ID.
         @see AwsConnection
       </description>
     </param>
 
-    <param name="aws.session.duration" dslName="sessionDuration" type="string">
+    <param name="awsSessionDuration" dslName="sessionDuration" type="string">
       <description>
         Session duration in minutes
       </description>

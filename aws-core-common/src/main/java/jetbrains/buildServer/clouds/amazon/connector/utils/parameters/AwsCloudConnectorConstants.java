@@ -9,13 +9,13 @@ public final class AwsCloudConnectorConstants {
   public static final String DEFAULT_SUFFIX = "aws";
   public static final int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
 
-  public static final String CREDENTIALS_TYPE_PARAM = "aws.credentials.type";
+  public static final String CREDENTIALS_TYPE_PARAM = "awsCredentialsType";
   public static final String CREDENTIALS_TYPE_LABEL = "Type";
 
-  public static final String STATIC_CREDENTIALS_TYPE = "aws.access.keys";
+  public static final String STATIC_CREDENTIALS_TYPE = "awsAccessKeys";
   public static final String ACCESS_KEYS_LABEL = "Access keys";
 
-  public static final String REGION_NAME_PARAM = "aws.region.name";
+  public static final String REGION_NAME_PARAM = "awsRegionName";
   public static final String REGION_NAME_LABEL = "AWS region";
   public static final String REGION_NAME_DEFAULT = "us-east-1";
   public static final String REGION_SELECT_ID = "regionSelect";
@@ -41,6 +41,6 @@ public final class AwsCloudConnectorConstants {
 
   public static final String PRINCIPAL_AWS_CONNECTION_ID = "principalAwsConnId";
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
-  public static final String CHOSEN_AWS_CONN_ID_PARAM = "aws.connection.id";
+  public static final String CHOSEN_AWS_CONN_ID_PARAM = "awsConnectionId";
   public static final String CHOSEN_AWS_CONN_ID_LABEL = "AWS Connection";
 }

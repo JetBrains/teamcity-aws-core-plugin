@@ -22,32 +22,32 @@
         AWS connection display name
       </description>
     </param>
-    <param name="aws.credentials.type" dslName="credentialsType" type="compound">
+    <param name="awsCredentialsType" dslName="credentialsType" type="compound">
       <description>
         The way how to obtain credentials (just provide the keys, assume IAM role or other)
       </description>
       <option name="static" value="aws.access.keys">
-        <param name="aws.access.key.id" dslName="accessKeyId" type="string" mandatory="true">
+        <param name="awsAccessKeyId" dslName="accessKeyId" type="string" mandatory="true">
           <description>
             Access Key ID
           </description>
         </param>
-        <param name="secure:aws.secret.access.key" dslName="secretAccessKey" type="string" mandatory="true">
+        <param name="secure:awsSecretAccessKey" dslName="secretAccessKey" type="string" mandatory="true">
           <description>
             Secret Access Key
           </description>
         </param>
-        <param name="aws.region.name" dslName="regionName" type="string">
+        <param name="awsRegionName" dslName="regionName" type="string">
           <description>
             Region where this connection will be used.
           </description>
         </param>
-        <param name="aws.session.credentials" dslName="useSessionCredentials" type="boolean" trueValue="true" falseValue="false">
+        <param name="awsSessionCredentials" dslName="useSessionCredentials" type="boolean" trueValue="true" falseValue="false">
           <description>
             Whether to use temporary credentials provided by STS service
           </description>
         </param>
-        <param name="aws.sts.endpoint" dslName="stsEndpoint" type="string">
+        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
           <description>
             Endpoint from where to obtain session credentials
           </description>

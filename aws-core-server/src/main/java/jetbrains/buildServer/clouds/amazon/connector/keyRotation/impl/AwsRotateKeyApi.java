@@ -28,9 +28,11 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.ClientConfigurationBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ConfigActionFactory;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SecurityContextEx;
@@ -45,7 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AwsRotateKeyApi {
+public class AwsRotateKeyApi implements RotateKeyApi {
 
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final SecurityContextEx mySecurityContext;
@@ -93,7 +95,31 @@ public class AwsRotateKeyApi {
     );
   }
 
-  public void createNewKey() throws KeyRotationException {
+  @Override
+  public void rotateKey() throws KeyRotationException {
+    Loggers.CLOUD.debug("Creating a new key...");
+    createNewKey();
+
+    Loggers.CLOUD.debug("Waiting for the new key to become available...");
+    waitUntilRotatedKeyIsAvailable();
+
+    Loggers.CLOUD.debug("Updating the AWS Connection...");
+    updateConnection();
+  }
+
+  @Override
+  public void deletePreviousAccessKey() throws KeyRotationException {
+    DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
+      .withAccessKeyId(myPreviousCredentials.getCredentials().getAWSAccessKeyId())
+      .withRequestCredentialsProvider(myPreviousCredentials);
+    try {
+      myIam.deleteAccessKey(deleteAccessKeyRequest);
+    } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
+      throw new KeyRotationException(e);
+    }
+  }
+
+  private void createNewKey() throws KeyRotationException {
     CreateAccessKeyResult createAccessKeyResult = createAccessKey(myPreviousCredentials);
     myNewCredentials = new AWSStaticCredentialsProvider(
       new BasicAWSCredentials(
@@ -103,7 +129,7 @@ public class AwsRotateKeyApi {
     );
   }
 
-  public void waitUntilRotatedKeyIsAvailable() throws KeyRotationException {
+  private void waitUntilRotatedKeyIsAvailable() throws KeyRotationException {
     GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest()
       .withRequestCredentialsProvider(myNewCredentials);
     try {
@@ -116,7 +142,7 @@ public class AwsRotateKeyApi {
     }
   }
 
-  public void updateConnection() throws KeyRotationException {
+  private void updateConnection() throws KeyRotationException {
     OAuthConnectionDescriptor currentConnection = myOAuthConnectionsManager.findConnectionById(myProject, myAwsConnectionDescriptor.getId());
     if (currentConnection == null) {
       throw new KeyRotationException("The connection has been deleted while it was being rotated. Cannot update connection with ID: " + myAwsConnectionDescriptor.getId());
@@ -128,17 +154,6 @@ public class AwsRotateKeyApi {
 
     myOAuthConnectionsManager.updateConnection(myProject, currentConnection.getId(), currentConnection.getOauthProvider().getType(), newParameters);
     persist(myProject);
-  }
-
-  public void deletePreviousAccessKey() throws KeyRotationException {
-    DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
-      .withAccessKeyId(myPreviousCredentials.getCredentials().getAWSAccessKeyId())
-      .withRequestCredentialsProvider(myPreviousCredentials);
-    try {
-      myIam.deleteAccessKey(deleteAccessKeyRequest);
-    } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
-      throw new KeyRotationException(e);
-    }
   }
 
   private void persist(@NotNull final SProject project) {

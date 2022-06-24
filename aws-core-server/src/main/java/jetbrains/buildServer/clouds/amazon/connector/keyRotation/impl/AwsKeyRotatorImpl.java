@@ -18,6 +18,7 @@ package jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl;
 
 import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
@@ -60,22 +61,14 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
     String previousAccessKey = awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
     Loggers.CLOUD.info("Key rotation initiated for the AWS key: " + ParamUtil.maskKey(previousAccessKey));
-    AwsRotateKeyApi rotateKeyApi = createRotateKeyApi(awsConnectionDescriptor, project);
-
-    Loggers.CLOUD.debug("Creating a new key...");
-    rotateKeyApi.createNewKey();
-
-    Loggers.CLOUD.debug("Waiting for the new key to become available...");
-    rotateKeyApi.waitUntilRotatedKeyIsAvailable();
-
-    Loggers.CLOUD.debug("Updating the AWS Connection...");
-    rotateKeyApi.updateConnection();
+    RotateKeyApi rotateKeyApi = createRotateKeyApi(awsConnectionDescriptor, project);
+    rotateKeyApi.rotateKey();
 
     myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, rotateKeyApi);
   }
 
   @NotNull
-  protected AwsRotateKeyApi createRotateKeyApi(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
+  protected RotateKeyApi createRotateKeyApi(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
     return new AwsRotateKeyApi(
       myOAuthConnectionsManager,
       mySecurityContext,

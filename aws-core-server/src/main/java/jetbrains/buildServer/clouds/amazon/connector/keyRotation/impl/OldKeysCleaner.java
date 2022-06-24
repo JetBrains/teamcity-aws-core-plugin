@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl;
 
 import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CannotAcceptTaskException;
@@ -19,7 +20,7 @@ public class OldKeysCleaner {
   private final MultiNodeTasks myMultiNodeTasks;
   private final TemporalAmount myOldKeyPreserveTime;
 
-  private final ConcurrentHashMap<String, AwsRotateKeyApi> oldKeysRotateApis = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, RotateKeyApi> oldKeysRotateApis = new ConcurrentHashMap<>();
 
   public OldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
                         @NotNull final TemporalAmount oldKeyPreserveTime) {
@@ -57,7 +58,7 @@ public class OldKeysCleaner {
     });
   }
 
-  public void scheduleAwsKeyForDeletion(@NotNull final String awsAccessKeyId, @NotNull final AwsRotateKeyApi awsRotateApi) {
+  public void scheduleAwsKeyForDeletion(@NotNull final String awsAccessKeyId, @NotNull final RotateKeyApi awsRotateApi) {
     oldKeysRotateApis.put(awsAccessKeyId, awsRotateApi);
 
     ZonedDateTime keyDeletionTime = ZonedDateTime

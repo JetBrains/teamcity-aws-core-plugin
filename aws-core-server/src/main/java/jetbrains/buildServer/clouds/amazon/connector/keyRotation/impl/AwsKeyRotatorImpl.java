@@ -21,32 +21,35 @@ import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.ConfigActionFactory;
+import jetbrains.buildServer.serverSide.MultiNodeTasks;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
-import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 
-public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotator {
+public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
   private static final int ROTATE_TIMEOUT_SEC = 30;
+  private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofDays(1);
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final SecurityContextEx mySecurityContext;
   private final ConfigActionFactory myConfigActionFactory;
-
-  private final ConcurrentHashMap<String, AwsRotateKeyActions> scheduledForDeletionKeys = new ConcurrentHashMap<>();
+  private final OldKeysCleaner myOldKeysCleaner;
 
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
-                           @NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
                            @NotNull final SecurityContextEx securityContext,
-                           @NotNull final ConfigActionFactory configActionFactory) {
+                           @NotNull final ConfigActionFactory configActionFactory,
+                           @NotNull MultiNodeTasks multiNodeTasks) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
     myConfigActionFactory = configActionFactory;
-    buildServerEventDispatcher.addListener(this);
+
+    myOldKeysCleaner = createOldKeysCleaner(multiNodeTasks);
   }
 
   public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws KeyRotationException {
@@ -66,12 +69,13 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     rotateActions.waitUntilRotatedKeyIsAvailable();
 
     Loggers.CLOUD.debug("Updating the AWS Connection...");
-    scheduledForDeletionKeys.put(previousAccessKey, rotateActions);
     rotateActions.updateConnection();
+
+    myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, rotateActions);
   }
 
   @NotNull
-  protected AwsRotateKeyActions createRotateKeyActions(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project){
+  protected AwsRotateKeyActions createRotateKeyActions(@NotNull final OAuthConnectionDescriptor awsConnectionDescriptor, @NotNull final SProject project) {
     return new AwsRotateKeyActions(
       myOAuthConnectionsManager,
       mySecurityContext,
@@ -82,29 +86,11 @@ public class AwsKeyRotatorImpl extends BuildServerAdapter implements AwsKeyRotat
     );
   }
 
-  @Override
-  public void projectFeatureChanged(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor before, @NotNull final SProjectFeatureDescriptor after) {
-    if (!OAuthConstants.FEATURE_TYPE.equals(after.getType())) {
-      return;
-    }
-
-    String previousAccessKeyId = before.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-
-    if (previousAccessKeyId == null || !scheduledForDeletionKeys.containsKey(previousAccessKeyId)) {
-      return;
-    }
-    String newAccessKeyId = after.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM);
-
-    if (!newAccessKeyId.equals(previousAccessKeyId)) {
-      try {
-        Loggers.CLOUD.info("Deleting the previous key " + ParamUtil.maskKey(previousAccessKeyId));
-        scheduledForDeletionKeys.get(previousAccessKeyId).deletePreviousAccessKey();
-
-      } catch (KeyRotationException keyRotationException) {
-        Loggers.CLOUD.warn("Failed to delete old AWS key after rotation: " + keyRotationException.getMessage());
-      }
-
-      scheduledForDeletionKeys.remove(previousAccessKeyId);
-    }
+  @NotNull
+  protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks) {
+    return new OldKeysCleaner(
+      multiNodeTasks,
+      OLD_KEY_PRESERVE_TIME
+    );
   }
 }

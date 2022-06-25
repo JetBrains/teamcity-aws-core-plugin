@@ -28,5 +28,6 @@
     <orderEntry type="module" module-name="server-test-core" />
     <orderEntry type="module" module-name="web" />
     <orderEntry type="library" name="org.mockito:mockito-core" level="project" />
+    <orderEntry type="library" name="org.awaitility:awaitility:4.2.0" level="project" />
   </component>
 </module>

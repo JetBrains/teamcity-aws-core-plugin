@@ -107,9 +107,7 @@
           }
 
         } else {
-          for (let i = 0; i < errors.length; i++) {
             errors.forEach(({message, id}) => addError(message, $j('.' + id)));
-          }
           toggleErrors(true);
         }
       }

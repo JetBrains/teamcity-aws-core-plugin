@@ -23,7 +23,7 @@ public class StsClientBuilder {
       Regions.US_EAST_1.getName()
     );
 
-    if (! stsEndpoint.equals(STS_GLOBAL_ENDPOINT)) {
+    if (stsEndpoint != null && ! stsEndpoint.equals(STS_GLOBAL_ENDPOINT)) {
       try {
         Regions awsRegion = Regions.fromName(properties.get(REGION_NAME_PARAM));
         endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(

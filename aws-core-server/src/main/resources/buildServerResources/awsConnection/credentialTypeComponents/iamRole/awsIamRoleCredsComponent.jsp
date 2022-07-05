@@ -52,12 +52,15 @@
         </td>
     </tr>
 
-    <tr id="${sts_endpoint_param}_row">
-        <th><label for="${sts_endpoint_param}">${sts_endpoint_label}</label></th>
-        <td><props:textProperty name="${sts_endpoint_param}"
-                                value="${empty stsEndpoint ? sts_endpoint_default : stsEndpoint}" className="longField" maxlength="256"/>
-            <span class="smallNote">Default is: ${sts_endpoint_default}</span>
-            <span class="error" id="error_${sts_endpoint_param}"></span>
+    <tr id="${sts_endpoint_param_iam_role}_row">
+        <th><label for="${sts_endpoint_param_iam_role}">${sts_endpoint_label}</label></th>
+        <td><props:textProperty id="${sts_endpoint_field_id_iam_role}"
+                                name="${sts_endpoint_param_iam_role}"
+                                value="${stsEndpoint}" className="longField" maxlength="256"/>
+            <span class="smallNote">The global endpoint is: ${sts_global_endpoint}</span>
+            <span class="error" id="error_${sts_endpoint_param_iam_role}"></span>
         </td>
     </tr>
 </l:settingsGroup>
+
+<jsp:include page="../stsEndpointLogic.jsp"/>

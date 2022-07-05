@@ -32,7 +32,3 @@
 <c:set var="iam_role_session_name_param" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_PARAM%>"/>
 <c:set var="iam_role_session_name_label" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_LABEL%>"/>
 <c:set var="iam_role_session_name_default" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_DEFAULT%>"/>
-
-<c:set var="sts_endpoint_param" value="<%=AwsAssumeIamRoleParams.STS_ENDPOINT_PARAM_IAM_ROLE%>"/>
-<c:set var="sts_endpoint_label" value="<%=AwsAccessKeysParams.STS_ENDPOINT_LABEL%>"/>
-<c:set var="sts_endpoint_default" value="<%=AwsAccessKeysParams.STS_ENDPOINT_DEFAULT%>"/>

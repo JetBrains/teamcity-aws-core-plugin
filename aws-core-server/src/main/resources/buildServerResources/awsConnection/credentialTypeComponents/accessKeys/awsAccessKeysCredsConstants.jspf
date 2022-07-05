@@ -30,10 +30,6 @@
 <c:set var="use_session_credentials_label" value="<%=AwsAccessKeysParams.SESSION_CREDENTIALS_LABEL%>"/>
 <c:set var="use_session_credentials_default" value="<%=AwsAccessKeysParams.SESSION_CREDENTIALS_DEFAULT%>"/>
 
-<c:set var="sts_endpoint_param" value="<%=AwsAccessKeysParams.STS_ENDPOINT_PARAM%>"/>
-<c:set var="sts_endpoint_label" value="<%=AwsAccessKeysParams.STS_ENDPOINT_LABEL%>"/>
-<c:set var="sts_global_endpoint" value="<%=AwsAccessKeysParams.STS_GLOBAL_ENDPOINT%>"/>
-
 <c:set var="rotate_key_button_id" value="<%=AwsAccessKeysParams.ROTATE_KEY_BTTN_ID%>"/>
 <c:set var="rotate_key_controller_url" value="<%=AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL%>"/>
 <c:set var="aws_connection_dialog_name" value="<%=AwsAccessKeysParams.AWS_CONN_DIALOG_NAME%>"/>

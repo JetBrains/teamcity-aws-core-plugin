@@ -29,6 +29,8 @@
 <c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
 <c:set var="rotateKeySpinnerId" value="spinner_${rotate_key_button_id}"/>
 
+<jsp:include page="../stsEndpointLogic.jsp"/>
+
 <l:settingsGroup title="Access Key">
     <tr id="${access_key_id_param}_row">
         <th><label for="${access_key_id_param}">${access_key_id_label}: <l:star/></label></th>
@@ -89,36 +91,6 @@
 
 
 <script>
-
-    let $regionSelectObject = $j('#${region_select_id}')[0];
-    let $useSessionCredentialsObject = $j('#useSessionCredentialsCheckbox')[0];
-
-    $regionSelectObject.onchange = function(){
-        $j('#${sts_endpoint_field_id}').val('https://sts.' + this.value + '.amazonaws.com')
-    };
-
-    $useSessionCredentialsObject.onchange = function(){
-        $j('#useSessionCredentials').val(this.checked);
-        toggleStsEndpint();
-    };
-
-    $j(document).ready(function () {
-        if (${empty stsEndpoint}) {
-            $j('#${sts_endpoint_field_id}').val('https://sts.' + $regionSelectObject.value + '.amazonaws.com')
-            toggleStsEndpint();
-        }
-    });
-
-    let toggleStsEndpint = function () {
-        if ($useSessionCredentialsObject.checked){
-            $j('.stsEndpointClass').removeClass('hidden');
-        } else {
-            $j('.stsEndpointClass').addClass('hidden');
-        }
-    };
-
-
-
 
     BS.OAuthConnectionDialog._errorIds = [
         '${rotate_key_button_id}'

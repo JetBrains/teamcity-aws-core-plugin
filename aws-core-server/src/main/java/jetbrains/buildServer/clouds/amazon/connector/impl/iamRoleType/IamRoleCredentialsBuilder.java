@@ -25,7 +25,6 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConne
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
@@ -38,7 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.getResourceNameFromArn;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isValidSessionName;
 
 public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
@@ -79,7 +80,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder impleme
         myExecutorServices
       );
     } catch (AmazonClientException ace) {
-      throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + AwsExceptionUtils.getAwsErrorMessage(ace));
+      throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));
     }
   }
 
@@ -112,6 +113,9 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder impleme
   @Override
   @NotNull
   public String getPropertiesDescription(@NotNull final Map<String, String> properties) {
-    return "Assume role to gain temporary credentials with specified privileges";
+    return
+      "Assume " +
+        getResourceNameFromArn(properties.get(IAM_ROLE_ARN_PARAM)) +
+        " role to gain temporary credentials with specified privileges";
   }
 }

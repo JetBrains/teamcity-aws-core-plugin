@@ -1,13 +1,14 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
+import java.util.List;
 import java.util.Map;
 
 import java.util.regex.Pattern;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.intellij.openapi.util.text.StringUtil.isEmptyOrSpaces;
-import static com.intellij.openapi.util.text.StringUtil.parseInt;
+import static com.intellij.openapi.util.text.StringUtil.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
@@ -56,5 +57,22 @@ public class ParamUtil {
     } else {
       return parseInt(sessionDurationStr, SESSION_DURATION_DEFAULT_NUMBER);
     }
+  }
+
+  /**
+   * Extract eh part after "/" symbol.
+   * @param  resourceArn  ARN of the resource where to find the name.
+   * @return Empty String if ARN is empty or part after "/" symbol otherwise.
+   */
+  @NotNull
+  public static String getResourceNameFromArn(@Nullable final String resourceArn) {
+    if(isEmptyOrSpaces(resourceArn)){
+      return "";
+    }
+    List<String> parts = split(resourceArn, "/");
+    if (parts.size() > 1){
+      return parts.get(1);
+    }
+    return "";
   }
 }

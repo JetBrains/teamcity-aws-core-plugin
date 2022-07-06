@@ -25,7 +25,7 @@ import java.util.List;
 
 public abstract class BaseAwsCredentialsBuilder {
   protected void throwExceptionIfPropertiesInvalid(@NotNull final List<InvalidProperty> invalidProperties) throws AwsConnectorException {
-    if (invalidProperties.size() > 0) {
+    if (! invalidProperties.isEmpty()) {
       InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
       String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
       throw new AwsConnectorException(

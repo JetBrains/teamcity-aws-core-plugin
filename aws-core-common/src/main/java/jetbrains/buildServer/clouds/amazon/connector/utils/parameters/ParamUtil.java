@@ -60,9 +60,9 @@ public class ParamUtil {
   }
 
   /**
-   * Extract eh part after "/" symbol.
+   * Extract the part after "/" symbol.
    * @param  resourceArn  ARN of the resource where to find the name.
-   * @return Empty String if ARN is empty or part after "/" symbol otherwise.
+   * @return Empty String if ARN is empty or the part after "/" symbol otherwise.
    */
   @NotNull
   public static String getResourceNameFromArn(@Nullable final String resourceArn) {

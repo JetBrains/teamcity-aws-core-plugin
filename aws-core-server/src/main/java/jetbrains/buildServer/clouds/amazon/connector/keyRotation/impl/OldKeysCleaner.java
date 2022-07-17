@@ -55,6 +55,7 @@ public class OldKeysCleaner {
             throw new KeyRotationException("The task to delete the key could not find it in the scheduled for deletion keys map");
           }
           previousKeyRotateApi.deletePreviousAccessKey();
+          task.finished();
 
         } catch (KeyRotationException e) {
           String errMsg = "Cannot delete the old AWS key " + ParamUtil.maskKey(previousAccessKeyId) + ": ";
@@ -63,7 +64,6 @@ public class OldKeysCleaner {
 
         } finally {
           oldKeysRotateApis.remove(previousAccessKeyId);
-          task.finished();
         }
       }
     });

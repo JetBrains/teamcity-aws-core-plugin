@@ -32,6 +32,7 @@ import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseControllerTestCase;
 import jetbrains.buildServer.serverSide.MultiNodeTasks;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.ServerResponsibility;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
@@ -131,7 +132,8 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
       myOAuthConnectionsManager,
       myFixture.getSecurityContext(),
       myFixture.getConfigActionFactory(),
-      myFixture.getMultiNodeTasks()
+      myFixture.getMultiNodeTasks(),
+      myFixture.getServerResponsibility()
     ) {
       @NotNull
       @Override
@@ -149,9 +151,11 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
 
       @NotNull
       @Override
-      protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks) {
+      protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
+                                                    @NotNull final ServerResponsibility serverResponsibility) {
         return new OldKeysCleaner(
           multiNodeTasks,
+          serverResponsibility,
           Duration.ofMillis(0)
         );
       }

@@ -22,10 +22,7 @@ import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.ConfigActionFactory;
-import jetbrains.buildServer.serverSide.MultiNodeTasks;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.SecurityContextEx;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
@@ -45,12 +42,13 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
                            @NotNull final SecurityContextEx securityContext,
                            @NotNull final ConfigActionFactory configActionFactory,
-                           @NotNull MultiNodeTasks multiNodeTasks) {
+                           @NotNull MultiNodeTasks multiNodeTasks,
+                           @NotNull final ServerResponsibility serverResponsibility) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
     myConfigActionFactory = configActionFactory;
 
-    myOldKeysCleaner = createOldKeysCleaner(multiNodeTasks);
+    myOldKeysCleaner = createOldKeysCleaner(multiNodeTasks, serverResponsibility);
   }
 
   public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws KeyRotationException {
@@ -80,9 +78,11 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   }
 
   @NotNull
-  protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks) {
+  protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
+                                                @NotNull final ServerResponsibility serverResponsibility) {
     return new OldKeysCleaner(
       multiNodeTasks,
+      serverResponsibility,
       OLD_KEY_PRESERVE_TIME
     );
   }

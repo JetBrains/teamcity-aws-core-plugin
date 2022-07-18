@@ -25,5 +25,11 @@
         Session duration in minutes
       </description>
     </param>
+
+    <param name="awsConnectionDisplayName" dslName="awsConnectionDisplayName" type="string">
+      <description>
+        The name of the AWS Connection that will be shown in the Build Feature description
+      </description>
+    </param>
   </params>
 </dsl-extension>

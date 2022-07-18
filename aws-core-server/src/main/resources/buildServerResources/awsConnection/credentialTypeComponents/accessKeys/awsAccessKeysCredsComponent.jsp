@@ -64,17 +64,17 @@
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
-    <tr id="${use_session_credentials_param}_row">
+    <tr class="non_serializable_form_elements_container" id="${use_session_credentials_param}_row">
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>
             <props:checkboxProperty id="useSessionCredentialsCheckbox"
                                     name="${use_session_credentials_param}_checkbox"
                                     checked="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"
                                     />
-            <props:hiddenProperty id="useSessionCredentials" name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
             <span>Issue temporary credentials by request</span>
         </td>
     </tr>
+    <props:hiddenProperty id="useSessionCredentials" name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
 
     <tr id="${sts_endpoint_param}_row" class="stsEndpointClass">
         <th><label for="${sts_endpoint_param}">${sts_endpoint_label}</label></th>

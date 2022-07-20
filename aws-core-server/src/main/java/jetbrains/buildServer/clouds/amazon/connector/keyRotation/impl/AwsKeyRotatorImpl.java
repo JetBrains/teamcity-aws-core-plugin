@@ -27,13 +27,9 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
-import java.time.temporal.TemporalAmount;
-
 public class AwsKeyRotatorImpl implements AwsKeyRotator {
 
   private static final int ROTATE_TIMEOUT_SEC = 30;
-  private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofDays(1);
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final SecurityContextEx mySecurityContext;
   private final ConfigActionFactory myConfigActionFactory;
@@ -42,13 +38,12 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
   public AwsKeyRotatorImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
                            @NotNull final SecurityContextEx securityContext,
                            @NotNull final ConfigActionFactory configActionFactory,
-                           @NotNull MultiNodeTasks multiNodeTasks,
-                           @NotNull final ServerResponsibility serverResponsibility) {
+                           @NotNull final OldKeysCleaner oldKeysCleaner) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
     myConfigActionFactory = configActionFactory;
 
-    myOldKeysCleaner = createOldKeysCleaner(multiNodeTasks, serverResponsibility);
+    myOldKeysCleaner = oldKeysCleaner;
   }
 
   public void rotateConnectionKeys(@NotNull final String connectionId, @NotNull final SProject project) throws KeyRotationException {
@@ -62,7 +57,7 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
     RotateKeyApi rotateKeyApi = createRotateKeyApi(awsConnectionDescriptor, project);
     rotateKeyApi.rotateKey();
 
-    myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, rotateKeyApi);
+    myOldKeysCleaner.scheduleAwsKeyForDeletion(previousAccessKey, connectionId, project.getExternalId());
   }
 
   @NotNull
@@ -74,16 +69,6 @@ public class AwsKeyRotatorImpl implements AwsKeyRotator {
       awsConnectionDescriptor,
       project,
       ROTATE_TIMEOUT_SEC
-    );
-  }
-
-  @NotNull
-  protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
-                                                @NotNull final ServerResponsibility serverResponsibility) {
-    return new OldKeysCleaner(
-      multiNodeTasks,
-      serverResponsibility,
-      OLD_KEY_PRESERVE_TIME
     );
   }
 }

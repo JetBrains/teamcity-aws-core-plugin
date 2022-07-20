@@ -28,11 +28,10 @@ import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.IamClientBuilder;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseControllerTestCase;
-import jetbrains.buildServer.serverSide.MultiNodeTasks;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.ServerResponsibility;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
@@ -132,8 +131,7 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
       myOAuthConnectionsManager,
       myFixture.getSecurityContext(),
       myFixture.getConfigActionFactory(),
-      myFixture.getMultiNodeTasks(),
-      myFixture.getServerResponsibility()
+      createOldKeysCleaner()
     ) {
       @NotNull
       @Override
@@ -148,18 +146,28 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
           project
         );
       }
-
-      @NotNull
-      @Override
-      protected OldKeysCleaner createOldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
-                                                    @NotNull final ServerResponsibility serverResponsibility) {
-        return new OldKeysCleaner(
-          multiNodeTasks,
-          serverResponsibility,
-          Duration.ofMillis(0)
-        );
-      }
     };
+  }
+
+  private OldKeysCleaner createOldKeysCleaner() {
+
+    IamClientBuilder iamClientBuilder = Mockito.mock(IamClientBuilder.class);
+    when(iamClientBuilder.createIamClient(any(), any()))
+      .thenReturn(iam);
+
+    OldKeysCleaner oldKeysCleaner = new OldKeysCleaner(
+      myFixture.getMultiNodeTasks(),
+      myFixture.getServerResponsibility(),
+      myOAuthConnectionsManager,
+      myFixture.getProjectManager(),
+      iamClientBuilder
+    );
+    OldKeysCleaner OldKeysCleanerSpy = Mockito.spy(oldKeysCleaner);
+
+    when(OldKeysCleanerSpy.getOldKeyPreserveTime())
+      .thenReturn(Duration.ofMillis(0));
+
+    return OldKeysCleanerSpy;
   }
 
   @Test

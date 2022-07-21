@@ -29,6 +29,9 @@
 <c:set var="aws_caller_identity_attr_user_id" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ATTR_USER_ID%>"/>
 <c:set var="aws_caller_identity_attr_user_arn" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ATTR_USER_ARN%>"/>
 
+<c:set var="connection_id_param" value="<%=AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM%>"/>
+<c:set var="connection_id_label" value="<%=AwsCloudConnectorConstants.USER_DEFINED_ID_LABEL%>"/>
+
 <c:set var="credentials_type_param" value="<%=AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM%>"/>
 <c:set var="credentials_type_label" value="<%=AwsCloudConnectorConstants.CREDENTIALS_TYPE_LABEL%>"/>
 

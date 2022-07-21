@@ -10,6 +10,8 @@ public final class AwsCloudConnectorConstants {
   public static final int DEFAULT_CONNECTION_TIMEOUT = 60 * 1000;
 
   public static final String CREDENTIALS_TYPE_PARAM = "awsCredentialsType";
+  public static final String USER_DEFINED_ID_PARAM = "connectionId";
+  public static final String USER_DEFINED_ID_LABEL = "Feature ID";
   public static final String CREDENTIALS_TYPE_LABEL = "Type";
 
   public static final String STATIC_CREDENTIALS_TYPE = "awsAccessKeys";

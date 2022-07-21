@@ -20,6 +20,7 @@ import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -68,7 +69,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
   @BeforeMethod
   public void setup() throws Exception {
     super.setUp();
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl();
+    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
     myAwsConnectionProperties = createDefaultProperties();
     myExecutorServices = Mockito.mock(ExecutorServices.class);
     myProject = Mockito.mock(SProject.class);

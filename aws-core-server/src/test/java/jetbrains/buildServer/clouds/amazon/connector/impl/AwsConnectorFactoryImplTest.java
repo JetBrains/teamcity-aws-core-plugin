@@ -25,7 +25,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
 
   @BeforeMethod
   public void setup() {
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl();
+    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
     myConnectorProperties = new HashMap<>();
     myExecutorServices = Mockito.mock(ExecutorServices.class);
   }

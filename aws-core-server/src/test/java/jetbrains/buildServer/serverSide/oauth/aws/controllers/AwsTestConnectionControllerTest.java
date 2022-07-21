@@ -6,6 +6,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -50,7 +51,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   @BeforeMethod
   public void setUp() throws IOException {
     super.setUp();
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl();
+    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
     ExecutorServices myExecutorServices = Mockito.mock(ExecutorServices.class);
     AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 

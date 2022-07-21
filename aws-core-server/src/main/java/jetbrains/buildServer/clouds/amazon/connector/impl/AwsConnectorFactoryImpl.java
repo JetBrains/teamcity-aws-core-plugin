@@ -17,10 +17,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
+  private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
+  public AwsConnectorFactoryImpl(@NotNull final AwsConnectionIdGenerator awsConnectionIdGenerator){
+    myAwsConnectionIdGenerator = awsConnectionIdGenerator;
+  }
 
   @NotNull
   @Override
@@ -41,7 +46,14 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       }
 
       AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
-      return credentialsBuilder.validateProperties(properties);
+      List<InvalidProperty> invalidProperties = credentialsBuilder.validateProperties(properties);
+
+      String userDefinedId = properties.get(USER_DEFINED_ID_PARAM);
+      if (userDefinedId != null && ! myAwsConnectionIdGenerator.isUnique(userDefinedId)) {
+        invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server."));
+      }
+
+      return invalidProperties;
 
     } catch (NoSuchAwsCredentialsBuilderException e){
       List<InvalidProperty> invalidProperties = new ArrayList<>();

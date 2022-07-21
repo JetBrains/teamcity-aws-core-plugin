@@ -31,6 +31,7 @@
 <c:url var="testAwsConnectionControllerUrl" value="${test_connection_controller_url}"/>
 
 <c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
+<c:set var="userDefinedConnectionId" value="${propertiesBean.properties[connection_id_param]}"/>
 
 <bs:linkScript>
   /js/bs/testConnection.js
@@ -44,6 +45,27 @@
     <span class="error" id="error_displayName"></span>
   </td>
 </tr>
+
+
+<tr>
+  <td><label for="displayName">${connection_id_label}:</label></td>
+  <td>
+    <c:choose>
+      <c:when test = "${empty userDefinedConnectionId}">
+        <props:textProperty name="${connection_id_param}" className="longField" style="width: 20em;"
+                            value="${userDefinedConnectionId}"/>
+      </c:when>
+      <c:otherwise>
+        <input readonly class="nowrap" className="longField"
+               value="${userDefinedConnectionId}"/>
+      </c:otherwise>
+    </c:choose>
+    <span class="smallNote nowrap">Specify the identificator for this connection.</span>
+    <span class="error" id="error_${connection_id_param}"></span>
+  </td>
+</tr>
+
+
 
 <tr>
   <th><label for="${region_name_param}">${region_name_label}: </label></th>

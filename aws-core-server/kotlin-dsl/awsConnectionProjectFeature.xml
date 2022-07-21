@@ -17,6 +17,11 @@
   </function>
 
   <params>
+    <param name="connectionId" dslName="connectionId">
+      <description>
+        AWS connection project feature ID
+      </description>
+    </param>
     <param name="displayName" dslName="name">
       <description>
         AWS connection display name

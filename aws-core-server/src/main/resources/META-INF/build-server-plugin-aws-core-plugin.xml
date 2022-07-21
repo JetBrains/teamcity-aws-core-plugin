@@ -10,6 +10,8 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsConnectionTesterImpl"/>
 <!--    ^-->
 
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdGenerator"/>
+
     <bean class="jetbrains.buildServer.clouds.amazon.connector.backwardsCompat.AwsConnectorExtensionRegistar"/>
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>

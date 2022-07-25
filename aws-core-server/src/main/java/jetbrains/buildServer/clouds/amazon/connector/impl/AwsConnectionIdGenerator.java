@@ -16,9 +16,12 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import jetbrains.buildServer.clouds.CloudException;
+import java.util.Map;
+import java.util.Random;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.ServerPaths;
+import jetbrains.buildServer.serverSide.CustomDataStorage;
+import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorFactory;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
@@ -28,50 +31,23 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
 public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
-  public final static String AWS_CONNECTIONS_IDX_FOLDER = "awsConnectionsIdx";
-  public final static String AWS_CONNECTIONS_IDX_FILE = "awsConnections.idx";
-  private final ReadWriteLock myRWLock = new ReentrantReadWriteLock();
-  private final File myAwsConnectionsIdxFile;
+  public final static String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
+  public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
+  public final static String FIRST_INCREMENTAL_ID = String.valueOf(0);
+  public final static String PROJECT_FEATURE_ID_PREFIX = "PROJECT_EXT_";
   private final IdentifiersGenerator myDefaultIdGenerator;
+  private final SProject rootProject;
 
-  public AwsConnectionIdGenerator(@NotNull final ServerPaths serverPaths,
-                                  @NotNull ProjectFeatureDescriptorFactory featureDescriptorFactory,
-                                  @NotNull IdGeneratorRegistry idGeneratorRegistry) {
-
-    myDefaultIdGenerator = idGeneratorRegistry.acquireIdGenerator("PROJECT_EXT_");
-
-    File awsConnectionsIdxFolder = new File(serverPaths.getPluginDataDirectory(), AWS_CONNECTIONS_IDX_FOLDER);
-    if (!awsConnectionsIdxFolder.exists()) {
-      awsConnectionsIdxFolder.mkdirs();
-    }
-    if (!awsConnectionsIdxFolder.exists()) {
-      throw new CloudException("Unable to create the folder for aws connection idx at " + awsConnectionsIdxFolder.getAbsolutePath());
-    }
-
-    myAwsConnectionsIdxFile = new File(awsConnectionsIdxFolder, AWS_CONNECTIONS_IDX_FILE);
-    try {
-      if (!myAwsConnectionsIdxFile.createNewFile()) {
-        boolean fileIsDeleted = myAwsConnectionsIdxFile.delete();
-        if (!fileIsDeleted) {
-          throw new CloudException("Unable to clean the file for aws connection idx at " + myAwsConnectionsIdxFile.getAbsolutePath());
-        }
-        myAwsConnectionsIdxFile.createNewFile();
-      }
-    } catch (IOException e) {
-      throw new CloudException("Unable to create the file for aws connection idx at " + myAwsConnectionsIdxFile.getAbsolutePath());
-    }
-
+  public AwsConnectionIdGenerator(@NotNull ProjectFeatureDescriptorFactory featureDescriptorFactory,
+                                  @NotNull IdGeneratorRegistry idGeneratorRegistry,
+                                  @NotNull final ProjectManager projectManager) {
+    myDefaultIdGenerator = idGeneratorRegistry.acquireIdGenerator(PROJECT_FEATURE_ID_PREFIX);
+    rootProject = projectManager.getRootProject();
     featureDescriptorFactory.registerGenerator(OAuthConstants.FEATURE_TYPE, this);
   }
 
@@ -83,13 +59,16 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     }
 
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
+    boolean needToGenerateId = false;
     if (userDefinedConnId == null) {
-      Loggers.CLOUD.info("User did not define the connection id, will use UUID");
-      userDefinedConnId = UUID.randomUUID().toString();
-      props.put(USER_DEFINED_ID_PARAM, userDefinedConnId);
+      needToGenerateId = true;
+      Loggers.CLOUD.info("User did not define the connection id, will generate it using incremental ID");
     } else if (!isUnique(userDefinedConnId)) {
+      needToGenerateId = true;
       Loggers.CLOUD.warn("User-defined connection id is not unique, will use UUID");
-      userDefinedConnId = UUID.randomUUID().toString();
+    }
+    if (needToGenerateId) {
+      userDefinedConnId = generateNewId();
       props.put(USER_DEFINED_ID_PARAM, userDefinedConnId);
     }
 
@@ -102,8 +81,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   @Override
   public void addGeneratedId(@NotNull final String id) {
     if (!isUnique(id)) {
-      Loggers.CLOUD.warn("Generated AWS Connection ID is not unique, please, change it and check that the file " + myAwsConnectionsIdxFile.getAbsolutePath() + " is available");
-      return;
+      Loggers.CLOUD.warn("Generated AWS Connection ID is not unique, check that your Project does not have another AWS Connection with ID: " + id);
     }
     writeNewId(id);
   }
@@ -111,20 +89,14 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public boolean isUnique(@NotNull final String connectionId) {
     String newIdSha1 = DigestUtils.sha1Hex(connectionId);
 
-    myRWLock.readLock().lock();
-    try (BufferedReader reader = new BufferedReader(new FileReader(myAwsConnectionsIdxFile))) {
-      String line = reader.readLine();
-      while (line != null) {
-        if (line.equals(newIdSha1)) {
-          return false;
-        }
-        line = reader.readLine();
+    final CustomDataStorage storage = getDataStorage();
+    final Map<String, String> values = storage.getValues();
+    if (values == null) return true;
+
+    for (String connectionIdSha1 : values.keySet()) {
+      if (connectionIdSha1.equals(newIdSha1)) {
+        return false;
       }
-    } catch (IOException e) {
-      Loggers.CLOUD.warnAndDebugDetails(String.format("Unable to read AWS Connection idx file '%s'", myAwsConnectionsIdxFile.getAbsolutePath()), e);
-      return false;
-    } finally {
-      myRWLock.readLock().unlock();
     }
     return true;
   }
@@ -133,15 +105,38 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     return !props.containsKey(CREDENTIALS_TYPE_PARAM);
   }
 
-  private void writeNewId(@NotNull String connectionId) {
-    myRWLock.writeLock().lock();
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(myAwsConnectionsIdxFile, true))) {
-      bw.write(DigestUtils.sha1Hex(connectionId));
-      bw.newLine();
-    } catch (IOException e) {
-      Loggers.CLOUD.warnAndDebugDetails(String.format("Unable to write AWS Connection ID to the file '%s'", myAwsConnectionsIdxFile.getAbsolutePath()), e);
-    } finally {
-      myRWLock.writeLock().unlock();
+  private String generateNewId() {
+    final CustomDataStorage storage = getDataStorage();
+    final Map<String, String> values = storage.getValues();
+    if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
+      storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, FIRST_INCREMENTAL_ID);
+      return FIRST_INCREMENTAL_ID;
     }
+
+    String currentIdNumber = values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM);
+    try {
+      int currentIncrementalId = Integer.parseInt(currentIdNumber);
+      currentIncrementalId++;
+      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+    } catch (NumberFormatException e) {
+      Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage", e);
+      Random r = new Random();
+      int currentIncrementalId = 100000 + r.nextInt(100000);
+      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+    }
+
+    return String.format("%s-%s", PROJECT_FEATURE_ID_PREFIX, currentIdNumber);
+  }
+
+  private void writeNewId(@NotNull String connectionId) {
+    final CustomDataStorage storage = getDataStorage();
+    storage.refresh();
+    storage.putValue(DigestUtils.sha1Hex(connectionId), connectionId);
+    Loggers.CLOUD.debug(String.format("Added sha1 of AWS Connection with ID '%s'", connectionId));
+  }
+
+  @NotNull
+  private CustomDataStorage getDataStorage() {
+    return rootProject.getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
   }
 }

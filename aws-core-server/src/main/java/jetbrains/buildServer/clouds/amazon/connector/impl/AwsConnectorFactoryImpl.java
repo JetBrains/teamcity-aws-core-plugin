@@ -50,7 +50,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
       String userDefinedId = properties.get(USER_DEFINED_ID_PARAM);
       if (userDefinedId != null && ! myAwsConnectionIdGenerator.isUnique(userDefinedId)) {
-        invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server."));
+        invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server"));
       }
 
       return invalidProperties;

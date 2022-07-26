@@ -23,10 +23,13 @@ import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
-import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
+import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsRotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.IamClientBuilder;
 import jetbrains.buildServer.controllers.ActionErrors;
@@ -42,13 +45,8 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -197,11 +195,11 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
 
-    await().until(() ->
-      myFixture.getMultiNodeTasks().findInProgressTasks().stream()
-        .noneMatch(submittedTask ->
-          CURRENT_ACCESS_KEY.equals(submittedTask.getIdentity())
-    ));
+    waitFor(() ->
+              myFixture.getMultiNodeTasks().findInProgressTasks().stream()
+                       .noneMatch(submittedTask ->
+                                    CURRENT_ACCESS_KEY.equals(submittedTask.getIdentity())
+                       ));
 
     Mockito.verify(iam, times(1)).deleteAccessKey(new DeleteAccessKeyRequest()
       .withAccessKeyId(CURRENT_ACCESS_KEY)

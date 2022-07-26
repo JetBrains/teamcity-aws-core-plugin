@@ -22,14 +22,13 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorFactory;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.serverSide.oauth.identifiers.ConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
 public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
@@ -37,13 +36,15 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
   public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
   public final static String FIRST_INCREMENTAL_ID = String.valueOf(0);
+  public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String PROJECT_FEATURE_ID_PREFIX = "PROJECT_EXT_";
+
   private final SProject rootProject;
 
-  public AwsConnectionIdGenerator(@NotNull ProjectFeatureDescriptorFactory featureDescriptorFactory,
+  public AwsConnectionIdGenerator(@NotNull ConnectionsIdGenerator connectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
     rootProject = projectManager.getRootProject();
-    featureDescriptorFactory.registerGenerator(OAuthConstants.FEATURE_TYPE, this);
+    connectionsIdGenerator.registerSubTypeGenerator(ID_GENERATOR_TYPE, this);
   }
 
   @Nullable
@@ -76,11 +77,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       Loggers.CLOUD.warn("Generated AWS Connection ID is not unique, check that your Project does not have another AWS Connection with ID: " + id);
     }
     writeNewId(id);
-  }
-
-  @Override
-  public boolean isApplicable(@NotNull Map<String, String> props) {
-    return props.containsKey(CREDENTIALS_TYPE_PARAM);
   }
 
   public boolean isUnique(@NotNull final String connectionId) {

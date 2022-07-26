@@ -22,11 +22,9 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorFactory;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
-import jetbrains.buildServer.util.IdentifiersGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,13 +38,10 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
   public final static String FIRST_INCREMENTAL_ID = String.valueOf(0);
   public final static String PROJECT_FEATURE_ID_PREFIX = "PROJECT_EXT_";
-  private final IdentifiersGenerator myDefaultIdGenerator;
   private final SProject rootProject;
 
   public AwsConnectionIdGenerator(@NotNull ProjectFeatureDescriptorFactory featureDescriptorFactory,
-                                  @NotNull IdGeneratorRegistry idGeneratorRegistry,
                                   @NotNull final ProjectManager projectManager) {
-    myDefaultIdGenerator = idGeneratorRegistry.acquireIdGenerator(PROJECT_FEATURE_ID_PREFIX);
     rootProject = projectManager.getRootProject();
     featureDescriptorFactory.registerGenerator(OAuthConstants.FEATURE_TYPE, this);
   }
@@ -54,9 +49,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   @Nullable
   @Override
   public String newId(Map<String, String> props) {
-    if (otherConnectionType(props)) {
-      return myDefaultIdGenerator.newId();
-    }
 
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
     boolean needToGenerateId = false;
@@ -86,6 +78,11 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     writeNewId(id);
   }
 
+  @Override
+  public boolean isApplicable(@NotNull Map<String, String> props) {
+    return props.containsKey(CREDENTIALS_TYPE_PARAM);
+  }
+
   public boolean isUnique(@NotNull final String connectionId) {
     String newIdSha1 = DigestUtils.sha1Hex(connectionId);
 
@@ -99,10 +96,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       }
     }
     return true;
-  }
-
-  private boolean otherConnectionType(Map<String, String> props) {
-    return !props.containsKey(CREDENTIALS_TYPE_PARAM);
   }
 
   private String generateNewId() {

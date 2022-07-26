@@ -21,7 +21,6 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.cloudfront.AmazonCloudFront;
-import com.amazonaws.services.cloudfront.AmazonCloudFrontClient;
 import com.amazonaws.services.cloudfront.AmazonCloudFrontClientBuilder;
 import com.amazonaws.services.codebuild.AWSCodeBuildClient;
 import com.amazonaws.services.codedeploy.AmazonCodeDeployClient;
@@ -47,6 +46,8 @@ public class AWSClients {
   @NotNull private final String myRegion;
   @NotNull private final ClientConfiguration myClientConfiguration;
   private boolean myDisablePathStyleAccess = false;
+
+  private boolean myAccelerateModeEnabled = false;
 
   private AWSClients(@Nullable AWSCredentials credentials, @NotNull String region) {
     myCredentials = credentials;
@@ -117,8 +118,9 @@ public class AWSClients {
     }
 
     final AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-            .withClientConfiguration(myClientConfiguration)
-            .withPathStyleAccessEnabled(!myDisablePathStyleAccess);
+                                                               .withClientConfiguration(myClientConfiguration)
+                                                               .withAccelerateModeEnabled(myAccelerateModeEnabled)
+                                                               .withPathStyleAccessEnabled(!myDisablePathStyleAccess);
 
     if (myCredentials != null) {
       builder.withCredentials(new AWSStaticCredentialsProvider(myCredentials));
@@ -188,14 +190,20 @@ public class AWSClients {
     myDisablePathStyleAccess = disablePathStyleAccess;
   }
 
+  public void setAccelerateModeEnabled(final boolean accelerateModeEnabled) {
+    myAccelerateModeEnabled = accelerateModeEnabled;
+  }
+
   @NotNull
   private <T extends AmazonWebServiceClient> T withRegion(@NotNull T client) {
     return client.withRegion(AWSRegions.getRegion(myRegion));
   }
 
   @NotNull
-  private AWSSessionCredentials createSessionCredentials(@NotNull String iamRoleARN, @Nullable String externalID, @NotNull String sessionName, int sessionDuration) throws AWSException {
-    final AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest().withRoleArn(iamRoleARN).withRoleSessionName(AWSCommonParams.patchSessionName(sessionName)).withDurationSeconds(AWSCommonParams.patchSessionDuration(sessionDuration));
+  private AWSSessionCredentials createSessionCredentials(@NotNull String iamRoleARN, @Nullable String externalID, @NotNull String sessionName, int sessionDuration)
+    throws AWSException {
+    final AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest().withRoleArn(iamRoleARN).withRoleSessionName(AWSCommonParams.patchSessionName(sessionName))
+                                                                       .withDurationSeconds(AWSCommonParams.patchSessionDuration(sessionDuration));
     if (StringUtil.isNotEmpty(externalID)) assumeRoleRequest.setExternalId(externalID);
     try {
       final Credentials credentials = createSecurityTokenServiceClient().assumeRole(assumeRoleRequest).getCredentials();

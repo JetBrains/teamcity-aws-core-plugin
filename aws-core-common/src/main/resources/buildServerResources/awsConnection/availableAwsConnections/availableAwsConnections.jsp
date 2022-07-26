@@ -27,12 +27,15 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
+<c:set var="previouslyChosenAwsConnName" value="${propertiesBean.properties[chosen_aws_conn_name]}"/>
+
 <c:set var="awsCredsType" value="${propertiesBean.properties[aws_creds_type_param]}"/>
 
 <tr class="noBorder">
   <th><label for="${chosen_aws_conn_id}">${chosen_aws_conn_label}: <l:star/></label></th>
   <td>
     <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+    <props:hiddenProperty id="${chosen_aws_conn_name_prop_id}" name="${chosen_aws_conn_name}" value="${previouslyChosenAwsConnName}"/>
     <span class="error error_${avail_connections_select_id} hidden"></span>
   </td>
 </tr>
@@ -58,11 +61,15 @@
 
   const availConnsSelectorId = BS.Util.escapeId('${avail_connections_select_id}');
   const availConnsSelector = $j(availConnsSelectorId);
+  const $availConnsSelectorObject = $j(availConnsSelectorId)[0];
 
   const _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
+  $availConnsSelectorObject.onchange = function(){
+    $j('#${chosen_aws_conn_name_prop_id}').val(this.options[this.selectedIndex].text);
+  };
 
   $j(document).ready(function () {
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
@@ -107,9 +114,7 @@
           }
 
         } else {
-          for (let i = 0; i < errors.length; i++) {
             errors.forEach(({message, id}) => addError(message, $j('.' + id)));
-          }
           toggleErrors(true);
         }
       }

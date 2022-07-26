@@ -19,7 +19,7 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   private final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;
-  private final String displayName = "Expose AWS Credentials via Env Vars";
+  private final String displayName = "Put AWS credentials to agent environment variables";
 
   public AwsConnToEnvVarsBuildFeature(@NotNull final PluginDescriptor pluginDescriptor) {
     myPluginResourcesEditUrl = pluginDescriptor.getPluginResourcesPath(EDIT_PARAMETERS_URL);
@@ -58,7 +58,14 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @NotNull
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
-    return "Expose chosen AWS Connection parameters via default environment variables (keys, region and session token if applicable).";
+    StringBuilder connDisplayNameBuilder = new StringBuilder();
+    String connDisplayName = params.get(CHOSEN_AWS_CONN_NAME_PARAM);
+    if (connDisplayName != null) {
+      connDisplayNameBuilder.append("\"");
+      connDisplayNameBuilder.append(connDisplayName);
+      connDisplayNameBuilder.append("\"");
+    }
+    return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to environment variables";
   }
 
   public String getAvailAwsConnsUrl() {

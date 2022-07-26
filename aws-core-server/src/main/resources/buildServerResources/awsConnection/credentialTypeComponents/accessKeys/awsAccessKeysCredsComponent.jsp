@@ -18,6 +18,7 @@
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 
 <%@include file="awsAccessKeysCredsConstants.jspf" %>
+<%@include file="../../awsConnectionConstants.jspf" %>
 
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
@@ -63,29 +64,24 @@
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
-    <tr id="${use_session_credentials_param}_row">
+    <tr class="non_serializable_form_elements_container" id="${use_session_credentials_param}_row">
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>
-            <c:set var="onclick">{
-                var hiddenElem = $('${use_session_credentials_param}');
-                var checkBox = $('${use_session_credentials_param}_checkbox');
-                if (checkBox.checked === false) {
-                hiddenElem.value = false;
-                } else {
-                hiddenElem.value = true;
-                }
-                }</c:set>
-            <props:checkboxProperty name="${use_session_credentials_param}_checkbox" onclick="${onclick}" checked="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
-            <props:hiddenProperty name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
+            <props:checkboxProperty id="useSessionCredentialsCheckbox"
+                                    name="${use_session_credentials_param}_checkbox"
+                                    checked="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"
+                                    />
             <span>Issue temporary credentials by request</span>
         </td>
     </tr>
+    <props:hiddenProperty id="useSessionCredentials" name="${use_session_credentials_param}" value="${empty useSessionCreds ? use_session_credentials_default : useSessionCreds}"/>
 
-    <tr id="${sts_endpoint_param}_row">
+    <tr id="${sts_endpoint_param}_row" class="stsEndpointClass">
         <th><label for="${sts_endpoint_param}">${sts_endpoint_label}</label></th>
-        <td><props:textProperty name="${sts_endpoint_param}"
-                                value="${empty stsEndpoint ? sts_endpoint_default : stsEndpoint}" className="longField" maxlength="256"/>
-            <span class="smallNote">Default is: ${sts_endpoint_default}</span>
+        <td><props:textProperty id="${sts_endpoint_field_id}"
+                                name="${sts_endpoint_param}"
+                                value="${stsEndpoint}" className="longField" maxlength="256"/>
+            <span class="smallNote">The global endpoint is: ${sts_global_endpoint}</span>
             <span class="error" id="error_${sts_endpoint_param}"></span>
         </td>
     </tr>
@@ -93,6 +89,36 @@
 
 
 <script>
+
+    let $regionSelectObject = $j('#${region_select_id}')[0];
+    let $useSessionCredentialsObject = $j('#useSessionCredentialsCheckbox')[0];
+
+    $regionSelectObject.onchange = function(){
+        $j('#${sts_endpoint_field_id}').val('https://sts.' + this.value + '.amazonaws.com')
+    };
+
+    $useSessionCredentialsObject.onchange = function(){
+        $j('#useSessionCredentials').val(this.checked);
+        toggleStsEndpint();
+    };
+
+    $j(document).ready(function () {
+        if (${empty stsEndpoint}) {
+            $j('#${sts_endpoint_field_id}').val('https://sts.' + $regionSelectObject.value + '.amazonaws.com')
+            toggleStsEndpint();
+        }
+    });
+
+    let toggleStsEndpint = function () {
+        if ($useSessionCredentialsObject.checked){
+            $j('.stsEndpointClass').removeClass('hidden');
+        } else {
+            $j('.stsEndpointClass').addClass('hidden');
+        }
+    };
+
+
+
 
     BS.OAuthConnectionDialog._errorIds = [
         '${rotate_key_button_id}'

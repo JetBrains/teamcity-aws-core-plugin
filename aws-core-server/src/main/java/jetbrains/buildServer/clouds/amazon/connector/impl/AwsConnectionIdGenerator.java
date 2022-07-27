@@ -94,7 +94,8 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     return true;
   }
 
-  private String generateNewId() {
+  @NotNull
+  private synchronized String generateNewId() {
     final CustomDataStorage storage = getDataStorage();
     final Map<String, String> values = storage.getValues();
     if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {

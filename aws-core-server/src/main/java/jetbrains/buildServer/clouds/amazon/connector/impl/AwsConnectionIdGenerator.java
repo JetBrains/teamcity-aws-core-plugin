@@ -35,7 +35,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   public final static String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
   public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
-  public final static String FIRST_INCREMENTAL_ID = String.valueOf(0);
+  public final static int FIRST_INCREMENTAL_ID = 0;
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
@@ -98,22 +98,24 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   private synchronized String generateNewId() {
     final CustomDataStorage storage = getDataStorage();
     final Map<String, String> values = storage.getValues();
-    if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
-      storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, FIRST_INCREMENTAL_ID);
-      storage.flush();
-      return FIRST_INCREMENTAL_ID;
-    }
 
     int newIdNumber;
-    try {
-      newIdNumber = Integer.parseInt(values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
-      newIdNumber++;
-      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
-    } catch (NumberFormatException e) {
-      Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
-      Random r = new Random();
-      newIdNumber = 100000 + r.nextInt(100000);
-      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
+    if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
+      storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(FIRST_INCREMENTAL_ID));
+      newIdNumber = FIRST_INCREMENTAL_ID;
+
+    } else {
+      try {
+        newIdNumber = Integer.parseInt(values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
+        newIdNumber++;
+        values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
+
+      } catch (NumberFormatException e) {
+        Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
+        Random r = new Random();
+        newIdNumber = 100000 + r.nextInt(100000);
+        values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
+      }
     }
     storage.flush();
 

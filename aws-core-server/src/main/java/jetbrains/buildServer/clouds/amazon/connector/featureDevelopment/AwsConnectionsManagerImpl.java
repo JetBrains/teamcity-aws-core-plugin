@@ -32,18 +32,18 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> featureProperties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException {
     String awsConnectionId = featureProperties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
-      throw new LinkedAwsConnNotFoundException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property");
+      throw new LinkedAwsConnNotFoundException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property. Project ID: " + project.getExternalId());
     }
 
     OAuthConnectionDescriptor connectionDescriptor = myConnectionsManager.findConnectionById(project, awsConnectionId);
     if (connectionDescriptor == null) {
-      throw new LinkedAwsConnNotFoundException("Could not find the AWS Connection with ID " + awsConnectionId);
+      throw new LinkedAwsConnNotFoundException("Could not find the AWS Connection with ID " + awsConnectionId +  " in Project with ID: " + project.getExternalId());
     }
 
     try {
       return AwsConnectionUtils.awsConnBeanFromDescriptor(connectionDescriptor, myAwsConnectorFactory, featureProperties);
     } catch (AwsConnectorException awsConnectorException) {
-      throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage());
+      throw new LinkedAwsConnNotFoundException("Could not get the AWS Credentials: " + awsConnectorException.getMessage() + ". AWS Connection ID: " + awsConnectionId + ". Project ID: " + project.getExternalId());
     }
   }
 
@@ -52,7 +52,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   @Override
   public AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException {
     if (build.getBuildId() < 0) {
-      throw new AwsBuildFeatureException("Dummy build with negative id does not have AWS Connections to expose");
+      throw new AwsBuildFeatureException("Dummy build with negative id " + build.getBuildId() + " does not have AWS Connections to expose");
     }
 
     SBuildType buildType = build.getBuildType();

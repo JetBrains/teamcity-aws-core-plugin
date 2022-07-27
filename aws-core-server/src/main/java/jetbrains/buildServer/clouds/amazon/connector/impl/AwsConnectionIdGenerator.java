@@ -37,7 +37,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
   public final static String FIRST_INCREMENTAL_ID = String.valueOf(0);
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
-  public final static String PROJECT_FEATURE_ID_PREFIX = "PROJECT_EXT_";
+  public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
   private final SProject rootProject;
 
@@ -100,22 +100,24 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     final Map<String, String> values = storage.getValues();
     if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
       storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, FIRST_INCREMENTAL_ID);
+      storage.flush();
       return FIRST_INCREMENTAL_ID;
     }
 
-    String currentIdNumber = values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM);
+    int newIdNumber;
     try {
-      int currentIncrementalId = Integer.parseInt(currentIdNumber);
-      currentIncrementalId++;
-      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+      newIdNumber = Integer.parseInt(values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
+      newIdNumber++;
+      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
     } catch (NumberFormatException e) {
-      Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage", e);
+      Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
       Random r = new Random();
-      int currentIncrementalId = 100000 + r.nextInt(100000);
-      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+      newIdNumber = 100000 + r.nextInt(100000);
+      values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
     }
+    storage.flush();
 
-    return String.format("%s-%s", PROJECT_FEATURE_ID_PREFIX, currentIdNumber);
+    return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, newIdNumber);
   }
 
   private void writeNewId(@NotNull String connectionId) {

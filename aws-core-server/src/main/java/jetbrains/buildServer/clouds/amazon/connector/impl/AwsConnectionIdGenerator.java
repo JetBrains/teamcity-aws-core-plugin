@@ -39,11 +39,11 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
-  private final SProject rootProject;
+  private final ProjectManager myProjectManager;
 
   public AwsConnectionIdGenerator(@NotNull ConnectionsIdGenerator connectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
-    rootProject = projectManager.getRootProject();
+    myProjectManager = projectManager;
     connectionsIdGenerator.registerSubTypeGenerator(ID_GENERATOR_TYPE, this);
   }
 
@@ -126,11 +126,12 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     final CustomDataStorage storage = getDataStorage();
     storage.refresh();
     storage.putValue(DigestUtils.sha1Hex(connectionId), connectionId);
+    storage.flush();
     Loggers.CLOUD.debug(String.format("Added sha1 of AWS Connection with ID '%s'", connectionId));
   }
 
   @NotNull
   private CustomDataStorage getDataStorage() {
-    return rootProject.getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
+    return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
   }
 }

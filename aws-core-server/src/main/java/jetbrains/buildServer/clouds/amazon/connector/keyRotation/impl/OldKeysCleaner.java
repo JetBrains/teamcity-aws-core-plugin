@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class OldKeysCleaner {
 
-  private static final String DELETE_OLD_AWS_KEY_TASK_TYPE = "deleteOldAwsKey";
+  public static final String DELETE_OLD_AWS_KEY_TASK_TYPE = "deleteOldAwsKey";
   private static final String TASK_ARG_DIVIDER = "{}";
   private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofDays(1);
 

@@ -23,9 +23,6 @@ import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl;
@@ -44,6 +41,11 @@ import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
@@ -163,7 +165,7 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
     OldKeysCleaner OldKeysCleanerSpy = Mockito.spy(oldKeysCleaner);
 
     when(OldKeysCleanerSpy.getOldKeyPreserveTime())
-      .thenReturn(Duration.ofMillis(0));
+      .thenReturn(Duration.ofMillis(200));
 
     return OldKeysCleanerSpy;
   }
@@ -196,10 +198,10 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
     );
 
     waitFor(() ->
-              myFixture.getMultiNodeTasks().findInProgressTasks().stream()
-                       .noneMatch(submittedTask ->
-                                    CURRENT_ACCESS_KEY.equals(submittedTask.getIdentity())
-                       ));
+      myFixture.getMultiNodeTasks()
+        .findFinishedTasks(Collections.singletonList(OldKeysCleaner.DELETE_OLD_AWS_KEY_TASK_TYPE), 10000)
+        .size() == 1
+    );
 
     Mockito.verify(iam, times(1)).deleteAccessKey(new DeleteAccessKeyRequest()
       .withAccessKeyId(CURRENT_ACCESS_KEY)

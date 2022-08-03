@@ -1,0 +1,10 @@
+input[data-test='ring-toggle-input'] {
+  position: absolute;
+  bottom: 0;
+}
+
+.telemetryInputLabel{
+  color: var(--ring-secondary-color);
+  font-size: var(--ring-font-size-smaller);
+  line-height: var(--ring-line-height-lowest);
+}

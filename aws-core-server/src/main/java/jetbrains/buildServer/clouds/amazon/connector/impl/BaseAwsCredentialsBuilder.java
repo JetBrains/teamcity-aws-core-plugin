@@ -16,15 +16,29 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
-public abstract class BaseAwsCredentialsBuilder {
-  protected void throwExceptionIfPropertiesInvalid(@NotNull final List<InvalidProperty> invalidProperties) throws AwsConnectorException {
+public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
+
+  @Override
+  @NotNull
+  public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
+    throwExceptionIfPropertiesInvalid(validateProperties(cloudConnectorProperties));
+    return constructConcreteCredentialsProviderImpl(cloudConnectorProperties);
+  }
+
+  @NotNull
+  protected abstract AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+
+  private void throwExceptionIfPropertiesInvalid(@NotNull final List<InvalidProperty> invalidProperties) throws AwsConnectorException {
     if (! invalidProperties.isEmpty()) {
       InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
       String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());

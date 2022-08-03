@@ -1,9 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -20,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
+public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   private final ExecutorServices myExecutorServices;
 
@@ -30,12 +28,9 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder implemen
     myExecutorServices = executorServices;
   }
 
-  @Override
   @NotNull
-  public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-
-    throwExceptionIfPropertiesInvalid(validateProperties(cloudConnectorProperties));
-
+  @Override
+  protected AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) {
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
       return createSessionCredentialsHolder(cloudConnectorProperties);

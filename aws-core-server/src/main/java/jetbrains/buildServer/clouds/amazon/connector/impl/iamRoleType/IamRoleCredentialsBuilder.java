@@ -18,7 +18,6 @@ package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
 import com.amazonaws.AmazonClientException;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
@@ -42,7 +41,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.getResourceNameFromArn;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isValidSessionName;
 
-public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
+public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   private final ExecutorServices myExecutorServices;
   private final AwsConnectionsManager myAwsConnectionsManager;
@@ -58,12 +57,9 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder impleme
     myProjectManager = projectManager;
   }
 
-  @Override
   @NotNull
-  public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-
-    throwExceptionIfPropertiesInvalid(validateProperties(cloudConnectorProperties));
-
+  @Override
+  protected AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
     String projectId = cloudConnectorProperties.get(IAM_ROLE_PROJECT_ID_PARAM);
     SProject project = myProjectManager.findProjectByExternalId(projectId);
 

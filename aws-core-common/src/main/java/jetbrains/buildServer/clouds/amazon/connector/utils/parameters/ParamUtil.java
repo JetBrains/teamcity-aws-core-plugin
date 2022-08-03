@@ -5,6 +5,7 @@ import java.util.Map;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +14,10 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
+
+  private final static int MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN = 5;
+  private final static String AWS_ARN_SEPARATOR = ":";
+  private final static String AWS_ARN_RESOURCE_SEPARATOR = "/";
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
     String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
@@ -60,19 +65,23 @@ public class ParamUtil {
   }
 
   /**
-   * Extract the part after "/" symbol.
-   * @param  resourceArn  ARN of the resource where to find the name.
-   * @return Empty String if ARN is empty or the part after "/" symbol otherwise.
+   * Extract the <b>resource-id</b> part of the ARN. <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">More info.</a>
+   * @param  resourceArn  ARN of the resource from where to extract the resource-id part.
+   * @return Empty String if ARN is empty, resource-id or the ARN itself if it is malformed.
    */
   @NotNull
   public static String getResourceNameFromArn(@Nullable final String resourceArn) {
     if(isEmptyOrSpaces(resourceArn)){
       return "";
     }
-    List<String> parts = split(resourceArn, "/");
-    if (parts.size() > 1){
-      return parts.get(1);
+    if (StringUtils.countMatches(resourceArn, AWS_ARN_SEPARATOR) > MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN) {
+      List<String> parts = split(resourceArn, AWS_ARN_SEPARATOR);
+      return parts.get(parts.size() - 1);
+
+    } else if (resourceArn.contains(AWS_ARN_RESOURCE_SEPARATOR)) {
+      return resourceArn.substring(resourceArn.indexOf(AWS_ARN_RESOURCE_SEPARATOR) + 1);
     }
-    return "";
+
+    return resourceArn;
   }
 }

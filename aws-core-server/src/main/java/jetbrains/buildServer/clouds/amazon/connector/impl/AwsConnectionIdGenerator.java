@@ -21,7 +21,6 @@ import java.util.Random;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.ConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
@@ -44,7 +43,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public AwsConnectionIdGenerator(@NotNull ConnectionsIdGenerator connectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
-    connectionsIdGenerator.registerSubTypeGenerator(ID_GENERATOR_TYPE, this);
+    connectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
   }
 
   @Nullable
@@ -72,7 +71,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   @Override
-  public void addGeneratedId(@NotNull final String id) {
+  public void addGeneratedId(@NotNull final String id, @NotNull final Map<String,String> props) {
     if (!isUnique(id)) {
       Loggers.CLOUD.warn("Generated AWS Connection ID is not unique, check that your Project does not have another AWS Connection with ID: " + id);
     }

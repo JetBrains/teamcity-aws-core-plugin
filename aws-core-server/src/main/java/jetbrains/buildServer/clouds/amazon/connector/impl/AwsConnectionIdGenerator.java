@@ -57,7 +57,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     boolean needToGenerateId = false;
     if (userDefinedConnId == null) {
       needToGenerateId = true;
-      Loggers.CLOUD.info("User did not define the connection id, will generate it using incremental ID");
+      Loggers.CLOUD.debug("User did not define the connection id, will generate it using incremental ID");
     } else if (!isUnique(userDefinedConnId)) {
       needToGenerateId = true;
       Loggers.CLOUD.warn("User-defined connection id is not unique, will use UUID");
@@ -110,13 +110,13 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       try {
         newIdNumber = Integer.parseInt(values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
         newIdNumber++;
-        values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
+        storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
 
       } catch (NumberFormatException e) {
         Loggers.CLOUD.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
         Random r = new Random();
         newIdNumber = 100000 + r.nextInt(100000);
-        values.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
+        storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(newIdNumber));
       }
     }
     storage.flush();

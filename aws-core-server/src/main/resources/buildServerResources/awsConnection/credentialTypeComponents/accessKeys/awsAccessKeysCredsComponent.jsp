@@ -29,8 +29,6 @@
 <c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
 <c:set var="rotateKeySpinnerId" value="spinner_${rotate_key_button_id}"/>
 
-<jsp:include page="../stsEndpointLogic.jsp"/>
-
 <l:settingsGroup title="Access Key">
     <tr id="${access_key_id_param}_row">
         <th><label for="${access_key_id_param}">${access_key_id_label}: <l:star/></label></th>
@@ -153,3 +151,5 @@
         }
     };
 </script>
+
+<%@ include file="../stsEndpointLogic.jsp" %>

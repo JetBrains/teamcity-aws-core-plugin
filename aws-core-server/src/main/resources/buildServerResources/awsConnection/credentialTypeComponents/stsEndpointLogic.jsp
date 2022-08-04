@@ -14,8 +14,6 @@
   ~ limitations under the License.
   --%>
 
-<%@include file="../awsConnectionConstants.jspf" %>
-
 <script>
   let $regionSelectObject = $j('#${region_select_id}')[0];
   let $useSessionCredentialsObject = $j('#useSessionCredentialsCheckbox')[0];

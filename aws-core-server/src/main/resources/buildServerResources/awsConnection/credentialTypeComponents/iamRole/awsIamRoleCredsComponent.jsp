@@ -24,8 +24,8 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean"/>
 
-<c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
-<c:set var="iamRoleArn" value="${propertiesBean.properties[sts_endpoint_param]}"/>
+<c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param_iam_role]}"/>
+<c:set var="iamRoleArn" value="${propertiesBean.properties[iam_role_arn_param]}"/>
 <c:set var="sessionName" value="${propertiesBean.properties[iam_role_session_name_param]}"/>
 
 <props:hiddenProperty name="${project_id_param}" value="${project.externalId}"/>
@@ -63,4 +63,4 @@
     </tr>
 </l:settingsGroup>
 
-<jsp:include page="../stsEndpointLogic.jsp"/>
+<%@ include file="../stsEndpointLogic.jsp" %>

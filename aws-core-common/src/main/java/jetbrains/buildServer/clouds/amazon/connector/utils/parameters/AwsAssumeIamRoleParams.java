@@ -23,7 +23,7 @@ public final class AwsAssumeIamRoleParams {
   public static final String IAM_ROLE_LABEL = "IAM Role";
 
   public static final String IAM_ROLE_ARN_PARAM = "awsIamRoleArn";
-  public static final String IAM_ROLE_PROJECT_ID_PARAM = "awsIamRoleProjectId";
+  public static final String PRINCIPAL_AWS_CONN_PROJECT_ID_PARAM = "principalAwsConnectionProjectId";
   public static final String IAM_ROLE_ARN_LABEL = "Role ARN:";
   public static final String IAM_ROLE_SESSION_NAME_PARAM = "awsIamRoleSessionName";
   public static final String IAM_ROLE_SESSION_NAME_LABEL = "Session name tag:";

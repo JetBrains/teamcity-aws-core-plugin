@@ -60,15 +60,15 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @NotNull
   @Override
   protected AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-    String projectId = cloudConnectorProperties.get(IAM_ROLE_PROJECT_ID_PARAM);
-    SProject project = myProjectManager.findProjectByExternalId(projectId);
+    String principalAwsConnectionProjectId = cloudConnectorProperties.get(PRINCIPAL_AWS_CONN_PROJECT_ID_PARAM);
+    SProject principalAwsConnectionProject = myProjectManager.findProjectByExternalId(principalAwsConnectionProjectId);
 
-    if (project == null) {
-      throw new AwsConnectorException("Failed to find project with id: " + projectId);
+    if (principalAwsConnectionProject == null) {
+      throw new AwsConnectorException("Failed to find the project with id: " + principalAwsConnectionProjectId);
     }
 
     try {
-      AwsConnectionBean principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties, project);
+      AwsConnectionBean principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties, principalAwsConnectionProject);
 
       return new IamRoleSessionCredentialsHolder(
         principalAwsConnection.getAwsCredentialsHolder(),

@@ -40,10 +40,13 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   private final ProjectManager myProjectManager;
 
+  private boolean awsConnectionsIdxStorageWasAccessed;
   public AwsConnectionIdGenerator(@NotNull ConnectionsIdGenerator connectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
     connectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
+
+    awsConnectionsIdxStorageWasAccessed = false;
   }
 
   @Nullable
@@ -131,6 +134,21 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @NotNull
   private CustomDataStorage getDataStorage() {
-    return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
+    if (awsConnectionsIdxStorageWasAccessed) {
+      return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
+    } else {
+      CustomDataStorage storage = myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
+      final Map<String, String> values = storage.getValues();
+
+      String currentConnectionIdNumber = String.valueOf(FIRST_INCREMENTAL_ID);
+      if (values != null){
+        currentConnectionIdNumber = values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM);
+      }
+      storage.clear();
+      storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, currentConnectionIdNumber);
+      storage.flush();
+      awsConnectionsIdxStorageWasAccessed = true;
+      return storage;
+    }
   }
 }

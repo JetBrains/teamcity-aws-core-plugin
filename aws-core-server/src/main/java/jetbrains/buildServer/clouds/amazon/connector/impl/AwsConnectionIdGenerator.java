@@ -22,7 +22,7 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
-import jetbrains.buildServer.serverSide.oauth.identifiers.ConnectionsIdGenerator;
+import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -41,10 +41,10 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   private final ProjectManager myProjectManager;
 
   private boolean awsConnectionsIdxStorageWasAccessed;
-  public AwsConnectionIdGenerator(@NotNull ConnectionsIdGenerator connectionsIdGenerator,
+  public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
-    connectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
+    OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
 
     awsConnectionsIdxStorageWasAccessed = false;
   }

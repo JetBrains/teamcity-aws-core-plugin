@@ -10,7 +10,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.Map;
@@ -46,7 +45,7 @@ public class StaticSessionCredentialsHolder extends CredentialsRefresher {
     try {
       currentSession = mySts.getSessionToken(mySessionConfiguration);
     } catch (Exception e) {
-      Loggers.CLOUD.debug("Failed to refresh AWS Credentials: " + e.getMessage());
+      Loggers.CLOUD.warnAndDebugDetails("Failed to refresh AWS Credentials: ", e);
     }
   }
 

@@ -67,7 +67,7 @@ public class IamRoleSessionCredentialsHolder extends CredentialsRefresher {
     try {
       currentSession = mySts.assumeRole(myAssumeRoleRequest);
     } catch (Exception e) {
-      Loggers.CLOUD.debug("Failed to refresh AWS Credentials with assume role request: " + e.getMessage());
+      Loggers.CLOUD.warnAndDebugDetails("Failed to refresh AWS Credentials with assume role request: ", e);
     }
   }
 

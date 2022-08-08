@@ -1,11 +1,15 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="AWS Tests">
+<suite name="AWS Utils Tests">
   <test name="AWS tests">
     <classes>
       <class name="jetbrains.buildServer.util.amazon.retry.impl.RetrierTest"/>
       <class name="jetbrains.buildServer.util.amazon.S3UtilIntegrationTest"/>
       <class name="jetbrains.buildServer.util.amazon.Java9CompatibilityTest"/>
-      <class name="jetbrains.buildServer.util.amazon.AWSCommonParamsTest"/>
+    </classes>
+  </test>
+  <test name="Param Utils Tests">
+    <classes>
+      <class name="jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtilTest"/>
     </classes>
   </test>
 </suite>

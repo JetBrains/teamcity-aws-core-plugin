@@ -31,14 +31,7 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
   @Override
   @NotNull
   public AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-    throwExceptionIfPropertiesInvalid(validateProperties(cloudConnectorProperties));
-    return constructConcreteCredentialsProviderImpl(cloudConnectorProperties);
-  }
-
-  @NotNull
-  protected abstract AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
-
-  private void throwExceptionIfPropertiesInvalid(@NotNull final List<InvalidProperty> invalidProperties) throws AwsConnectorException {
+    List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
     if (! invalidProperties.isEmpty()) {
       InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
       String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
@@ -47,5 +40,9 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
         lastInvalidProperty.getPropertyName()
       );
     }
+    return constructConcreteCredentialsProviderImpl(cloudConnectorProperties);
   }
+
+  @NotNull
+  protected abstract AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
 }

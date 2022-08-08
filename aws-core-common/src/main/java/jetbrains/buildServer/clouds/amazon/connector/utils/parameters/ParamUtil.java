@@ -74,14 +74,22 @@ public class ParamUtil {
     if(isEmptyOrSpaces(resourceArn)){
       return "";
     }
-    if (StringUtils.countMatches(resourceArn, AWS_ARN_SEPARATOR) > MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN) {
-      List<String> parts = split(resourceArn, AWS_ARN_SEPARATOR);
-      return parts.get(parts.size() - 1);
+
+    int semicilonsQuantity = StringUtils.countMatches(resourceArn, AWS_ARN_SEPARATOR);
+    if (semicilonsQuantity > MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN) {
+      return getLastArnPart(resourceArn);
 
     } else if (resourceArn.contains(AWS_ARN_RESOURCE_SEPARATOR)) {
       return resourceArn.substring(resourceArn.indexOf(AWS_ARN_RESOURCE_SEPARATOR) + 1);
     }
-
+    return getLastArnPart(resourceArn);
+  }
+  @NotNull
+  private static String getLastArnPart(@NotNull String resourceArn) {
+    List<String> parts = split(resourceArn, AWS_ARN_SEPARATOR);
+    if (parts.size() > 0) {
+      return parts.get(parts.size() - 1);
+    }
     return resourceArn;
   }
 }

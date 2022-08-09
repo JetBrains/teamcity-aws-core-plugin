@@ -28,7 +28,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     AwsConnectionBean cachedAwsConnection = cachedAwsConnections.get(context.getBuild().getBuildId());
     if (cachedAwsConnection == null) {
       try {
-        AwsConnectionBean awsConnection = myAwsConnectionsManager.getAwsConnectionForBuild(context.getBuild());
+        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(context.getBuild());
         if (awsConnection == null) {
           return;
         }
@@ -69,7 +69,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     AwsConnectionBean cachedAwsConnectionToSecure = cachedAwsConnections.get(build.getBuildId());
     if (cachedAwsConnectionToSecure == null) {
       try {
-        AwsConnectionBean awsConnection = myAwsConnectionsManager.getAwsConnectionForBuild(build);
+        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(build);
         if (awsConnection == null) {
           return Collections.emptyList();
         }

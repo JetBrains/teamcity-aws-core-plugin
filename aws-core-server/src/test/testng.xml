@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="AWS Cleanup Tests">
+  <test name="AWS Cleanup tests">
+    <classes>
+      <class name="jetbrains.buildServer.clouds.amazon.ami.cleanup.EC2AmiCleanupExtensionTest"/>
+    </classes>
+  </test>
+</suite>

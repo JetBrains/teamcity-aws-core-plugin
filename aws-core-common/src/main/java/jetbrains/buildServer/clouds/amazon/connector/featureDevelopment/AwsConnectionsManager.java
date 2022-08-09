@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
@@ -8,8 +9,6 @@ import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 public interface AwsConnectionsManager {
   /**
@@ -25,6 +24,17 @@ public interface AwsConnectionsManager {
   @NotNull
   AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> properties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException;
 
+  /**
+   * Returns a connection attached to specific project
+   *
+   * @param project              - project where connection is attached
+   * @param awsConnectionId      - ID of the connection
+   * @param connectionParameters - Additional parameters necessary to construct a connection(session duration etc.)
+   * @return bean containing information about connection that can be used to construct specific AWS clients or null if no such connection can be found
+   */
   @Nullable
-  AwsConnectionBean getAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException;
+  AwsConnectionBean getAwsConnection(@NotNull final SProject project, @NotNull String awsConnectionId, Map<String, String> connectionParameters);
+
+  @Nullable
+  AwsConnectionBean getEnvVarAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException;
 }

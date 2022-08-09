@@ -23,4 +23,6 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.impl.IamClientBuilderImpl"/>
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsRotateKeysController"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.ami.cleanup.EC2AmiCleanupExtension"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.EC2ClientCreator"/>
 </beans>

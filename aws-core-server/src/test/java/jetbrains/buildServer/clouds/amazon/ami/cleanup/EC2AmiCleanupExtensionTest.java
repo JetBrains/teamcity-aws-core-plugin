@@ -14,15 +14,20 @@ import jetbrains.buildServer.serverSide.cleanup.BuildCleanupContext;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import org.mockito.Answers;
 import org.mockito.Mockito;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.PARAM_AMI_ID;
-import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.PARAM_CONNECTION_ID;
+import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
+
+  @BeforeMethod
+  public void init() {
+    setInternalProperty(AMI_CLEANUP_FEATURE_ENABLED, true);
+  }
 
   @Test
   public void deregistersImages() {

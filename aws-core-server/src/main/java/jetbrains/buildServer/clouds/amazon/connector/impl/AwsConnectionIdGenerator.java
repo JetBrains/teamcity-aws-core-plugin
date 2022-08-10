@@ -132,9 +132,12 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       CustomDataStorage storage = myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
       final Map<String, String> values = storage.getValues();
 
-      String currentConnectionIdNumber = String.valueOf(FIRST_INCREMENTAL_ID);
+      String currentConnectionIdNumber = null;
       if (values != null){
         currentConnectionIdNumber = values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM);
+      }
+      if (currentConnectionIdNumber == null) {
+        currentConnectionIdNumber = String.valueOf(FIRST_INCREMENTAL_ID);
       }
       storage.clear();
       storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, currentConnectionIdNumber);

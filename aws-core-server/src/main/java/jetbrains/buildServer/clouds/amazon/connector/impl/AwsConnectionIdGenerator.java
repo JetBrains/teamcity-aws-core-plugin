@@ -24,7 +24,6 @@ import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,18 +81,11 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   public boolean isUnique(@NotNull final String connectionId) {
-    String newIdSha1 = DigestUtils.sha1Hex(connectionId);
-
     final CustomDataStorage storage = getDataStorage();
     final Map<String, String> values = storage.getValues();
     if (values == null) return true;
 
-    for (String connectionIdSha1 : values.keySet()) {
-      if (connectionIdSha1.equals(newIdSha1)) {
-        return false;
-      }
-    }
-    return true;
+    return values.containsKey(connectionId);
   }
 
   @NotNull
@@ -127,9 +119,9 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   private void writeNewId(@NotNull String connectionId) {
     final CustomDataStorage storage = getDataStorage();
     storage.refresh();
-    storage.putValue(DigestUtils.sha1Hex(connectionId), connectionId);
+    storage.putValue(connectionId, connectionId);
     storage.flush();
-    Loggers.CLOUD.debug(String.format("Added sha1 of AWS Connection with ID '%s'", connectionId));
+    Loggers.CLOUD.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
   }
 
   @NotNull

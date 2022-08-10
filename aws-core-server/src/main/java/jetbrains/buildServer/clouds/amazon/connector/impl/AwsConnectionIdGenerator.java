@@ -18,6 +18,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentSkipListSet;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
@@ -31,21 +32,19 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
-  public final static String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
+  public final static String AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE = "aws.connections.current.incremental.id.storage";
   public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
   public final static int FIRST_INCREMENTAL_ID = 0;
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
   private final ProjectManager myProjectManager;
+  private final ConcurrentSkipListSet<String> awsConnectionIdxSet = new ConcurrentSkipListSet<>();
 
-  private boolean awsConnectionsIdxStorageWasAccessed;
   public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
                                   @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
-
-    awsConnectionsIdxStorageWasAccessed = false;
   }
 
   @Nullable
@@ -73,7 +72,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   @Override
-  public void addGeneratedId(@NotNull final String id, @NotNull final Map<String,String> props) {
+  public void addGeneratedId(@NotNull final String id, @NotNull final Map<String, String> props) {
     if (!isUnique(id)) {
       Loggers.CLOUD.warn("Generated AWS Connection ID is not unique, check that your Project does not have another AWS Connection with ID: " + id);
     }
@@ -81,11 +80,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   public boolean isUnique(@NotNull final String connectionId) {
-    final CustomDataStorage storage = getDataStorage();
-    final Map<String, String> values = storage.getValues();
-    if (values == null) return true;
-
-    return values.containsKey(connectionId);
+    return awsConnectionIdxSet.contains(connectionId);
   }
 
   @NotNull
@@ -117,33 +112,12 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   private void writeNewId(@NotNull String connectionId) {
-    final CustomDataStorage storage = getDataStorage();
-    storage.refresh();
-    storage.putValue(connectionId, connectionId);
-    storage.flush();
+    awsConnectionIdxSet.add(connectionId);
     Loggers.CLOUD.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
   }
 
   @NotNull
   private CustomDataStorage getDataStorage() {
-    if (awsConnectionsIdxStorageWasAccessed) {
-      return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
-    } else {
-      CustomDataStorage storage = myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
-      final Map<String, String> values = storage.getValues();
-
-      String currentConnectionIdNumber = null;
-      if (values != null){
-        currentConnectionIdNumber = values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM);
-      }
-      if (currentConnectionIdNumber == null) {
-        currentConnectionIdNumber = String.valueOf(FIRST_INCREMENTAL_ID);
-      }
-      storage.clear();
-      storage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, currentConnectionIdNumber);
-      storage.flush();
-      awsConnectionsIdxStorageWasAccessed = true;
-      return storage;
-    }
+    return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE);
   }
 }

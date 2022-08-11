@@ -28,7 +28,7 @@ public class OldKeysCleaner {
 
   public static final String DELETE_OLD_AWS_KEY_TASK_TYPE = "deleteOldAwsKey";
   private static final String TASK_ARG_DIVIDER = "{}";
-  private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofDays(1);
+  private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofMinutes(1);
 
   private final MultiNodeTasks myMultiNodeTasks;
   private final ServerResponsibility myServerResponsibility;

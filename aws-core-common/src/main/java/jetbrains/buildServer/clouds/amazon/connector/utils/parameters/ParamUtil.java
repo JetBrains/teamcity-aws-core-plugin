@@ -19,6 +19,8 @@ public class ParamUtil {
   private final static String AWS_ARN_SEPARATOR = ":";
   private final static String AWS_ARN_RESOURCE_SEPARATOR = "/";
 
+  private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
+
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
     String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
     if("false".equals(useSessionCredentials))
@@ -51,7 +53,6 @@ public class ParamUtil {
   public static boolean isValidSessionName(@Nullable final String sessionName) {
     if(sessionName == null)
       return false;
-    Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
     return validAwsSessionNamePattern.matcher(sessionName).matches();
   }
 

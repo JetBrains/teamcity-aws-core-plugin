@@ -1,11 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
-import java.util.List;
+import com.amazonaws.arn.Arn;
 import java.util.Map;
 
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,10 +13,6 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
-
-  private final static int MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN = 5;
-  private final static String AWS_ARN_SEPARATOR = ":";
-  private final static String AWS_ARN_RESOURCE_SEPARATOR = "/";
 
   private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
 
@@ -67,30 +62,15 @@ public class ParamUtil {
 
   /**
    * Extract the <b>resource-id</b> part of the ARN. <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">More info.</a>
-   * @param  resourceArn  ARN of the resource from where to extract the resource-id part.
+   * @param  resourceArnString  ARN of the resource from where to extract the resource-id part.
    * @return Empty String if ARN is empty, resource-id or the ARN itself if it is malformed.
    */
   @NotNull
-  public static String getResourceNameFromArn(@Nullable final String resourceArn) {
-    if(isEmptyOrSpaces(resourceArn)){
+  public static String getResourceNameFromArn(@Nullable final String resourceArnString) {
+    if(isEmptyOrSpaces(resourceArnString)){
       return "";
     }
-
-    int semicilonsQuantity = StringUtils.countMatches(resourceArn, AWS_ARN_SEPARATOR);
-    if (semicilonsQuantity > MIN_SEMICOLONS_QUANTITY_IN_AWS_ARN) {
-      return getLastArnPart(resourceArn);
-
-    } else if (resourceArn.contains(AWS_ARN_RESOURCE_SEPARATOR)) {
-      return resourceArn.substring(resourceArn.indexOf(AWS_ARN_RESOURCE_SEPARATOR) + 1);
-    }
-    return getLastArnPart(resourceArn);
-  }
-  @NotNull
-  private static String getLastArnPart(@NotNull String resourceArn) {
-    List<String> parts = split(resourceArn, AWS_ARN_SEPARATOR);
-    if (parts.size() > 0) {
-      return parts.get(parts.size() - 1);
-    }
-    return resourceArn;
+    Arn resourceArn = Arn.fromString(resourceArnString);
+    return resourceArn.getResource().getResource();
   }
 }

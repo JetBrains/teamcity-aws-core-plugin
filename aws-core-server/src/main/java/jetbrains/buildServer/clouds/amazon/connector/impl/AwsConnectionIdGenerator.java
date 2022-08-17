@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
@@ -39,26 +38,29 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdGenerator.class.getName());
-  private final AtomicInteger currentIdentifier = new AtomicInteger(-1);
 
-  private final ProjectManager myProjectManager;
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
 
-  private final ScheduledExecutorService currentAwsConnIdentifierSynchroniser;
+  private final AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
   private final int CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC = 60 * 1000;
   private final int CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC = 500;
 
   public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator, @NotNull final ProjectManager projectManager) {
-    myProjectManager = projectManager;
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
 
-    currentAwsConnIdentifierSynchroniser = ExecutorsFactory.newFixedScheduledDaemonExecutor("Amazon Identifier Synchroniser", 1);
-    scheduleIdentifierSyncTask();
-  }
+    ScheduledExecutorService currentAwsConnIdentifierSynchroniser =
+      ExecutorsFactory.newFixedScheduledDaemonExecutor("Amazon Identifier Synchroniser", 1);
 
-  public static boolean currentIdentifierInitialised(@NotNull AtomicInteger currentIdentifier) {
-    return currentIdentifier.get() != -1;
+    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(projectManager);
+
+    currentAwsConnIdentifierSynchroniser
+      .scheduleWithFixedDelay(
+        myAwsConnectionIdSynchroniser,
+        CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC,
+        CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC,
+        TimeUnit.MILLISECONDS
+      );
   }
 
   @Nullable
@@ -102,15 +104,19 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     return Collections.unmodifiableMap(awsConnectionIdxMap);
   }
 
+  public boolean currentIdentifierInitialised() {
+    return myAwsConnectionIdSynchroniser.currentIdentifierInitialised();
+  }
+
   @NotNull
   private String generateNewId() {
     int newIdNumber;
 
-    if (!currentIdentifierInitialised(currentIdentifier)) {
+    if (!myAwsConnectionIdSynchroniser.currentIdentifierInitialised()) {
       Random r = new Random();
       newIdNumber = 100000 + r.nextInt(100000);
     } else {
-      newIdNumber = currentIdentifier.addAndGet(1);
+      newIdNumber = myAwsConnectionIdSynchroniser.getCurrentIdentifier().addAndGet(1);
     }
 
     return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, newIdNumber);
@@ -119,10 +125,5 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   private void writeNewId(@NotNull String connectionId) {
     awsConnectionIdxMap.put(connectionId, connectionId);
     LOG.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
-  }
-
-  private void scheduleIdentifierSyncTask() {
-    Runnable identifierSyncTask = new AwsConnectionIdSynchroniser(myProjectManager, currentIdentifier, AwsConnectionIdGenerator::currentIdentifierInitialised);
-    currentAwsConnIdentifierSynchroniser.scheduleWithFixedDelay(identifierSyncTask, CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC, CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC, TimeUnit.MILLISECONDS);
   }
 }

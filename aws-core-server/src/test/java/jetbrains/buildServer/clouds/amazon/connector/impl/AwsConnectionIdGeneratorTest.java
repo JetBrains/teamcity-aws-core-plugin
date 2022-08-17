@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdGenerator.AWS_CONNECTION_ID_PREFIX;
+import static jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdSynchroniser.AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.ACCESS_KEY_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
@@ -21,11 +22,10 @@ import static org.mockito.Mockito.when;
 
 public class AwsConnectionIdGeneratorTest extends BaseTestCase {
 
+  private final String USER_DEFINED_AWS_CONN_ID = "MY_OWN_CONNECTION_ID";
   private AwsConnectionIdGenerator myAwsConnectionIdGenerator;
   private ArrayList<String> myAwsExistedConnectionIDx;
-
   private Map<String, String> myDataStorageValues;
-
   private ProjectManager projectManager;
 
   @BeforeMethod
@@ -72,9 +72,9 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
   public void whenRootProjectIsNotInitialisedThenReturnRandomId() {
 
     when(projectManager.getRootProject().getCustomDataStorage(any()))
-      .thenThrow(new Exception("Has not been initialised yet"));
+      .thenThrow(new RuntimeException("Has not been initialised yet"));
 
-    Pattern pattern = Pattern.compile(AWS_CONNECTION_ID_PREFIX + "*", Pattern.CASE_INSENSITIVE);
+    Pattern pattern = Pattern.compile(AWS_CONNECTION_ID_PREFIX + ".*", Pattern.CASE_INSENSITIVE);
 
     myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
 
@@ -89,6 +89,22 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
     assertFalse(set.contains(AWS_CONNECTION_ID_PREFIX + "0"));
   }
 
+  @Test
+  public void whenUserDefinedConnectionIdThenUseDefinedId() {
+
+    myDataStorageValues.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, "0");
+
+    Map<String, String> awsConnProps = createDefaultConnectionProps();
+    awsConnProps.put(USER_DEFINED_ID_PARAM, USER_DEFINED_AWS_CONN_ID);
+
+    myAwsConnectionIdGenerator.newId(awsConnProps);
+
+    assertEquals(
+      USER_DEFINED_AWS_CONN_ID,
+      myAwsConnectionIdGenerator.getAwsConnectionIdx()
+                                .get(USER_DEFINED_AWS_CONN_ID)
+    );
+  }
 
   private void initExistedIdx() {
     for (int i = 0; i < 3; i++) {

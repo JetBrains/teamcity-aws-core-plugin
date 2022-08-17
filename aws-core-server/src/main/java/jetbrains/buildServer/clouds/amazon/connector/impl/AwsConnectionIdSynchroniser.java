@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionIdSynchroniser implements Runnable {
 
-  private final static String AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE = "aws.connections.current.incremental.id.storage";
-  private final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
+  public final static String AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE = "aws.connections.current.incremental.id.storage";
+  public final static String AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM = "awsConnectionsCurrentId";
   private final static int FIRST_INCREMENTAL_ID = 0;
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdSynchroniser.class.getName());
 

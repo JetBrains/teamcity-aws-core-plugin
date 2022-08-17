@@ -39,14 +39,15 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdGenerator.class.getName());
-  private final AtomicInteger currentIdentifier;
+  private final AtomicInteger currentIdentifier = new AtomicInteger(-1);
 
   private final ProjectManager myProjectManager;
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
 
   private final ScheduledExecutorService currentAwsConnIdentifierSynchroniser;
-  private final int CURRENT_IDENTIFIER_SYNC_TIMEOUT_MIN = 1;
+  private final int CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC = 60 * 1000;
+  private final int CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC = 500;
 
   public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator, @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
@@ -54,8 +55,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
     currentAwsConnIdentifierSynchroniser = ExecutorsFactory.newFixedScheduledDaemonExecutor("Amazon Identifier Synchroniser", 1);
     scheduleIdentifierSyncTask();
-
-    currentIdentifier = new AtomicInteger(-1);
   }
 
   public static boolean currentIdentifierInitialised(@NotNull AtomicInteger currentIdentifier) {
@@ -124,6 +123,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   private void scheduleIdentifierSyncTask() {
     Runnable identifierSyncTask = new AwsConnectionIdSynchroniser(myProjectManager, currentIdentifier, AwsConnectionIdGenerator::currentIdentifierInitialised);
-    currentAwsConnIdentifierSynchroniser.schedule(identifierSyncTask, CURRENT_IDENTIFIER_SYNC_TIMEOUT_MIN, TimeUnit.MINUTES);
+    currentAwsConnIdentifierSynchroniser.scheduleWithFixedDelay(identifierSyncTask, CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC, CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC, TimeUnit.MILLISECONDS);
   }
 }

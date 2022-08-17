@@ -106,6 +106,30 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
     );
   }
 
+  @Test
+  public void whenUserDidNotSpecifiedConnectionIdThenUseCurrentIncrementalId() {
+
+    int currentIncrementalId = 10;
+    myDataStorageValues.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+
+    waitFor(
+      () -> myAwsConnectionIdGenerator
+              .currentIdentifierInitialised(),
+      3000
+    );
+
+    myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
+
+    currentIncrementalId++;
+    String resultConnectionId = AWS_CONNECTION_ID_PREFIX + "-" + String.valueOf(currentIncrementalId);
+
+    assertEquals(
+      resultConnectionId,
+      myAwsConnectionIdGenerator.getAwsConnectionIdx()
+                                .get(resultConnectionId)
+    );
+  }
+
   private void initExistedIdx() {
     for (int i = 0; i < 3; i++) {
       myAwsExistedConnectionIDx.add(UUID.randomUUID().toString());

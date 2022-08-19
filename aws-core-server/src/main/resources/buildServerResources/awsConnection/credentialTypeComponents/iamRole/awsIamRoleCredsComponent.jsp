@@ -24,7 +24,7 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean"/>
 
-<c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param_iam_role]}"/>
+<c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 <c:set var="iamRoleArn" value="${propertiesBean.properties[iam_role_arn_param]}"/>
 <c:set var="sessionName" value="${propertiesBean.properties[iam_role_session_name_param]}"/>
 
@@ -52,13 +52,13 @@
         </td>
     </tr>
 
-    <tr id="${sts_endpoint_param_iam_role}_row">
-        <th><label for="${sts_endpoint_param_iam_role}">${sts_endpoint_label}</label></th>
+    <tr id="${sts_endpoint_param}_row">
+        <th><label for="${sts_endpoint_field_id_iam_role}">${sts_endpoint_label}</label></th>
         <td><props:textProperty id="${sts_endpoint_field_id_iam_role}"
-                                name="${sts_endpoint_param_iam_role}"
+                                name="${sts_endpoint_param}"
                                 value="${stsEndpoint}" className="longField" maxlength="256"/>
             <span class="smallNote">The global endpoint is: ${sts_global_endpoint}</span>
-            <span class="error" id="error_${sts_endpoint_param_iam_role}"></span>
+            <span class="error" id="error_${sts_endpoint_param}"></span>
         </td>
     </tr>
 </l:settingsGroup>

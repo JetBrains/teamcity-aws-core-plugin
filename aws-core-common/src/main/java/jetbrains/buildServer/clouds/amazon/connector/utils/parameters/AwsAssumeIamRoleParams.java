@@ -30,7 +30,6 @@ public final class AwsAssumeIamRoleParams {
   public static final String IAM_ROLE_SESSION_NAME_DEFAULT = "TeamCity-session";
 
   public static final String STS_ENDPOINT_FIELD_ID_IAM_ROLE = "stsEndpointFieldIamRole";
-  public static final String STS_ENDPOINT_PARAM_IAM_ROLE = "awsStsEndpointIamRole";
 
   public static final String VALID_ROLE_SESSION_NAME_REGEX = "[\\w+=,.@-]*";
 

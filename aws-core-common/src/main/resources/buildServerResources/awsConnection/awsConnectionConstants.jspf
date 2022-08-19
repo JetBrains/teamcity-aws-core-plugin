@@ -52,7 +52,6 @@
 <c:set var="sts_global_endpoint" value="<%=AwsAccessKeysParams.STS_GLOBAL_ENDPOINT%>"/>
 
 <c:set var="sts_endpoint_field_id_iam_role" value="<%=AwsAssumeIamRoleParams.STS_ENDPOINT_FIELD_ID_IAM_ROLE%>"/>
-<c:set var="sts_endpoint_param_iam_role" value="<%=AwsAssumeIamRoleParams.STS_ENDPOINT_PARAM_IAM_ROLE%>"/>
 
 
 <c:set var="test_connection_controller_url" value="<%=AwsCloudConnectorConstants.TEST_CONNECTION_CONTROLLER_URL%>"/>

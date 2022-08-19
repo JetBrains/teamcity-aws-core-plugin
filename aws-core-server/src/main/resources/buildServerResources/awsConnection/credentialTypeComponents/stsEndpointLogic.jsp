@@ -35,8 +35,8 @@
   });
 
   let setStsEndpoint = function (stsEndpoint) {
-    $j('#${sts_endpoint_field_id}').val('https://sts.' + stsEndpoint + '.amazonaws.com')
-    $j('#${sts_endpoint_field_id_iam_role}').val('https://sts.' + stsEndpoint + '.amazonaws.com')
+    $j('#${sts_endpoint_field_id}').val('https://sts.' + stsEndpoint + '.amazonaws.com');
+    $j('#${sts_endpoint_field_id_iam_role}').val('https://sts.' + stsEndpoint + '.amazonaws.com');
   };
 
   let toggleStsEndpint = function () {

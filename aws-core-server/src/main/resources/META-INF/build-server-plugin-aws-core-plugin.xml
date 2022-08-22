@@ -15,6 +15,7 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.IamRoleCredentialsBuilder"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.PrincipalConnProjectIdChangedListener"/>
 
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsTestConnectionController"/>

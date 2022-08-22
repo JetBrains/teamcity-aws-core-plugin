@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jetbrains.buildServer.BaseTestCase;
+import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
@@ -12,8 +13,8 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdGenerator.AWS_CONNECTION_ID_PREFIX;
-import static jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionIdSynchroniser.AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.AWS_CONNECTION_ID_PREFIX;
+import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdSynchroniser.AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.ACCESS_KEY_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;

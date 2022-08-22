@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.impl;
+package jetbrains.buildServer.clouds.amazon.connector.connectionId;
 
 import com.intellij.openapi.diagnostic.Logger;
 import java.util.Collections;

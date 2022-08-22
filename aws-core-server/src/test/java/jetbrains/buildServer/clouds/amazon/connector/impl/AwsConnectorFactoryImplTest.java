@@ -2,6 +2,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;

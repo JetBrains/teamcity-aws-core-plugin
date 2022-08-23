@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
-import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionIdSynchroniser implements Runnable {
@@ -16,27 +16,21 @@ public class AwsConnectionIdSynchroniser implements Runnable {
   private final static int FIRST_INCREMENTAL_ID = 0;
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdSynchroniser.class.getName());
 
-  private final ProjectManager myProjectManager;
+  private final SProject myProject;
   private final AtomicInteger currentIdentifier = new AtomicInteger(-1);
 
-  public AwsConnectionIdSynchroniser(@NotNull final ProjectManager projectManager) {
-    myProjectManager = projectManager;
+  public AwsConnectionIdSynchroniser(@NotNull final SProject project) {
+    myProject = project;
   }
 
   @Override
   public void run() {
     try {
-      CustomDataStorage dataStorage = myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE);
-      final Map<String, String> values = dataStorage.getValues();
-
-      if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
-        setInitialIdentifier(dataStorage);
-      } else if (!currentIdentifierInitialised()) {
-        loadIdentifier(values);
+      if (!currentIdentifierInitialised()) {
+        loadIdentifier();
       } else {
-        syncIdentifier(dataStorage);
+        syncIdentifier();
       }
-
     } catch (Exception e) {
       LOG.warnAndDebugDetails("Cannot sync the current AWS identifier", e);
     }
@@ -50,23 +44,15 @@ public class AwsConnectionIdSynchroniser implements Runnable {
     return currentIdentifier.incrementAndGet();
   }
 
-  private void setInitialIdentifier(@NotNull CustomDataStorage dataStorage) {
+  public void setInitialIdentifier() {
+    CustomDataStorage dataStorage = getCustomDataStorage();
     dataStorage.putValue(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(FIRST_INCREMENTAL_ID));
     dataStorage.flush();
     currentIdentifier.set(FIRST_INCREMENTAL_ID);
   }
 
-  private void loadIdentifier(@NotNull final Map<String, String> dataStorageValues) {
-    try {
-      int currentIdentifierFromDataStorage = Integer.parseInt(dataStorageValues.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
-      currentIdentifier.set(currentIdentifierFromDataStorage);
-
-    } catch (NumberFormatException e) {
-      LOG.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
-    }
-  }
-
-  private void syncIdentifier(@NotNull CustomDataStorage dataStorage) {
+  public void syncIdentifier() {
+    CustomDataStorage dataStorage = getCustomDataStorage();
     dataStorage.updateValues(
       Collections.singletonMap(
         AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM,
@@ -75,5 +61,24 @@ public class AwsConnectionIdSynchroniser implements Runnable {
       new HashSet<>()
     );
     dataStorage.flush();
+  }
+
+  @NotNull
+  private CustomDataStorage getCustomDataStorage() {
+    return myProject.getCustomDataStorage(AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE);
+  }
+
+  private void loadIdentifier() {
+    Map<String, String> dataStorageValues = getCustomDataStorage().getValues();
+    try {
+      if (dataStorageValues == null) {
+        throw new NumberFormatException("There is no values in the  AWS Connections IDs DataStorage in the project: " + myProject.getExternalId());
+      }
+      int currentIdentifierFromDataStorage = Integer.parseInt(dataStorageValues.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
+      currentIdentifier.set(currentIdentifierFromDataStorage);
+
+    } catch (NumberFormatException e) {
+      LOG.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
+    }
   }
 }

@@ -21,17 +21,20 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import jetbrains.buildServer.serverSide.BuildServerAdapter;
+import jetbrains.buildServer.serverSide.BuildServerListener;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
+import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
-public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
+public class AwsConnectionIdGenerator extends BuildServerAdapter implements CachingTypedIdGenerator {
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
 
@@ -39,23 +42,19 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
-  private final AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
+  private final ProjectManager myProjectManager;
+  private final ExecutorServices myExecutorServices;
+  private AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
 
   public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
+                                  @NotNull final EventDispatcher<BuildServerListener> eventDispatcher,
                                   @NotNull final ProjectManager projectManager,
                                   @NotNull final ExecutorServices executorServices) {
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
+    eventDispatcher.addListener(this);
 
-    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(projectManager);
-
-    executorServices
-      .getLowPriorityExecutorService()
-      .submit(
-        new AwsConnectionIdSyncTask(
-          executorServices,
-          myAwsConnectionIdSynchroniser
-        )
-      );
+    myProjectManager = projectManager;
+    myExecutorServices = executorServices;
   }
 
   @Nullable
@@ -101,6 +100,28 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   public boolean currentIdentifierInitialised() {
     return myAwsConnectionIdSynchroniser.currentIdentifierInitialised();
+  }
+
+  @Override
+  public void serverStartup() {
+    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(
+      myProjectManager.getRootProject()
+    );
+    myAwsConnectionIdSynchroniser.setInitialIdentifier();
+
+    myExecutorServices
+      .getLowPriorityExecutorService()
+      .submit(
+        new AwsConnectionIdSyncTask(
+          myExecutorServices,
+          myAwsConnectionIdSynchroniser
+        )
+      );
+  }
+
+  @Override
+  public void serverShutdown() {
+    myAwsConnectionIdSynchroniser.syncIdentifier();
   }
 
   @NotNull

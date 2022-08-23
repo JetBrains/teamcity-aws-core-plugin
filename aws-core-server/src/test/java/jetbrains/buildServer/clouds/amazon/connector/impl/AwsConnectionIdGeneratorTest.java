@@ -40,6 +40,7 @@ public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
 
     myAwsConnectionIdGenerator = new AwsConnectionIdGenerator(
       Mockito.mock(OAuthConnectionsIdGenerator.class),
+      myFixture.getEventDispatcher(),
       projectManager,
       myFixture.getExecutorServices()
     );

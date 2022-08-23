@@ -32,7 +32,7 @@ public class AwsConnectionIdSynchroniser implements Runnable {
       if (values == null || values.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM) == null) {
         setInitialIdentifier(dataStorage);
       } else if (!currentIdentifierInitialised()) {
-        getIdentifier(values);
+        loadIdentifier(values);
       } else {
         syncIdentifier(dataStorage);
       }
@@ -56,7 +56,7 @@ public class AwsConnectionIdSynchroniser implements Runnable {
     currentIdentifier.set(FIRST_INCREMENTAL_ID);
   }
 
-  private void getIdentifier(@NotNull final Map<String, String> dataStorageValues) {
+  private void loadIdentifier(@NotNull final Map<String, String> dataStorageValues) {
     try {
       int currentIdentifierFromDataStorage = Integer.parseInt(dataStorageValues.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
       currentIdentifier.set(currentIdentifierFromDataStorage);

@@ -46,8 +46,8 @@ public class AwsConnectionIdSynchroniser implements Runnable {
     return currentIdentifier.get() != -1;
   }
 
-  public AtomicInteger getCurrentIdentifier() {
-    return currentIdentifier;
+  public int incrementAndGetCurrentIdentifier() {
+    return currentIdentifier.incrementAndGet();
   }
 
   private void setInitialIdentifier(@NotNull CustomDataStorage dataStorage) {

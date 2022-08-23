@@ -21,13 +21,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
-import jetbrains.buildServer.util.executors.ExecutorsFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,25 +39,22 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
-
   private final AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
-  private final int CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC = 60 * 1000;
-  private final int CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC = 500;
 
-  public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator, @NotNull final ProjectManager projectManager) {
+  public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
+                                  @NotNull final ProjectManager projectManager,
+                                  @NotNull final ExecutorServices executorServices) {
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
-
-    ScheduledExecutorService currentAwsConnIdentifierSynchroniser =
-      ExecutorsFactory.newFixedScheduledDaemonExecutor("Amazon Identifier Synchroniser", 1);
 
     myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(projectManager);
 
-    currentAwsConnIdentifierSynchroniser
-      .scheduleWithFixedDelay(
-        myAwsConnectionIdSynchroniser,
-        CURRENT_IDENTIFIER_SYNC_INITIAL_DELAY_MSEC,
-        CURRENT_IDENTIFIER_SYNC_TIMEOUT_MSEC,
-        TimeUnit.MILLISECONDS
+    executorServices
+      .getLowPriorityExecutorService()
+      .submit(
+        new AwsConnectionIdSyncTask(
+          executorServices,
+          myAwsConnectionIdSynchroniser
+        )
       );
   }
 

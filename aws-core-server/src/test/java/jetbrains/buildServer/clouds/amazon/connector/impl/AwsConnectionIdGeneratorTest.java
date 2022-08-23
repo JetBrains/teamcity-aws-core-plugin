@@ -3,10 +3,10 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import org.mockito.Answers;
 import org.mockito.Mockito;
@@ -21,7 +21,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class AwsConnectionIdGeneratorTest extends BaseTestCase {
+public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
 
   private final String USER_DEFINED_AWS_CONN_ID = "MY_OWN_CONNECTION_ID";
   private AwsConnectionIdGenerator myAwsConnectionIdGenerator;
@@ -40,7 +40,8 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
 
     myAwsConnectionIdGenerator = new AwsConnectionIdGenerator(
       Mockito.mock(OAuthConnectionsIdGenerator.class),
-      projectManager
+      projectManager,
+      myFixture.getExecutorServices()
     );
 
     initExistedIdx();

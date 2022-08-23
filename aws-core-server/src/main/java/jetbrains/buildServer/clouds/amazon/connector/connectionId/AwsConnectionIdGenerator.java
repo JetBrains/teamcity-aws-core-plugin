@@ -117,6 +117,9 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       newIdNumber = 100000 + r.nextInt(100000);
     } else {
       newIdNumber = myAwsConnectionIdSynchroniser.incrementAndGetCurrentIdentifier();
+      while (!isUnique(String.valueOf(newIdNumber))) {
+        newIdNumber = myAwsConnectionIdSynchroniser.incrementAndGetCurrentIdentifier();
+      }
     }
 
     return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, newIdNumber);

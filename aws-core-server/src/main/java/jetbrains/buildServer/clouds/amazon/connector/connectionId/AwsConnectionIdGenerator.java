@@ -46,7 +46,7 @@ public class AwsConnectionIdGenerator extends BuildServerAdapter implements Cach
   private final ExecutorServices myExecutorServices;
   private AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
 
-  public AwsConnectionIdGenerator(@NotNull OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
+  public AwsConnectionIdGenerator(@NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
                                   @NotNull final EventDispatcher<BuildServerListener> eventDispatcher,
                                   @NotNull final ProjectManager projectManager,
                                   @NotNull final ExecutorServices executorServices) {
@@ -59,7 +59,7 @@ public class AwsConnectionIdGenerator extends BuildServerAdapter implements Cach
 
   @Nullable
   @Override
-  public String newId(Map<String, String> props) {
+  public String newId(@NotNull Map<String, String> props) {
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
 
     boolean needToGenerateId = false;

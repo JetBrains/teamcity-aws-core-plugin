@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
-import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.ProjectManager;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionIdSynchroniser implements Runnable {
@@ -16,11 +16,11 @@ public class AwsConnectionIdSynchroniser implements Runnable {
   private final static int FIRST_INCREMENTAL_ID = 0;
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdSynchroniser.class.getName());
 
-  private final SProject myProject;
+  private final ProjectManager myProjectManager;
   private final AtomicInteger currentIdentifier = new AtomicInteger(-1);
 
-  public AwsConnectionIdSynchroniser(@NotNull final SProject project) {
-    myProject = project;
+  public AwsConnectionIdSynchroniser(@NotNull final ProjectManager projectManager) {
+    myProjectManager = projectManager;
   }
 
   @Override
@@ -65,14 +65,14 @@ public class AwsConnectionIdSynchroniser implements Runnable {
 
   @NotNull
   private CustomDataStorage getCustomDataStorage() {
-    return myProject.getCustomDataStorage(AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE);
+    return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_INCREMENTAL_ID_STORAGE);
   }
 
   private void loadIdentifier() {
     Map<String, String> dataStorageValues = getCustomDataStorage().getValues();
     try {
       if (dataStorageValues == null) {
-        throw new NumberFormatException("There is no values in the  AWS Connections IDs DataStorage in the project: " + myProject.getExternalId());
+        throw new NumberFormatException("There are no values in the AWS Connections IDs DataStorage in the Root project");
       }
       int currentIdentifierFromDataStorage = Integer.parseInt(dataStorageValues.get(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM));
       currentIdentifier.set(currentIdentifierFromDataStorage);

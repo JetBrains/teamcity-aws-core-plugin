@@ -104,9 +104,7 @@ public class AwsConnectionIdGenerator extends BuildServerAdapter implements Cach
 
   @Override
   public void serverStartup() {
-    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(
-      myProjectManager.getRootProject()
-    );
+    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(myProjectManager);
     myAwsConnectionIdSynchroniser.setInitialIdentifier();
 
     myExecutorServices

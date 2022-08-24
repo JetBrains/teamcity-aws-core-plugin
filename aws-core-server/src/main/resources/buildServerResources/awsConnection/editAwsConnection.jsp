@@ -46,19 +46,18 @@
 
 <c:choose>
   <c:when test="${!StringUtil.isEmpty(overrideBundleUrl)}">
-    <script src="<c:out value="${overrideBundleUrl}" />/bundle.js"></script>
+    <script src="<c:out value="${overrideBundleUrl}" />"></script>
   </c:when>
   <c:otherwise>
     <bs:linkScript>${teamcityPluginResourcesPath}bundle.js</bs:linkScript>
   </c:otherwise>
 </c:choose>
-<%--<script src="<c:out value="${overrideBundleUrl}"/>"></script>--%>
 <%--<bs:linkScript>${teamcityPluginResourcesPath}bundle.js</bs:linkScript>&ndash;%&gt;--%>
 
 
 <script>
   console.log("${teamcityPluginResourcesPath}");
-  console.log("TEST-4 bundle url: ${overrideBundleUrl}");
+  console.log("TEST-10 bundle url: ${overrideBundleUrl}");
   <%--const eventLogData = {--%>
   <%--  "<bs:forJs>${event_log_enabled_param}</bs:forJs>": "<bs:forJs>${propertiesBean.properties[event_log_enabled_param]}</bs:forJs>" === "true",--%>
   <%--  "<bs:forJs>${event_log_artifact_storage_time_param}</bs:forJs>": "<bs:forJs>${propertiesBean.properties[event_log_artifact_storage_time_param]}</bs:forJs>"--%>
@@ -84,7 +83,7 @@
   <%--};--%>
   const something = {};
 
-  testBundle("ALERT 2!!!!");
+  testBundle2("ALERT 8!!!!");
 
   <%--renderTelemetry({--%>
   <%--  something,--%>

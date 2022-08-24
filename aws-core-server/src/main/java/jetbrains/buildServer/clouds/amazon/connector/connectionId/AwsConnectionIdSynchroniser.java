@@ -79,6 +79,7 @@ public class AwsConnectionIdSynchroniser implements Runnable {
 
     } catch (NumberFormatException e) {
       LOG.warnAndDebugDetails("Wrong number in the incremental ID parameter of the CustomDataStorage in the Root Project", e);
+      setInitialIdentifier();
     }
   }
 }

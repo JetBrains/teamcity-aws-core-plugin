@@ -17,11 +17,6 @@
   </function>
 
   <params>
-    <param name="connectionId" dslName="connectionId">
-      <description>
-        AWS connection project feature ID
-      </description>
-    </param>
     <param name="displayName" dslName="name">
       <description>
         AWS connection display name
@@ -30,6 +25,11 @@
     <param name="awsRegionName" dslName="regionName" type="string">
       <description>
         Region where this connection will be used.
+      </description>
+    </param>
+    <param name="projectFeatureId" dslName="projectFeatureId" type="string">
+      <description>
+        Custom identifier for this AWS Connection
       </description>
     </param>
     <param name="awsCredentialsType" dslName="credentialsType" type="compound">
@@ -55,6 +55,33 @@
         <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
           <description>
             Endpoint from where to obtain session credentials
+          </description>
+        </param>
+      </option>
+      <option name="iamRole" value="awsAssumeIamRole">
+        <param name="awsIamRoleArn" dslName="roleArn" type="string" mandatory="true">
+          <description>
+            AWS IAM Role ARN
+          </description>
+        </param>
+        <param name="awsIamRoleSessionName" dslName="sessionName" type="string" mandatory="true">
+          <description>
+            An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons.
+          </description>
+        </param>
+        <param name="awsConnectionId" dslName="awsConnectionId" type="string" mandatory="true">
+          <description>
+            Principal AWS Connection ID (Who will assume the IAM Role)
+          </description>
+        </param>
+        <param name="principalAwsConnectionProjectId" dslName="principalAwsConnectionProjectId" type="string" mandatory="true">
+          <description>
+            The project ID of the Principal AWS Connection
+          </description>
+        </param>
+        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
+          <description>
+            Endpoint from where to obtain session credentials of the assumed IAM Role
           </description>
         </param>
       </option>

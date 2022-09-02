@@ -3,6 +3,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import org.jetbrains.annotations.NotNull;
 
+@Deprecated
 public class AwsConnectionBean {
   private final String myConnectionId;
   private final String myDescription;

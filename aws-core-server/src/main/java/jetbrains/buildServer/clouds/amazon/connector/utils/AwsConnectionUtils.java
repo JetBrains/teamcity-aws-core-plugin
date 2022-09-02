@@ -17,40 +17,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils;
 
 import com.amazonaws.auth.*;
-import java.util.HashMap;
-import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import org.jetbrains.annotations.NotNull;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
-
 public class AwsConnectionUtils {
-
-  @NotNull
-  public static AwsConnectionBean awsConnBeanFromDescriptor(@NotNull final OAuthConnectionDescriptor connectionDescriptor,
-                                                            @NotNull final AwsConnectorFactory awsConnectorFactory,
-                                                            @NotNull final Map<String, String> connectionParameters) throws AwsConnectorException {
-    Map<String, String> connectionProperties = new HashMap<>(connectionDescriptor.getParameters());
-
-    String sessionDuration = connectionParameters.get(SESSION_DURATION_PARAM);
-    if (sessionDuration != null) {
-      connectionProperties.put(SESSION_DURATION_PARAM, sessionDuration);
-    }
-
-    AwsCredentialsHolder credentialsHolder = awsConnectorFactory.buildAwsCredentialsProvider(connectionProperties);
-    return new AwsConnectionBean(
-      connectionDescriptor.getId(),
-      connectionDescriptor.getDescription(),
-      credentialsHolder,
-      connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM)
-    );
-  }
-
   @NotNull
   public static AWSCredentialsProvider awsCredsProviderFromHolder(@NotNull final AwsCredentialsHolder credentialsHolder) {
     AWSCredentials credentials;

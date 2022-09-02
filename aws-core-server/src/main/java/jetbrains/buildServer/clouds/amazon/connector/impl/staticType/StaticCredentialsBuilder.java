@@ -39,6 +39,13 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
     }
   }
 
+  @NotNull
+  @Override
+  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) {
+    //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
+    return constructConcreteCredentialsProviderImpl(parameters);
+  }
+
   @Override
   @NotNull
   public List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties) {

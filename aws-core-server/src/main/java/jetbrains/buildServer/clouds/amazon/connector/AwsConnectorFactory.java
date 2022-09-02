@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,9 @@ public interface AwsConnectorFactory {
    */
   @NotNull
   AwsCredentialsHolder buildAwsCredentialsProvider(@NotNull final Map<String, String> connectionProperties) throws AwsConnectorException;
+
+  @NotNull
+  AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final AwsConnectionDescriptor featureDescriptor, @NotNull final String sessionDuration) throws AwsConnectorException;
 
   void registerAwsCredentialsBuilder(@NotNull final AwsCredentialsBuilder credentialsBuilder);
 

@@ -23,7 +23,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
@@ -68,7 +68,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
     }
 
     try {
-      AwsConnectionBean principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties, principalAwsConnectionProject);
+      AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties);
 
       return new IamRoleSessionCredentialsHolder(
         principalAwsConnection.getAwsCredentialsHolder(),
@@ -78,6 +78,13 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
     } catch (AmazonClientException ace) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));
     }
+  }
+
+  @NotNull
+  @Override
+  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) throws AwsConnectorException {
+    //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
+    return constructConcreteCredentialsProviderImpl(parameters);
   }
 
   @Override

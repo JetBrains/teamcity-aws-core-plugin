@@ -25,6 +25,8 @@ public interface AwsCredentialsBuilder {
    */
   @NotNull
   AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+  @NotNull
+  AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final Map<String, String> parameters) throws AwsConnectorException;
 
   @NotNull
   List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties);

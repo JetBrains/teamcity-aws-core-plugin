@@ -74,12 +74,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
 
     SBuildFeatureDescriptor configuredAwsConnBuildFeature;
-    try {
-      configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
-    } catch (NoSuchElementException noExposeAwsConnBuildFeaturesException) {
-      return null;
-    }
-
+    configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters());
   }
 
@@ -128,12 +123,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
 
     SBuildFeatureDescriptor configuredAwsConnBuildFeature;
-    try {
-      configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
-    } catch (NoSuchElementException noExposeAwsConnBuildFeaturesException) {
-      return null;
-    }
-
+    configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());
   }
 }

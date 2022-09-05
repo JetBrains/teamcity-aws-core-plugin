@@ -12,6 +12,9 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,20 +85,24 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   @Override
   public void rebuildAllConnectionsForProject(@NotNull String projectId) {
-    Map<String, String> values = getDataStorage().getValues();
-    if (values != null) {
-      values.forEach((connectionId, ownerProjectId) -> {
+    SProject updatedProject = myProjectManager.findProjectById(projectId);
+    if (updatedProject == null) {
+      Loggers.CLOUD.debug(
+        String.format("Could not find the reloaded project with ID: '%s'", projectId));
+      return;
+    }
+
+    for (SProjectFeatureDescriptor projectFeature : updatedProject.getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE)) {
+      if (AwsConnectionProvider.TYPE.equals(projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM))){
         try {
-          if (ownerProjectId.equals(projectId)) {
-            updateAwsConnection(
-              buildAwsConnectionDescriptor(connectionId, projectId)
-            );
-          }
+          updateAwsConnection(
+            buildAwsConnectionDescriptor(projectFeature.getId(), projectId)
+          );
         } catch (AwsConnectorException e) {
           Loggers.CLOUD.warnAndDebugDetails(
-            String.format("Failed to build AWS Connection with ID '%s' in Project with ID: '%s', reason: <%s>", connectionId, projectId, e.getMessage()), e);
+            String.format("Failed to reload AWS Connection with ID '%s' in Project with ID: '%s', reason: <%s>", projectFeature.getId(), projectId, e.getMessage()), e);
         }
-      });
+      }
     }
   }
 

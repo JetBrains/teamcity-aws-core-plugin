@@ -49,7 +49,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     assertTrue(invalidProperties.isEmpty());
 
     try {
-      AwsCredentialsHolder credentialsHolder = staticCredentialsFactory.constructConcreteCredentialsProvider(myConnectorProperties);
+      AwsCredentialsHolder credentialsHolder = staticCredentialsFactory.constructSpecificCredentialsProvider(myConnectorProperties);
       assertEquals(testAccessKeyId, credentialsHolder.getAwsCredentials().getAccessKeyId());
       assertEquals(testSecretAccessKey, credentialsHolder.getAwsCredentials().getSecretAccessKey());
     } catch (AwsConnectorException awsConnectorException) {

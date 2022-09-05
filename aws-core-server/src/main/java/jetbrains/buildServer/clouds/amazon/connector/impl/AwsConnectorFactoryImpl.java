@@ -37,7 +37,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
     String credentialsType = connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
 
     AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
-    return credentialsBuilder.constructConcreteCredentialsProvider(connectionProperties);
+    return credentialsBuilder.constructSpecificCredentialsProvider(connectionProperties);
   }
 
   @NotNull

@@ -24,7 +24,7 @@ public interface AwsCredentialsBuilder {
    * @see    jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory#buildAwsCredentialsProvider(Map) buildAwsCredentialsProvider(connectionProperties).
    */
   @NotNull
-  AwsCredentialsHolder constructConcreteCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+  AwsCredentialsHolder constructSpecificCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
   @NotNull
   AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final Map<String, String> parameters) throws AwsConnectorException;
 

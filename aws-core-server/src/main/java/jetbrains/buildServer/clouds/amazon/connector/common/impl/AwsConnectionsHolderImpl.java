@@ -38,27 +38,22 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     if (dataStorageValues != null && dataStorageValues.containsKey(awsConnectionId)) {
       throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
     }
+    //TODO: TW-77164 add the refresher task
     awsConnections.put(awsConnectionId, awsConnectionDescriptor);
     dataStorage.putValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
     dataStorage.flush();
   }
 
   @Override
-  public void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws AwsConnectionNotFoundException {
+  public void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String connectionId = awsConnectionDescriptor.getId();
     CustomDataStorage dataStorage = getDataStorage();
     Map<String, String> dataStorageValues = dataStorage.getValues();
     if (dataStorageValues == null || !dataStorageValues.containsKey(connectionId)) {
-      throw new AwsConnectionNotFoundException("AWS Connection with ID " + connectionId + " was not found, cannot update it");
-    }
-    awsConnections.remove(connectionId);
-    awsConnections.put(connectionId, awsConnectionDescriptor);
-
-    String storedOwnerProjectId = dataStorageValues.get(connectionId);
-    if (!storedOwnerProjectId.equals(awsConnectionDescriptor.getProjectId())) {
-      Map<String, String> updatedConnectionInValues = new HashMap<>();
-      updatedConnectionInValues.put(connectionId, awsConnectionDescriptor.getProjectId());
-      dataStorage.updateValues(updatedConnectionInValues, Collections.emptySet());
+      addAwsConnection(awsConnectionDescriptor);
+    } else {
+      //TODO: TW-77164 update the refresher task
+      awsConnections.put(connectionId, awsConnectionDescriptor);
     }
   }
 

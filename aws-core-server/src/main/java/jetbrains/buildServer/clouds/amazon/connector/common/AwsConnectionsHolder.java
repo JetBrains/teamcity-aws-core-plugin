@@ -9,7 +9,7 @@ public interface AwsConnectionsHolder {
 
   void addAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException;
 
-  void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws AwsConnectionNotFoundException;
+  void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException;
 
   void removeAwsConnection(@NotNull final String awsConnectionId);
 

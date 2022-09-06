@@ -36,23 +36,20 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   @Override
   public void addAwsConnection(@NotNull AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String awsConnectionId = awsConnectionDescriptor.getId();
-    CustomDataStorage dataStorage = getDataStorage();
-    Map<String, String> dataStorageValues = dataStorage.getValues();
-    if (dataStorageValues != null && dataStorageValues.containsKey(awsConnectionId)) {
+    String connecionOwnerProject = getDataStorageValue(awsConnectionId);
+    if (connecionOwnerProject != null) {
       throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
     }
     //TODO: TW-77164 add the refresher task
     awsConnections.put(awsConnectionId, awsConnectionDescriptor);
-    dataStorage.putValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
-    dataStorage.flush();
+    putDataStorageValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
   }
 
   @Override
   public void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String connectionId = awsConnectionDescriptor.getId();
-    CustomDataStorage dataStorage = getDataStorage();
-    Map<String, String> dataStorageValues = dataStorage.getValues();
-    if (dataStorageValues == null || !dataStorageValues.containsKey(connectionId)) {
+    String connecionOwnerProject = getDataStorageValue(connectionId);
+    if (connecionOwnerProject == null) {
       addAwsConnection(awsConnectionDescriptor);
     } else {
       //TODO: TW-77164 update the refresher task
@@ -119,12 +116,10 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   @NotNull
   private AwsConnectionDescriptor getConnectionViaOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
-    CustomDataStorage dataStorage = getDataStorage();
-    Map<String, String> dataStorageValues = dataStorage.getValues();
-    if (dataStorageValues == null || !dataStorageValues.containsKey(awsConnectionId)) {
+    String projectIdWhereToLookForConnection = getDataStorageValue(awsConnectionId);
+    if (projectIdWhereToLookForConnection == null) {
       throw new AwsConnectionNotFoundException("There is no AWS Connection with ID: " + awsConnectionId);
     }
-    String projectIdWhereToLookForConnection = dataStorageValues.get(awsConnectionId);
     AwsConnectionsLogger.connectionRequested(awsConnectionId, projectIdWhereToLookForConnection);
     return buildAwsConnectionDescriptor(awsConnectionId, projectIdWhereToLookForConnection);
   }
@@ -142,6 +137,22 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     CustomDataStorage storage = getDataStorage();
     storage.updateValues(Collections.emptyMap(), Collections.singleton(awsConnectionId));
     storage.flush();
+  }
+
+  @Nullable
+  private String getDataStorageValue(@NotNull final String key) {
+    CustomDataStorage dataStorage = getDataStorage();
+    Map<String, String> dataStorageValues = dataStorage.getValues();
+    if (dataStorageValues == null || !dataStorageValues.containsKey(key)) {
+      return null;
+    }
+    return dataStorageValues.get(key);
+  }
+
+  private void putDataStorageValue(@NotNull final String key, @NotNull final String value) {
+    CustomDataStorage dataStorage = getDataStorage();
+    dataStorage.putValue(key, value);
+    dataStorage.flush();
   }
 
   @NotNull

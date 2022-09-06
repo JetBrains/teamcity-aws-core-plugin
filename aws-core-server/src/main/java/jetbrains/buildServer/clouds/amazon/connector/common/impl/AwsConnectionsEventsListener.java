@@ -48,14 +48,14 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     //TODO TW-77164 Add refreshing task
-    AwsConnectionEventsLogger awsConnectionEventsLogger = new AwsConnectionEventsLogger(project);
+    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
       myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
-      awsConnectionEventsLogger.connectionAdded(awsConnectionDescriptor.getId());
+      awsConnectionsLogger.connectionAdded(awsConnectionDescriptor.getId());
 
     } catch (AwsConnectorException e) {
-      awsConnectionEventsLogger.failedToAdd(projectFeature.getId(), e);
+      awsConnectionsLogger.failedToAdd(projectFeature.getId(), e);
     }
   }
 
@@ -68,14 +68,14 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     //TODO: TW-77164 update the refresher task
-    AwsConnectionEventsLogger awsConnectionEventsLogger = new AwsConnectionEventsLogger(project);
+    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(after);
       myAwsConnectionsHolder.updateAwsConnection(awsConnectionDescriptor);
-      awsConnectionEventsLogger.connectionUpdated(before.getId(), after.getId());
+      awsConnectionsLogger.connectionUpdated(before.getId(), after.getId());
 
     } catch (AwsConnectorException e) {
-      awsConnectionEventsLogger.failedToUpdate(before.getId(), after.getId(), e);
+      awsConnectionsLogger.failedToUpdate(before.getId(), after.getId(), e);
     }
   }
 
@@ -85,7 +85,8 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     myAwsConnectionsHolder.removeAwsConnection(projectFeature.getId());
-    new AwsConnectionEventsLogger(project).connectionRemoved(projectFeature.getId());
+    new AwsConnectionsLogger(project)
+      .connectionRemoved(projectFeature.getId());
   }
 
   private boolean isAwsConnectionFeature(SProjectFeatureDescriptor projectFeature) {

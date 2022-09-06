@@ -5,14 +5,36 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 
-public class AwsConnectionEventsLogger {
+public class AwsConnectionsLogger {
 
-  private final Logger LOG = Logger.getInstance(AwsConnectionEventsLogger.class.getName());
+  private final Logger LOG = Logger.getInstance(AwsConnectionsLogger.class.getName());
 
   private final SProject myProject;
 
-  public AwsConnectionEventsLogger(@NotNull final SProject project) {
+  public AwsConnectionsLogger(@NotNull final SProject project) {
     myProject = project;
+  }
+
+  public static void projectNotFound(@NotNull final String projectId) {
+    Loggers.CLOUD.debug(String.format(
+      "Could not find a project with ID: '%s'",
+      projectId
+    ));
+  }
+
+  public static void connectionRequested(@NotNull final String awsConnectionId) {
+    Loggers.CLOUD.debug(String.format(
+      "Trying to construct AWS Connection for the first time as it has not been added to the map yet, connection ID: '%s'",
+      awsConnectionId
+    ));
+  }
+
+  public static void connectionRequested(@NotNull final String awsConnectionId, @NotNull final String projectId) {
+    Loggers.CLOUD.debug(String.format(
+      "Building AWS Connection with ID: '%s', from the Project with ID: '%s'",
+      awsConnectionId,
+      projectId
+    ));
   }
 
   public void connectionAdded(@NotNull final String awsConnectionId) {
@@ -57,5 +79,14 @@ public class AwsConnectionEventsLogger {
       awsConnectionId,
       myProject.getExternalId()
     ));
+  }
+
+  public void failedToBuild(@NotNull final String awsConnectionId, @NotNull final Exception cause) {
+    Loggers.CLOUD.warnAndDebugDetails(String.format(
+      "Failed to reload AWS Connection with ID '%s' in Project with ID: '%s', reason: <%s>",
+      awsConnectionId,
+      myProject.getExternalId(),
+      cause.getMessage()
+    ), cause);
   }
 }

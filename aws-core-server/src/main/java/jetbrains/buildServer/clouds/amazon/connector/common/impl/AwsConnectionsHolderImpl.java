@@ -1,6 +1,9 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
@@ -8,7 +11,6 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
@@ -71,8 +73,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   public AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException {
     AwsConnectionDescriptor awsConnectionDescriptor = awsConnections.get(awsConnectionId);
     if (awsConnectionDescriptor == null) {
-      Loggers.CLOUD.debug(
-        String.format("Trying to construct AWS Connection for the first time as it has not been added to the map yet, connection ID: '%s'", awsConnectionId));
+      AwsConnectionsLogger.connectionRequested(awsConnectionId);
       return getConnectionViaOwnerProject(awsConnectionId);
     }
     return awsConnectionDescriptor;
@@ -87,20 +88,19 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   public void rebuildAllConnectionsForProject(@NotNull String projectId) {
     SProject updatedProject = myProjectManager.findProjectById(projectId);
     if (updatedProject == null) {
-      Loggers.CLOUD.debug(
-        String.format("Could not find the reloaded project with ID: '%s'", projectId));
+      AwsConnectionsLogger.projectNotFound(projectId);
       return;
     }
 
     for (SProjectFeatureDescriptor projectFeature : updatedProject.getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE)) {
-      if (AwsConnectionProvider.TYPE.equals(projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM))){
+      if (AwsConnectionProvider.TYPE.equals(projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM))) {
         try {
           updateAwsConnection(
             buildAwsConnectionDescriptor(projectFeature.getId(), projectId)
           );
         } catch (AwsConnectorException e) {
-          Loggers.CLOUD.warnAndDebugDetails(
-            String.format("Failed to reload AWS Connection with ID '%s' in Project with ID: '%s', reason: <%s>", projectFeature.getId(), projectId, e.getMessage()), e);
+          new AwsConnectionsLogger(updatedProject)
+            .failedToBuild(projectFeature.getId(), e);
         }
       }
     }
@@ -127,8 +127,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
       throw new AwsConnectionNotFoundException("There is no AWS Connection with ID: " + awsConnectionId);
     }
     String projectIdWhereToLookForConnection = dataStorageValues.get(awsConnectionId);
-    Loggers.CLOUD.debug(
-      String.format("Building AWS Connection with ID: '%s', from the Project with ID: '%s'", awsConnectionId, projectIdWhereToLookForConnection));
+    AwsConnectionsLogger.connectionRequested(awsConnectionId, projectIdWhereToLookForConnection);
     return buildAwsConnectionDescriptor(awsConnectionId, projectIdWhereToLookForConnection);
   }
 

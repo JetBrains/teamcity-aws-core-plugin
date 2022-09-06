@@ -27,7 +27,7 @@ import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDe
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener;
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl;
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
@@ -203,14 +203,17 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
 
   @Test
   public void givenAwsConnManager_whenRequestAwsConnById_thenReturnDefaultConnection() {
-    AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.findAwsConnection(testConnectionId);
-    assert awsConnectionDescriptor != null;
-    checkDefaultAwsConnProps(awsConnectionDescriptor);
-    assertEquals(testSessionAccessKeyId, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
-    assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
-    assertEquals(testSessionToken, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
+    try {
+      AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(testConnectionId);
+      checkDefaultAwsConnProps(awsConnectionDescriptor);
+      assertEquals(testSessionAccessKeyId, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
+      assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
+      assertEquals(testSessionToken, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
 
-    assertTrue(awsConnectionDescriptor.isUsingSessionCredentials());
+      assertTrue(awsConnectionDescriptor.isUsingSessionCredentials());
+    } catch (AwsConnectorException e) {
+      fail(e.getMessage());
+    }
   }
 
   @Test

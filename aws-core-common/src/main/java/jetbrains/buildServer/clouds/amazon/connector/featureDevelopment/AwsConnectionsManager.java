@@ -32,8 +32,8 @@ public interface AwsConnectionsManager {
    * @param awsConnectionId - ID of the connection
    * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or throws exception if no such connection can be found
    */
-  @Nullable
-  AwsConnectionDescriptor findAwsConnection(@NotNull final String awsConnectionId);
+  @NotNull
+  AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException;
 
   /**
    * Returns an AWS connection with specified ID, credentials will be valid for specified period if time, {@link AwsConnectionsManager} will make a new request to the AWS API, credentials WILL NOT be refreshed automatically

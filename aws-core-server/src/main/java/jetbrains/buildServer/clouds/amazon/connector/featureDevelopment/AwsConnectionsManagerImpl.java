@@ -43,15 +43,10 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     }
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public AwsConnectionDescriptor findAwsConnection(@NotNull String awsConnectionId) {
-    try {
-      return myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
-    } catch (AwsConnectorException e) {
-      Loggers.CLOUD.warnAndDebugDetails("Failed to return AWS connection, reason: " + e.getMessage(), e);
-      return null;
-    }
+  public AwsConnectionDescriptor getAwsConnection(@NotNull String awsConnectionId) throws AwsConnectorException {
+    return myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
   }
 
   @NotNull

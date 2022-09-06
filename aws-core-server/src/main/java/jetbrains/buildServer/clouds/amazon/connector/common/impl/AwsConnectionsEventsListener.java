@@ -62,6 +62,9 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
   @Override
   public void projectFeatureChanged(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor before, @NotNull final SProjectFeatureDescriptor after) {
     if (!isAwsConnectionFeature(after)) {
+      if (isAwsConnectionFeature(before)) {
+        myAwsConnectionsHolder.removeAwsConnection(before.getId());
+      }
       return;
     }
     //TODO: TW-77164 update the refresher task

@@ -30,7 +30,7 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @NotNull
   @Override
-  protected AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) {
+  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) {
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
       return createSessionCredentialsHolder(cloudConnectorProperties);
@@ -43,7 +43,7 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @Override
   public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) {
     //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructConcreteCredentialsProviderImpl(parameters);
+    return constructSpecificCredentialsProviderImpl(parameters);
   }
 
   @Override

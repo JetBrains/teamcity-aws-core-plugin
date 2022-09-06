@@ -40,9 +40,9 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
         lastInvalidProperty.getPropertyName()
       );
     }
-    return constructConcreteCredentialsProviderImpl(cloudConnectorProperties);
+    return constructSpecificCredentialsProviderImpl(cloudConnectorProperties);
   }
 
   @NotNull
-  protected abstract AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+  protected abstract AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
 }

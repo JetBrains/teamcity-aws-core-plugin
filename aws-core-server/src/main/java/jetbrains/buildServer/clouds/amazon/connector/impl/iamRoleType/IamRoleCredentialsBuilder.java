@@ -59,7 +59,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @NotNull
   @Override
-  protected AwsCredentialsHolder constructConcreteCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
+  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
     String principalAwsConnectionProjectId = cloudConnectorProperties.get(PRINCIPAL_AWS_CONN_PROJECT_ID_PARAM);
     SProject principalAwsConnectionProject = myProjectManager.findProjectByExternalId(principalAwsConnectionProjectId);
 
@@ -84,7 +84,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @Override
   public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) throws AwsConnectorException {
     //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructConcreteCredentialsProviderImpl(parameters);
+    return constructSpecificCredentialsProviderImpl(parameters);
   }
 
   @Override

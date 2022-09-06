@@ -1,9 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
@@ -145,12 +143,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   private void removeAwsConnectionFromDataStorage(@NotNull final String awsConnectionId) {
     CustomDataStorage storage = getDataStorage();
-    Map<String, String> values = storage.getValues();
-    if (values != null) {
-      Set<String> removedKey = new HashSet<>();
-      removedKey.add(awsConnectionId);
-      storage.updateValues(Collections.emptyMap(), removedKey);
-    }
+    storage.updateValues(Collections.emptyMap(), Collections.singleton(awsConnectionId));
     storage.flush();
   }
 

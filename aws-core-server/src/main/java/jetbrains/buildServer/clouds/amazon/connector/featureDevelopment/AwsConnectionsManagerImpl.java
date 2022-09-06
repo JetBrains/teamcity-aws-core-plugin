@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
+import java.util.Collection;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
@@ -72,7 +73,11 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
 
     SBuildFeatureDescriptor configuredAwsConnBuildFeature;
-    configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
+    Collection<SBuildFeatureDescriptor> awsConnectionBuildFeatures = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE);
+    if (awsConnectionBuildFeatures.isEmpty()) {
+      return null;
+    }
+    configuredAwsConnBuildFeature = awsConnectionBuildFeatures.iterator().next();
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters());
   }
 

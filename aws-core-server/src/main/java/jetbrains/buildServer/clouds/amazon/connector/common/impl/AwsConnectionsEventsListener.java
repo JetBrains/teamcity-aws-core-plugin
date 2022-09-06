@@ -53,17 +53,15 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
       myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
+      Loggers.CLOUD.debug(String.format("Added AWS Connection '%s' in the Project with ID: '%s'", projectFeature.getId(), project.getExternalId()));
 
     } catch (DuplicatedAwsConnectionIdException e) {
       Loggers.CLOUD.warnAndDebugDetails(
         String.format("Can not add AWS Connection '%s' in the Project with ID: '%s', the AWS Connection ID is duplicated", projectFeature.getId(), project.getExternalId()), e);
-      return;
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.warnAndDebugDetails(
         String.format("Can not create AWS Connection '%s' in the Project with ID: '%s', reason: <%s>", projectFeature.getId(), project.getExternalId(), e.getMessage()), e);
-      return;
     }
-    Loggers.CLOUD.debug(String.format("Added AWS Connection '%s' in the Project with ID: '%s'", projectFeature.getId(), project.getExternalId()));
   }
 
   @Override

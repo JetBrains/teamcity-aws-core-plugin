@@ -203,19 +203,14 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
 
   @Test
   public void givenAwsConnManager_whenRequestAwsConnById_thenReturnDefaultConnection() {
-    try {
-      AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(testConnectionId);
-      assert awsConnectionDescriptor != null;
-      checkDefaultAwsConnProps(awsConnectionDescriptor);
-      assertEquals(testSessionAccessKeyId, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
-      assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
-      assertEquals(testSessionToken, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
+    AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.findAwsConnection(testConnectionId);
+    assert awsConnectionDescriptor != null;
+    checkDefaultAwsConnProps(awsConnectionDescriptor);
+    assertEquals(testSessionAccessKeyId, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
+    assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
+    assertEquals(testSessionToken, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
 
-      assertTrue(awsConnectionDescriptor.isUsingSessionCredentials());
-
-    } catch (AwsConnectionNotFoundException e) {
-      fail("Could not find linked aws connection: " + e.getMessage());
-    }
+    assertTrue(awsConnectionDescriptor.isUsingSessionCredentials());
   }
 
   @Test

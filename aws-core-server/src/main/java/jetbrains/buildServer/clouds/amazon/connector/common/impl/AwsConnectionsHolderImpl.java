@@ -68,7 +68,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   @NotNull
   @Override
-  public AwsConnectionDescriptor findAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectionNotFoundException {
+  public AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException {
     AwsConnectionDescriptor awsConnectionDescriptor = awsConnections.get(awsConnectionId);
     if (awsConnectionDescriptor == null) {
       Loggers.CLOUD.debug(
@@ -120,21 +120,16 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
 
   @NotNull
-  private AwsConnectionDescriptor getConnectionViaOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectionNotFoundException {
+  private AwsConnectionDescriptor getConnectionViaOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
     CustomDataStorage dataStorage = getDataStorage();
     Map<String, String> dataStorageValues = dataStorage.getValues();
     if (dataStorageValues == null || !dataStorageValues.containsKey(awsConnectionId)) {
       throw new AwsConnectionNotFoundException("There is no AWS Connection with ID: " + awsConnectionId);
     }
     String projectIdWhereToLookForConnection = dataStorageValues.get(awsConnectionId);
-    try {
-      Loggers.CLOUD.debug(
-        String.format("Building AWS Connection with ID: '%s', from the Project with ID: '%s'", awsConnectionId, projectIdWhereToLookForConnection));
-      return buildAwsConnectionDescriptor(awsConnectionId, projectIdWhereToLookForConnection);
-
-    } catch (AwsConnectorException e) {
-      throw new AwsConnectionNotFoundException(e.getMessage());
-    }
+    Loggers.CLOUD.debug(
+      String.format("Building AWS Connection with ID: '%s', from the Project with ID: '%s'", awsConnectionId, projectIdWhereToLookForConnection));
+    return buildAwsConnectionDescriptor(awsConnectionId, projectIdWhereToLookForConnection);
   }
 
   @NotNull

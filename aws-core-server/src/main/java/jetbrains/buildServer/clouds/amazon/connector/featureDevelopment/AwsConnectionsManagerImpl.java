@@ -1,11 +1,9 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
@@ -36,7 +34,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       throw new LinkedAwsConnNotFoundException("AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property");
     }
     try {
-      return myAwsConnectionsHolder.findAwsConnection(awsConnectionId);
+      return myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
 
     } catch (AwsConnectorException awsConnectorException) {
       throw new LinkedAwsConnNotFoundException(
@@ -47,14 +45,19 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   @Nullable
   @Override
-  public AwsConnectionDescriptor getAwsConnection(@NotNull String awsConnectionId) throws AwsConnectionNotFoundException {
-    return myAwsConnectionsHolder.findAwsConnection(awsConnectionId);
+  public AwsConnectionDescriptor findAwsConnection(@NotNull String awsConnectionId) {
+    try {
+      return myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
+    } catch (AwsConnectorException e) {
+      Loggers.CLOUD.warnAndDebugDetails("Failed to return AWS connection, reason: " + e.getMessage(), e);
+      return null;
+    }
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public AwsConnectionDescriptor getAwsConnection(@NotNull String awsConnectionId, @NotNull String sessionDuration) throws AwsConnectorException {
-    AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsHolder.findAwsConnection(awsConnectionId);
+  public AwsConnectionDescriptor buildWithSessionDuration(@NotNull String awsConnectionId, @NotNull String sessionDuration) throws AwsConnectorException {
+    AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
     return myAwsConnectionDescriptorBuilder.buildWithSessionDuration(awsConnectionDescriptor, sessionDuration);
   }
 
@@ -88,7 +91,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
         "AWS Connection ID was not specified in " + AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM + " property. Project ID: " + project.getExternalId());
     }
     try {
-      AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.findAwsConnection(awsConnectionId);
+      AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
       return myAwsConnectionDescriptorBuilder.awsConnBeanFromDescriptor(connectionDescriptor, featureProperties);
     } catch (AwsConnectorException e) {
       throw new LinkedAwsConnNotFoundException(
@@ -100,7 +103,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   @Override
   public AwsConnectionBean getAwsConnection(@NotNull SProject project, @NotNull String awsConnectionId, Map<String, String> connectionParameters) {
     try {
-      AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.findAwsConnection(awsConnectionId);
+      AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
       return myAwsConnectionDescriptorBuilder.awsConnBeanFromDescriptor(connectionDescriptor, connectionParameters);
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.warnAndDebugDetails(String.format("Cannot resolve AWS connection with ID '%s' in project '%s'", awsConnectionId, project.getExternalId()), e);

@@ -1,6 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.common;
 
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +14,7 @@ public interface AwsConnectionsHolder {
   void removeAwsConnection(@NotNull final String awsConnectionId);
 
   @NotNull
-  AwsConnectionDescriptor findAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectionNotFoundException;
+  AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException;
 
   void clear();
 

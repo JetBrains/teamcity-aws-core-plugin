@@ -2,7 +2,6 @@ package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
@@ -28,13 +27,13 @@ public interface AwsConnectionsManager {
   AwsConnectionDescriptor getLinkedAwsConnection(@NotNull final Map<String, String> properties) throws LinkedAwsConnNotFoundException;
 
   /**
-   * Returns an AWS connection with specified ID, credentials will reference the Singleton object who is resopsible for credentials refreshing of this particular AWS Connection
+   * Returns an AWS connection with specified ID, credentials will reference the Singleton object who is resopsible for credentials refreshing of this particular AWS Connection or null if there is no AWS Connection with specified ID
    *
    * @param awsConnectionId - ID of the connection
    * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or throws exception if no such connection can be found
    */
   @Nullable
-  AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectionNotFoundException;
+  AwsConnectionDescriptor findAwsConnection(@NotNull final String awsConnectionId);
 
   /**
    * Returns an AWS connection with specified ID, credentials will be valid for specified period if time, {@link AwsConnectionsManager} will make a new request to the AWS API, credentials WILL NOT be refreshed automatically
@@ -43,8 +42,8 @@ public interface AwsConnectionsManager {
    * @param sessionDuration - The duration of the session if you know the exact time for which these AWS Connection credentilas should be valid for
    * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or null if no such connection can be found
    */
-  @Nullable
-  AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId, @NotNull final String sessionDuration) throws AwsConnectorException;
+  @NotNull
+  AwsConnectionDescriptor buildWithSessionDuration(@NotNull final String awsConnectionId, @NotNull final String sessionDuration) throws AwsConnectorException;
 
   @Nullable
   AwsConnectionDescriptor getAwsConnectionFromBuildEnvVar(@NotNull final SBuild build) throws AwsBuildFeatureException;

@@ -4,8 +4,6 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescrip
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildServerAdapter;
 import jetbrains.buildServer.serverSide.BuildServerListener;
 import jetbrains.buildServer.serverSide.SProject;
@@ -50,17 +48,14 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     //TODO TW-77164 Add refreshing task
+    AwsConnectionEventsLogger awsConnectionEventsLogger = new AwsConnectionEventsLogger(project);
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
       myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
-      Loggers.CLOUD.debug(String.format("Added AWS Connection '%s' in the Project with ID: '%s'", projectFeature.getId(), project.getExternalId()));
+      awsConnectionEventsLogger.connectionAdded(awsConnectionDescriptor.getId());
 
-    } catch (DuplicatedAwsConnectionIdException e) {
-      Loggers.CLOUD.warnAndDebugDetails(
-        String.format("Can not add AWS Connection '%s' in the Project with ID: '%s', the AWS Connection ID is duplicated", projectFeature.getId(), project.getExternalId()), e);
     } catch (AwsConnectorException e) {
-      Loggers.CLOUD.warnAndDebugDetails(
-        String.format("Can not create AWS Connection '%s' in the Project with ID: '%s', reason: <%s>", projectFeature.getId(), project.getExternalId(), e.getMessage()), e);
+      awsConnectionEventsLogger.failedToAdd(projectFeature.getId(), e);
     }
   }
 
@@ -70,21 +65,15 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     //TODO: TW-77164 update the refresher task
+    AwsConnectionEventsLogger awsConnectionEventsLogger = new AwsConnectionEventsLogger(project);
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(after);
       myAwsConnectionsHolder.updateAwsConnection(awsConnectionDescriptor);
+      awsConnectionEventsLogger.connectionUpdated(before.getId(), after.getId());
 
-    } catch (DuplicatedAwsConnectionIdException e) {
-      Loggers.CLOUD.warnAndDebugDetails(
-        String.format("Can not update AWS Connection '%s' in the Project with ID: '%s', the AWS Connection ID is duplicated, previous connection ID: '%s'", after.getId(),
-                      project.getExternalId(), before.getId()), e);
     } catch (AwsConnectorException e) {
-      Loggers.CLOUD.warnAndDebugDetails(
-        String.format("Can not update AWS Connection '%s' in the Project with ID: '%s', reason: <%s>, previous connection ID: '%s'", after.getId(), project.getExternalId(),
-                      e.getMessage(), before.getId()), e);
+      awsConnectionEventsLogger.failedToUpdate(before.getId(), after.getId(), e);
     }
-    Loggers.CLOUD.debug(
-      String.format("Updated AWS Connection '%s' in the Project with ID: '%s', previous connection ID: '%s'", after.getId(), project.getExternalId(), before.getId()));
   }
 
   @Override
@@ -93,7 +82,7 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
     myAwsConnectionsHolder.removeAwsConnection(projectFeature.getId());
-    Loggers.CLOUD.debug(String.format("Removed AWS Connection '%s' in the Project with ID: '%s'", projectFeature.getId(), project.getExternalId()));
+    new AwsConnectionEventsLogger(project).connectionRemoved(projectFeature.getId());
   }
 
   private boolean isAwsConnectionFeature(SProjectFeatureDescriptor projectFeature) {

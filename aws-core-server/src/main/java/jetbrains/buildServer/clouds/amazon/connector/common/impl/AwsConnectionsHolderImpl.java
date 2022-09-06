@@ -131,9 +131,6 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   @NotNull
   private AwsConnectionDescriptor buildAwsConnectionDescriptor(@NotNull final String connectionId, @Nullable final String projectId) throws AwsConnectorException {
-    if (projectId == null) {
-      throw new AwsConnectorException("The connection with ID: " + connectionId + " is not assosiated with any project (Project ID is null)");
-    }
     SProject project = myProjectManager.findProjectById(projectId);
     if (project == null) {
       throw new AwsConnectorException("The project with ID: " + projectId + " does not exist");

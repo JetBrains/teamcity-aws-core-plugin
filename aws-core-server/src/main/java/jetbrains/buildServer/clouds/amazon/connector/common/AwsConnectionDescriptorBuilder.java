@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 public interface AwsConnectionDescriptorBuilder {
   @NotNull
-  AwsConnectionDescriptor findInProjectAndBuild(@NotNull final SProject project, @NotNull final String awsFeatureConnectionId) throws AwsConnectorException;
+  AwsConnectionDescriptor buildFromProject(@NotNull final SProject project, @NotNull final String awsFeatureConnectionId) throws AwsConnectorException;
 
   @NotNull
   AwsConnectionDescriptor fromFeatureDescriptor(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;

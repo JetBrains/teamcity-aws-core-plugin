@@ -22,14 +22,7 @@ public class AwsConnectionsLogger {
     ));
   }
 
-  public static void connectionRequested(@NotNull final String awsConnectionId) {
-    Loggers.CLOUD.debug(String.format(
-      "Trying to construct AWS Connection for the first time as it has not been added to the map yet, connection ID: '%s'",
-      awsConnectionId
-    ));
-  }
-
-  public static void connectionRequested(@NotNull final String awsConnectionId, @NotNull final String projectId) {
+  public static void connectionBuildRequested(@NotNull final String awsConnectionId, @NotNull final String projectId) {
     Loggers.CLOUD.debug(String.format(
       "Building AWS Connection with ID: '%s', from the Project with ID: '%s'",
       awsConnectionId,
@@ -65,11 +58,11 @@ public class AwsConnectionsLogger {
 
   public void failedToUpdate(@NotNull final String previousConnectionId, @NotNull final String updatedConnectionId, @NotNull final Exception cause) {
     Loggers.CLOUD.warnAndDebugDetails(String.format(
-      "Can not update AWS Connection '%s' in the Project with ID: '%s', reason: <%s>, previous connection ID: '%s'",
+      "Can not update AWS Connection '%s' in the Project with ID: '%s', previous connection ID: '%s', reason: <%s>",
       updatedConnectionId,
       myProject.getExternalId(),
-      cause.getMessage(),
-      previousConnectionId
+      previousConnectionId,
+      cause.getMessage()
     ), cause);
   }
 

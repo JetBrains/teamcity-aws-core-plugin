@@ -31,7 +31,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
 
   @NotNull
   @Override
-  public AwsConnectionDescriptor findInProjectAndBuild(@NotNull final SProject project, @NotNull final String awsFeatureConnectionId) throws AwsConnectorException {
+  public AwsConnectionDescriptor buildFromProject(@NotNull final SProject project, @NotNull final String awsFeatureConnectionId) throws AwsConnectorException {
     OAuthConnectionDescriptor awsConnectionFeature = myOAuthConnectionsManager.findConnectionById(project, awsFeatureConnectionId);
     if (awsConnectionFeature == null) {
       throw new AwsConnectorException("There is no AWS Connection with ID: " + awsFeatureConnectionId + " in the project with ID: " + project.getExternalId());
@@ -93,7 +93,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
       awsConnectionFeature.getId(),
       awsConnectionFeature.getOauthProvider().getType(),
       awsConnectionFeature.getParameters(),
-      awsConnectionFeature.getProject().getExternalId()
+      awsConnectionFeature.getProject().getProjectId()
     );
   }
 }

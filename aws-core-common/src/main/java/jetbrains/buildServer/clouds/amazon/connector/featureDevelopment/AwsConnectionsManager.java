@@ -19,7 +19,7 @@ public interface AwsConnectionsManager {
    * and return a {@link AwsConnectionDescriptor} with all properties like connectionId, providerType and all properties map.
    *
    * @param properties properties Map where should be the chosen AWS Connection ID parameter.
-   * @return AwsConnectionBean data bean with all AWS Connection properties.
+   * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or throws exception if no such connection can be found
    * @throws LinkedAwsConnNotFoundException thrown when there is no corresponding {@link AwsCloudConnectorConstants#CHOSEN_AWS_CONN_ID_PARAM property} in the properties map,
    *                                        when there is no AWS Connection with specified ID or when the AWS Connection credentials creation failed.
    */
@@ -27,10 +27,11 @@ public interface AwsConnectionsManager {
   AwsConnectionDescriptor getLinkedAwsConnection(@NotNull final Map<String, String> properties) throws LinkedAwsConnNotFoundException;
 
   /**
-   * Returns an AWS connection with specified ID, credentials will reference the Singleton object who is resopsible for credentials refreshing of this particular AWS Connection or null if there is no AWS Connection with specified ID
+   * Returns an AWS connection with specified ID, credentials will reference a Singleton object who is resopsible for credentials refreshing of this particular AWS Connection
    *
    * @param awsConnectionId - ID of the connection
    * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or throws exception if no such connection can be found
+   * @throws AwsConnectorException thrown when the AWS Connection credentials creation failed.
    */
   @NotNull
   AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException;

@@ -116,7 +116,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     initDataStorageMock();
 
     myProject = Mockito.mock(SProject.class);
-    when(myProject.getExternalId())
+    when(myProject.getProjectId())
       .thenReturn(testProjectId);
     when(myProject.getCustomDataStorage(any()))
       .thenReturn(myCustomDataStorage);
@@ -149,7 +149,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     myProjectManager = Mockito.mock(ProjectManager.class);
     when(myProjectManager.getRootProject())
       .thenReturn(myProject);
-    when(myProjectManager.findProjectByExternalId(testProjectId))
+    when(myProjectManager.findProjectById(testProjectId))
       .thenReturn(myProject);
   }
 
@@ -314,7 +314,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
       @NotNull
       @Override
       public String getProjectId() {
-        return myProject.getExternalId();
+        return myProject.getProjectId();
       }
 
       @NotNull

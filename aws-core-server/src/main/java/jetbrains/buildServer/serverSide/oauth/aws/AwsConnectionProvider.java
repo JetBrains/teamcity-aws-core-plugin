@@ -39,7 +39,7 @@ public class AwsConnectionProvider extends OAuthProvider {
   @Override
   @NotNull
   public String getDisplayName() {
-    return "Amazon Web Services";
+    return "Amazon Web Services (AWS)";
   }
 
 

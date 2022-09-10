@@ -60,13 +60,6 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @NotNull
   @Override
   protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-    String principalAwsConnectionProjectId = cloudConnectorProperties.get(PRINCIPAL_AWS_CONN_PROJECT_ID_PARAM);
-    SProject principalAwsConnectionProject = myProjectManager.findProjectByExternalId(principalAwsConnectionProjectId);
-
-    if (principalAwsConnectionProject == null) {
-      throw new AwsConnectorException("Failed to find the project with id: " + principalAwsConnectionProjectId);
-    }
-
     try {
       AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties);
 

@@ -19,8 +19,6 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:set var="project_id_param" value="<%=AwsAssumeIamRoleParams.PRINCIPAL_AWS_CONN_PROJECT_ID_PARAM%>"/>
-
 <c:set var="principal_aws_connection_param" value="<%=AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM%>"/>
 <c:set var="principal_aws_connection_label" value="<%=AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_LABEL%>"/>
 <c:set var="avail_aws_conns_url" value="<%=AwsAssumeIamRoleParams.AVAIL_AWS_CONNS_URL%>"/>

@@ -1,6 +1,11 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
@@ -10,15 +15,11 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
+import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
@@ -27,7 +28,8 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
   private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
-  public AwsConnectorFactoryImpl(@NotNull final AwsConnectionIdGenerator awsConnectionIdGenerator){
+
+  public AwsConnectorFactoryImpl(@NotNull final AwsConnectionIdGenerator awsConnectionIdGenerator) {
     myAwsConnectionIdGenerator = awsConnectionIdGenerator;
   }
 
@@ -57,21 +59,18 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
   public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> properties) {
     String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
     try {
-      if(credentialsType == null){
+      if (credentialsType == null) {
         throw new NoSuchAwsCredentialsBuilderException("Credentials type is null");
       }
 
       AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
       List<InvalidProperty> invalidProperties = credentialsBuilder.validateProperties(properties);
 
-      String userDefinedId = properties.get(USER_DEFINED_ID_PARAM);
-      if (userDefinedId != null && ! myAwsConnectionIdGenerator.isUnique(userDefinedId)) {
-        invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server"));
-      }
+      validateConnectionId(properties.get(USER_DEFINED_ID_PARAM), invalidProperties);
 
       return invalidProperties;
 
-    } catch (NoSuchAwsCredentialsBuilderException e){
+    } catch (NoSuchAwsCredentialsBuilderException e) {
       List<InvalidProperty> invalidProperties = new ArrayList<>();
       invalidProperties.add(new InvalidProperty(CREDENTIALS_TYPE_PARAM, "The credentials type " + credentialsType + " is not supported."));
       return invalidProperties;
@@ -106,7 +105,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   @NotNull
   private AwsCredentialsBuilder getAwsCredentialsBuilderOfType(@Nullable final String type) throws NoSuchAwsCredentialsBuilderException {
-    if(type == null){
+    if (type == null) {
       String errMsg = "There is no credentials type property in the AWS Connection, cannot construct Credentials Provider of type null.";
       throw new NoSuchAwsCredentialsBuilderException(errMsg);
     }
@@ -117,5 +116,20 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       throw new NoSuchAwsCredentialsBuilderException(errMsg);
     }
     return builder;
+  }
+
+  private void validateConnectionId(@Nullable final String connectionId, @NotNull List<InvalidProperty> invalidProperties) {
+    if (connectionId == null) {
+      return;
+    }
+
+    if (!myAwsConnectionIdGenerator.isUnique(connectionId)) {
+      invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server"));
+    }
+    try {
+      IdGeneratorRegistry.validateId(connectionId, "This ID is invalid");
+    } catch (InvalidIdentifierException e) {
+      invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));
+    }
   }
 }

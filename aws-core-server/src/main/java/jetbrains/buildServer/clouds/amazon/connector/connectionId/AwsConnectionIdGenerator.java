@@ -19,42 +19,29 @@ package jetbrains.buildServer.clouds.amazon.connector.connectionId;
 import com.intellij.openapi.diagnostic.Logger;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import jetbrains.buildServer.serverSide.BuildServerAdapter;
-import jetbrains.buildServer.serverSide.BuildServerListener;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
+import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
-import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
-public class AwsConnectionIdGenerator extends BuildServerAdapter implements CachingTypedIdGenerator {
+public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
+  public final static int INITIAL_CURRENT_AWS_CONNECTION_ID = 0;
 
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdGenerator.class.getName());
 
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
-  private final ProjectManager myProjectManager;
-  private final ExecutorServices myExecutorServices;
-  private AwsConnectionIdSynchroniser myAwsConnectionIdSynchroniser;
+  private final AtomicInteger currentIdentifier = new AtomicInteger(INITIAL_CURRENT_AWS_CONNECTION_ID);
 
-  public AwsConnectionIdGenerator(@NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator,
-                                  @NotNull final EventDispatcher<BuildServerListener> eventDispatcher,
-                                  @NotNull final ProjectManager projectManager,
-                                  @NotNull final ExecutorServices executorServices) {
+  public AwsConnectionIdGenerator(@NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator) {
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
-    eventDispatcher.addListener(this);
-
-    myProjectManager = projectManager;
-    myExecutorServices = executorServices;
   }
 
   @Nullable
@@ -98,49 +85,23 @@ public class AwsConnectionIdGenerator extends BuildServerAdapter implements Cach
     return Collections.unmodifiableMap(awsConnectionIdxMap);
   }
 
-  public boolean currentIdentifierInitialised() {
-    return myAwsConnectionIdSynchroniser.currentIdentifierInitialised();
-  }
-
-  @Override
-  public void serverStartup() {
-    myAwsConnectionIdSynchroniser = new AwsConnectionIdSynchroniser(myProjectManager);
-    myAwsConnectionIdSynchroniser.setInitialIdentifier();
-
-    myExecutorServices
-      .getLowPriorityExecutorService()
-      .submit(
-        new AwsConnectionIdSyncTask(
-          myExecutorServices,
-          myAwsConnectionIdSynchroniser
-        )
-      );
-  }
-
-  @Override
-  public void serverShutdown() {
-    myAwsConnectionIdSynchroniser.syncIdentifier();
-  }
-
   @NotNull
   private String generateNewId() {
-    int newIdNumber;
-
-    if (!myAwsConnectionIdSynchroniser.currentIdentifierInitialised()) {
-      Random r = new Random();
-      newIdNumber = 100000 + r.nextInt(100000);
-    } else {
-      newIdNumber = myAwsConnectionIdSynchroniser.incrementAndGetCurrentIdentifier();
-      while (!isUnique(String.valueOf(newIdNumber))) {
-        newIdNumber = myAwsConnectionIdSynchroniser.incrementAndGetCurrentIdentifier();
-      }
+    String newAwsConnectionId = buildNewId();
+    while (!isUnique(newAwsConnectionId)) {
+      newAwsConnectionId = buildNewId();
     }
 
-    return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, newIdNumber);
+    return newAwsConnectionId;
   }
 
   private void writeNewId(@NotNull String connectionId) {
     awsConnectionIdxMap.put(connectionId, connectionId);
     LOG.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
+  }
+
+  private String buildNewId() {
+    int newIdNumber = currentIdentifier.incrementAndGet();
+    return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, String.valueOf(newIdNumber));
   }
 }

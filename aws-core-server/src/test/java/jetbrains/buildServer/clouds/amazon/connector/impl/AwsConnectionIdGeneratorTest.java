@@ -1,68 +1,40 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
-import jetbrains.buildServer.serverSide.CustomDataStorage;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
-import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.AWS_CONNECTION_ID_PREFIX;
-import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdSynchroniser.AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.INITIAL_CURRENT_AWS_CONNECTION_ID;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.ACCESS_KEY_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
+public class AwsConnectionIdGeneratorTest extends BaseTestCase {
 
   private final String USER_DEFINED_AWS_CONN_ID = "MY_OWN_CONNECTION_ID";
   private AwsConnectionIdGenerator myAwsConnectionIdGenerator;
   private ArrayList<String> myAwsExistedConnectionIDx;
-  private Map<String, String> myDataStorageValues;
-  private ProjectManager projectManager;
 
   @BeforeMethod
   public void setup() throws Exception {
     super.setUp();
 
     myAwsExistedConnectionIDx = new ArrayList<>();
-    myDataStorageValues = new HashMap<>();
-
-    projectManager = Mockito.mock(ProjectManager.class, Answers.RETURNS_DEEP_STUBS);
 
     myAwsConnectionIdGenerator = new AwsConnectionIdGenerator(
-      Mockito.mock(OAuthConnectionsIdGenerator.class),
-      myFixture.getEventDispatcher(),
-      projectManager,
-      myFixture.getExecutorServices()
+      Mockito.mock(OAuthConnectionsIdGenerator.class)
     );
 
     initExistedIdx();
-    initDataStorageIdx();
-
-    CustomDataStorage customDataStorage = Mockito.mock(CustomDataStorage.class, Answers.RETURNS_DEEP_STUBS);
-
-    when(projectManager.getRootProject().getCustomDataStorage(any()))
-      .thenReturn(customDataStorage);
-
-    when(customDataStorage.getValues())
-      .thenReturn(myDataStorageValues);
   }
 
   @Test
-  public void testAddingOfExistedIds() {
-    for (String id : myAwsExistedConnectionIDx) {
-      myAwsConnectionIdGenerator.addGeneratedId(id, Collections.emptyMap());
-    }
-
+  public void whenAddedExistinIdsTheyShouldBeInTheMap() {
     for (String id : myAwsExistedConnectionIDx) {
       assertFalse(
         "After adding existed ids, they shold be in the map",
@@ -72,31 +44,7 @@ public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
   }
 
   @Test
-  public void whenRootProjectIsNotInitialisedThenReturnRandomId() {
-
-    when(projectManager.getRootProject().getCustomDataStorage(any()))
-      .thenThrow(new RuntimeException("Has not been initialised yet"));
-
-    Pattern pattern = Pattern.compile(AWS_CONNECTION_ID_PREFIX + ".*", Pattern.CASE_INSENSITIVE);
-
-    myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
-
-    Set<String> set = myAwsConnectionIdGenerator
-      .getAwsConnectionIdx()
-      .keySet()
-      .stream()
-      .filter(k -> pattern.matcher(k).matches())
-      .collect(Collectors.toSet());
-
-    assertEquals(1, set.size());
-    assertFalse(set.contains(AWS_CONNECTION_ID_PREFIX + "0"));
-  }
-
-  @Test
   public void whenUserDefinedConnectionIdThenUseDefinedId() {
-
-    myDataStorageValues.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, "0");
-
     Map<String, String> awsConnProps = createDefaultConnectionProps();
     awsConnProps.put(USER_DEFINED_ID_PARAM, USER_DEFINED_AWS_CONN_ID);
 
@@ -112,19 +60,23 @@ public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
   @Test
   public void whenUserDidNotSpecifiedConnectionIdThenUseCurrentIncrementalId() {
 
-    int currentIncrementalId = 10;
-    myDataStorageValues.put(AWS_CONNECTIONS_CURRENT_INCREMENTAL_ID_PARAM, String.valueOf(currentIncrementalId));
+    myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
+    String resultConnectionId = buildAwsConnId(INITIAL_CURRENT_AWS_CONNECTION_ID + 1);
 
-    waitFor(
-      () -> myAwsConnectionIdGenerator
-              .currentIdentifierInitialised(),
-      3000
+    assertEquals(
+      resultConnectionId,
+      myAwsConnectionIdGenerator.getAwsConnectionIdx()
+                                .get(resultConnectionId)
     );
+  }
+
+  @Test
+  public void whenThereAre10InitialAwsConnsThenUseCorrectIncrementalId() {
+
+    addIds(10);
 
     myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
-
-    currentIncrementalId++;
-    String resultConnectionId = AWS_CONNECTION_ID_PREFIX + "-" + String.valueOf(currentIncrementalId);
+    String resultConnectionId = buildAwsConnId(11);
 
     assertEquals(
       resultConnectionId,
@@ -137,13 +89,19 @@ public class AwsConnectionIdGeneratorTest extends BaseServerTestCase {
     for (int i = 0; i < 3; i++) {
       myAwsExistedConnectionIDx.add(UUID.randomUUID().toString());
     }
+    for (String id : myAwsExistedConnectionIDx) {
+      myAwsConnectionIdGenerator.addGeneratedId(id, Collections.emptyMap());
+    }
   }
 
-  private void initDataStorageIdx() {
-    for (int i = 0; i < 2; i++) {
-      String newId = UUID.randomUUID().toString();
-      myDataStorageValues.put(newId, newId);
+  private void addIds(int quantity) {
+    for (int i = 1; i <= quantity; i++) {
+      myAwsConnectionIdGenerator.addGeneratedId(buildAwsConnId(i), Collections.emptyMap());
     }
+  }
+
+  private String buildAwsConnId(int number) {
+    return AWS_CONNECTION_ID_PREFIX + "-" + String.valueOf(number);
   }
 
   private Map<String, String> createDefaultConnectionProps() {

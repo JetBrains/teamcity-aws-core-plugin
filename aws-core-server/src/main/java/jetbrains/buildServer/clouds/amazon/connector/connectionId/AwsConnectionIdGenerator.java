@@ -65,6 +65,8 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     writeNewId(userDefinedConnId);
     LOG.debug("Will use: \"" + userDefinedConnId + "\" as AWS Connection id");
 
+    props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
+
     return userDefinedConnId;
   }
 

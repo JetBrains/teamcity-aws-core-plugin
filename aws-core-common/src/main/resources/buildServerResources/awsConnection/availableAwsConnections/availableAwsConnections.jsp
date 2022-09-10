@@ -41,17 +41,12 @@
 </tr>
 
 <c:choose>
-  <c:when test = "${not empty param.sessionDuration}">
-    <c:set var="sessionConfigVisibility" value="hidden"/>
+  <c:when test="${empty param.sessionDuration}">
+    <jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp"/>
   </c:when>
 
   <c:otherwise/>
 </c:choose>
-
-<jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp">
-  <jsp:param name="sessionDuration" value="${param.sessionDuration}"/>
-  <jsp:param name="sessionConfigVisibility" value="${sessionConfigVisibility}"/>
-</jsp:include>
 
 
 <script type="text/javascript">

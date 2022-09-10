@@ -28,11 +28,11 @@
 <c:set var="iamRoleArn" value="${propertiesBean.properties[iam_role_arn_param]}"/>
 <c:set var="sessionName" value="${propertiesBean.properties[iam_role_session_name_param]}"/>
 
-<props:hiddenProperty name="${project_id_param}" value="${project.externalId}"/>
 <l:settingsGroup title="IAM Role">
     <jsp:include page="${avail_aws_conns_url}">
         <jsp:param name="projectId" value="${project.externalId}"/>
         <jsp:param name="principalAwsConnId" value="${oauthConnectionBean.getConnectionId()}"/>
+        <jsp:param name="sessionDuration" value="exclude"/>
     </jsp:include>
 
     <tr id="${iam_role_arn_param}_row">

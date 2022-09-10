@@ -31,7 +31,7 @@
 <c:url var="testAwsConnectionControllerUrl" value="${test_connection_controller_url}"/>
 
 <c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
-<c:set var="userDefinedConnectionId" value="${propertiesBean.properties[connection_id_param]}"/>
+<c:set var="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
 
 <bs:linkScript>
   /js/bs/testConnection.js
@@ -47,20 +47,19 @@
 </tr>
 
 
-<tr>
+<tr class="advancedSetting">
   <td><label for="displayName">${connection_id_label}:</label></td>
   <td>
     <c:choose>
-      <c:when test = "${empty userDefinedConnectionId}">
+      <c:when test = "${empty connectionId}">
         <props:textProperty name="${connection_id_param}" className="longField" style="width: 20em;"
-                            value="${userDefinedConnectionId}"/>
+                            value="${connectionId}"/>
       </c:when>
       <c:otherwise>
-        <input readonly class="nowrap" className="longField"
-               value="${userDefinedConnectionId}"/>
+        <label className="longField" maxlength="256">${connectionId}</label>
       </c:otherwise>
     </c:choose>
-    <span class="smallNote nowrap">Specify the identificator for this connection.</span>
+    <span class="smallNote">Specify the identificator for this connection. <br>Default is awsConnection-#</span>
     <span class="error" id="error_${connection_id_param}"></span>
   </td>
 </tr>
@@ -89,6 +88,8 @@
     <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
+
+<admin:showHideAdvancedOpts containerId="OAuthConnectionDialog" optsKey="editAwsConnection"/>
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {

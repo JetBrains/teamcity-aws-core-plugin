@@ -25,24 +25,28 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
 
   @Override
   public void updateParameters(@NotNull BuildStartContext context) {
-    AwsConnectionBean cachedAwsConnection = cachedAwsConnections.get(context.getBuild().getBuildId());
-    if (cachedAwsConnection == null) {
-      try {
-        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(context.getBuild());
-        if (awsConnection == null) {
-          return;
-        }
-        getConnectionParametersToExpose(awsConnection)
-          .forEach(context::addSharedParameter);
-        cachedAwsConnections.put(context.getBuild().getBuildId(), awsConnection);
+    if (hasAwsConnectionsToExpose(context.getBuild())) {
+      Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", context.getBuild().getBuildId()));
 
-      } catch (AwsBuildFeatureException e) {
-        Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+      AwsConnectionBean cachedAwsConnection = cachedAwsConnections.get(context.getBuild().getBuildId());
+      if (cachedAwsConnection == null) {
+        try {
+          AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(context.getBuild());
+          if (awsConnection == null) {
+            return;
+          }
+          getConnectionParametersToExpose(awsConnection)
+            .forEach(context::addSharedParameter);
+          cachedAwsConnections.put(context.getBuild().getBuildId(), awsConnection);
+
+        } catch (AwsBuildFeatureException e) {
+          Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+        }
+      } else {
+        getConnectionParametersToExpose(cachedAwsConnection)
+          .forEach(context::addSharedParameter);
+        cachedAwsConnections.remove(context.getBuild().getBuildId());
       }
-    } else {
-      getConnectionParametersToExpose(cachedAwsConnection)
-        .forEach(context::addSharedParameter);
-      cachedAwsConnections.remove(context.getBuild().getBuildId());
     }
   }
 
@@ -66,26 +70,36 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     ArrayList<Parameter> secureParams = new ArrayList<>();
     Map<String, String> secureParamsMap = new HashMap<>();
 
-    AwsConnectionBean cachedAwsConnectionToSecure = cachedAwsConnections.get(build.getBuildId());
-    if (cachedAwsConnectionToSecure == null) {
-      try {
-        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(build);
-        if (awsConnection == null) {
-          return Collections.emptyList();
-        }
-        addSecureParameters(secureParamsMap, awsConnection);
-        cachedAwsConnections.put(build.getBuildId(), awsConnection);
+    if (hasAwsConnectionsToExpose(build)) {
+      Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", build.getBuildId()));
 
-      } catch (AwsBuildFeatureException e) {
-        Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+      AwsConnectionBean cachedAwsConnectionToSecure = cachedAwsConnections.get(build.getBuildId());
+      if (cachedAwsConnectionToSecure == null) {
+        try {
+          AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(build);
+          if (awsConnection == null) {
+            return Collections.emptyList();
+          }
+          addSecureParameters(secureParamsMap, awsConnection);
+          cachedAwsConnections.put(build.getBuildId(), awsConnection);
+
+        } catch (AwsBuildFeatureException e) {
+          Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+        }
+      } else {
+        addSecureParameters(secureParamsMap, cachedAwsConnectionToSecure);
+        cachedAwsConnections.remove(build.getBuildId());
       }
-    } else {
-      addSecureParameters(secureParamsMap, cachedAwsConnectionToSecure);
-      cachedAwsConnections.remove(build.getBuildId());
     }
 
     secureParamsMap.forEach((k, v) -> secureParams.add(new SimpleParameter(k, v)));
     return secureParams;
+  }
+
+  private boolean hasAwsConnectionsToExpose(@NotNull final SBuild build) {
+    BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE);
+    return ! awsConnectionsToExpose.isEmpty();
   }
 
   private void addSecureParameters(@NotNull final Map<String, String> parameters, @NotNull final AwsConnectionBean awsConnection) {

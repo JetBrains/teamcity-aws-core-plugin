@@ -27,7 +27,7 @@ public interface AwsConnectionsManager {
   AwsConnectionDescriptor getLinkedAwsConnection(@NotNull final Map<String, String> properties) throws LinkedAwsConnNotFoundException;
 
   /**
-   * Returns an AWS connection with specified ID, credentials will reference a Singleton object who is resopsible for credentials refreshing of this particular AWS Connection
+   * Returns an AWS connection with specified ID, credentials will reference a Singleton object which is resopsible for credentials refreshing of this particular AWS Connection
    *
    * @param awsConnectionId - ID of the connection
    * @return {@link AwsConnectionDescriptor} containing information about connection that can be used to construct specific AWS clients or throws exception if no such connection can be found

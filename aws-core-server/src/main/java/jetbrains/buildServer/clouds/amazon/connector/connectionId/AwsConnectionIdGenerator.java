@@ -70,9 +70,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Override
   public void addGeneratedId(@NotNull final String id, @NotNull final Map<String, String> props) {
-    if (!isUnique(id)) {
-      LOG.warn("Generated AWS Connection ID is not unique, check that your Project does not have another AWS Connection with ID: " + id);
-    }
     writeNewId(id);
   }
 

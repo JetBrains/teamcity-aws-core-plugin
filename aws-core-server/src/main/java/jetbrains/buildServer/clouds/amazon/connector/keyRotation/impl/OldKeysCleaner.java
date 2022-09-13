@@ -73,6 +73,13 @@ public class OldKeysCleaner {
 
       @Override
       public void accept(final MultiNodeTasks.PerformingTask task) {
+        if (!myServerResponsibility.canWriteToConfigDirectory() ||
+            !DELETE_OLD_AWS_KEY_TASK_TYPE.equals(task.getType()) ||
+            task.getStringArg() == null) {
+          return;
+        }
+        Loggers.CLOUD.debug("AWS Key Rotation task is accepted, task ID is: " + task.getId());
+
         DeleteKeyTaskArg taskArgObject = null;
         try {
           taskArgObject = DeleteKeyTaskArg.fromTask(task);
@@ -107,7 +114,8 @@ public class OldKeysCleaner {
           );
 
           deletePreviousAccessKey(taskArgObject.oldAccessKeyId, iam);
-          task.finished();
+          Loggers.CLOUD.debug("Deleted the old AWS key: " + ParamUtil.maskKey(taskArgObject.oldAccessKeyId));
+
 
         } catch (KeyRotationException e) {
           String errMsg;
@@ -118,8 +126,9 @@ public class OldKeysCleaner {
           }
 
           Loggers.CLOUD.warnAndDebugDetails(errMsg, e);
-          throw new CannotAcceptTaskException(errMsg + e.getMessage());
         }
+
+        task.finished();
       }
     });
   }
@@ -197,14 +206,12 @@ public class OldKeysCleaner {
     public static DeleteKeyTaskArg fromTask(@NotNull final MultiNodeTasks.PerformingTask task) throws KeyRotationException {
       String taskIdentity = task.getIdentity();
       Pair<String, String> keyIdConnectionId = splitArgByTaskDivider(taskIdentity);
-      Loggers.CLOUD.debug("Extracted args from delete old key task: old key access id is " + keyIdConnectionId.first + " and connection id is " + keyIdConnectionId.second);
 
       String taskStringArg = task.getStringArg();
       if (taskStringArg == null) {
         throw new KeyRotationException("Delete old key Task argument cannot be null");
       }
       Pair<String, String> keyDeletionTimeProjectId = splitArgByTaskDivider(taskStringArg);
-      Loggers.CLOUD.debug("Extracted args from delete old key task: deletion date is " + keyDeletionTimeProjectId.first + " and project id is " + keyDeletionTimeProjectId.second);
 
       return new DeleteKeyTaskArg(
         keyIdConnectionId.first,

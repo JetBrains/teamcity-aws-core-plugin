@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, PasswordsProvider {
 
   private final AwsConnectionsManager myAwsConnectionsManager;
-  private final ConcurrentHashMap<Long, AwsConnectionBean> cachedAwsConnections = new ConcurrentHashMap<>();
+  //private final ConcurrentHashMap<Long, AwsConnectionBean> cachedAwsConnections = new ConcurrentHashMap<>();
 
   public InjectAwsConnDataToEnvVars(@NotNull final AwsConnectionsManager awsConnectionsManager) {
     myAwsConnectionsManager = awsConnectionsManager;
@@ -28,24 +28,15 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     if (hasAwsConnectionsToExpose(context.getBuild())) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", context.getBuild().getBuildId()));
 
-      AwsConnectionBean cachedAwsConnection = cachedAwsConnections.get(context.getBuild().getBuildId());
-      if (cachedAwsConnection == null) {
-        try {
-          AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(context.getBuild());
-          if (awsConnection == null) {
-            return;
-          }
-          getConnectionParametersToExpose(awsConnection)
-            .forEach(context::addSharedParameter);
-          cachedAwsConnections.put(context.getBuild().getBuildId(), awsConnection);
-
-        } catch (AwsBuildFeatureException e) {
-          Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+      try {
+        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(context.getBuild());
+        if (awsConnection == null) {
+          return;
         }
-      } else {
-        getConnectionParametersToExpose(cachedAwsConnection)
+        getConnectionParametersToExpose(awsConnection)
           .forEach(context::addSharedParameter);
-        cachedAwsConnections.remove(context.getBuild().getBuildId());
+      } catch (AwsBuildFeatureException e) {
+        Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
       }
     }
   }
@@ -73,22 +64,15 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     if (hasAwsConnectionsToExpose(build)) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", build.getBuildId()));
 
-      AwsConnectionBean cachedAwsConnectionToSecure = cachedAwsConnections.get(build.getBuildId());
-      if (cachedAwsConnectionToSecure == null) {
-        try {
-          AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(build);
-          if (awsConnection == null) {
-            return Collections.emptyList();
-          }
-          addSecureParameters(secureParamsMap, awsConnection);
-          cachedAwsConnections.put(build.getBuildId(), awsConnection);
-
-        } catch (AwsBuildFeatureException e) {
-          Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
+      try {
+        AwsConnectionBean awsConnection = myAwsConnectionsManager.getEnvVarAwsConnectionForBuild(build);
+        if (awsConnection == null) {
+          return Collections.emptyList();
         }
-      } else {
-        addSecureParameters(secureParamsMap, cachedAwsConnectionToSecure);
-        cachedAwsConnections.remove(build.getBuildId());
+        addSecureParameters(secureParamsMap, awsConnection);
+
+      } catch (AwsBuildFeatureException e) {
+        Loggers.CLOUD.warn("Failed to expose AWS Connection to a build: " + e.getMessage());
       }
     }
 

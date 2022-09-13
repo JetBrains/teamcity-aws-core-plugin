@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAmount;
-import jetbrains.buildServer.Used;
 import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.IamClientBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -28,12 +27,15 @@ public class OldKeysCleaner {
 
   public static final String DELETE_OLD_AWS_KEY_TASK_TYPE = "deleteOldAwsKey";
   private static final String TASK_ARG_DIVIDER = "{}";
-  private static final TemporalAmount OLD_KEY_PRESERVE_TIME = Duration.ofDays(1);
-
+  public static final String OLD_KEY_PRESERVE_TIME_MIN_PROPERTY_NAME = "teamcity.internal.cloud.aws.keyRotation.old.key.preserve.time.min";
+  public static final String OLD_KEY_PRESERVE_TIME_DAYS_PROPERTY_NAME = "teamcity.internal.cloud.aws.keyRotation.old.key.preserve.time.days";
+  public static final int OLD_KEY_PRESERVE_TIME_DEFAULT_DAYS = 1;
   private final MultiNodeTasks myMultiNodeTasks;
   private final ServerResponsibility myServerResponsibility;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final ProjectManager myProjectManager;
+
+  private TemporalAmount oldKeyPreserveTime;
 
   public OldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
                         @NotNull final ServerResponsibility serverResponsibility,
@@ -44,6 +46,8 @@ public class OldKeysCleaner {
     myServerResponsibility = serverResponsibility;
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
+
+    setOldKeyPreserveTime();
 
     myMultiNodeTasks.subscribe(DELETE_OLD_AWS_KEY_TASK_TYPE, new MultiNodeTasks.TaskConsumer() {
       @Override
@@ -157,10 +161,21 @@ public class OldKeysCleaner {
     Loggers.CLOUD.debug("Submitted task to delete the old AWS key with id: " + awsAccessKeyId);
   }
 
-  @Used("tests")
   @NotNull
   public TemporalAmount getOldKeyPreserveTime() {
-    return OLD_KEY_PRESERVE_TIME;
+    return oldKeyPreserveTime;
+  }
+
+  private void setOldKeyPreserveTime() {
+    int inMinutes = TeamCityProperties.getInteger(OLD_KEY_PRESERVE_TIME_MIN_PROPERTY_NAME);
+    int inDays = TeamCityProperties.getInteger(OLD_KEY_PRESERVE_TIME_DAYS_PROPERTY_NAME);
+    if (inMinutes == 0 && inDays == 0) {
+      oldKeyPreserveTime = Duration.ofDays(OLD_KEY_PRESERVE_TIME_DEFAULT_DAYS);
+    } else if (inMinutes == 0){
+      oldKeyPreserveTime = Duration.ofDays(inDays);
+    } else {
+      oldKeyPreserveTime = Duration.ofMinutes(inMinutes);
+    }
   }
 
   private static class DeleteKeyTaskArg {

@@ -74,11 +74,6 @@
             Principal AWS Connection ID (Who will assume the IAM Role)
           </description>
         </param>
-        <param name="principalAwsConnectionProjectId" dslName="principalAwsConnectionProjectId" type="string" mandatory="true">
-          <description>
-            The project ID of the Principal AWS Connection
-          </description>
-        </param>
         <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
           <description>
             Endpoint from where to obtain session credentials of the assumed IAM Role

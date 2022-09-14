@@ -1,7 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import jetbrains.buildServer.agent.Constants;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, PasswordsProvider {
 
   private final AwsConnectionsManager myAwsConnectionsManager;
-  //private final ConcurrentHashMap<Long, AwsConnectionBean> cachedAwsConnections = new ConcurrentHashMap<>();
 
   public InjectAwsConnDataToEnvVars(@NotNull final AwsConnectionsManager awsConnectionsManager) {
     myAwsConnectionsManager = awsConnectionsManager;
@@ -25,7 +23,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
 
   @Override
   public void updateParameters(@NotNull BuildStartContext context) {
-    if (hasAwsConnectionsToExpose(context.getBuild())) {
+    if (!AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(context.getBuild()).isEmpty()) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", context.getBuild().getBuildId()));
 
       try {
@@ -61,7 +59,7 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
     ArrayList<Parameter> secureParams = new ArrayList<>();
     Map<String, String> secureParamsMap = new HashMap<>();
 
-    if (hasAwsConnectionsToExpose(build)) {
+    if (!AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(build).isEmpty()) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to expose, getting AWS Connection...", build.getBuildId()));
 
       try {
@@ -78,12 +76,6 @@ public class InjectAwsConnDataToEnvVars implements BuildStartContextProcessor, P
 
     secureParamsMap.forEach((k, v) -> secureParams.add(new SimpleParameter(k, v)));
     return secureParams;
-  }
-
-  private boolean hasAwsConnectionsToExpose(@NotNull final SBuild build) {
-    BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
-    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE);
-    return ! awsConnectionsToExpose.isEmpty();
   }
 
   private void addSecureParameters(@NotNull final Map<String, String> parameters, @NotNull final AwsConnectionBean awsConnection) {

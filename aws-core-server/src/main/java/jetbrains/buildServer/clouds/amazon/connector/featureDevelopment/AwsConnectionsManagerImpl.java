@@ -8,11 +8,14 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars.AwsConnToEnvVarsBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.SBuild;
+import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
+import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,14 +73,11 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
     }
 
-    BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
-
-    SBuildFeatureDescriptor configuredAwsConnBuildFeature;
-    Collection<SBuildFeatureDescriptor> awsConnectionBuildFeatures = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE);
-    if (awsConnectionBuildFeatures.isEmpty()) {
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(build);
+    if (awsConnectionsToExpose.isEmpty()) {
       return null;
     }
-    configuredAwsConnBuildFeature = awsConnectionBuildFeatures.iterator().next();
+    SBuildFeatureDescriptor configuredAwsConnBuildFeature = awsConnectionsToExpose.iterator().next();
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters());
   }
 
@@ -126,10 +126,11 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
     }
 
-    BuildSettings buildSettings = ((BuildPromotionEx)build.getBuildPromotion()).getBuildSettings();
-
-    SBuildFeatureDescriptor configuredAwsConnBuildFeature;
-    configuredAwsConnBuildFeature = buildSettings.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE).iterator().next();
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(build);
+    if (awsConnectionsToExpose.isEmpty()) {
+      return null;
+    }
+    SBuildFeatureDescriptor configuredAwsConnBuildFeature = awsConnectionsToExpose.iterator().next();
     return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());
   }
 }

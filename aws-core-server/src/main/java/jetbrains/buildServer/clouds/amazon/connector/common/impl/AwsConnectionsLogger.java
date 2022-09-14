@@ -47,21 +47,19 @@ public class AwsConnectionsLogger {
     ), cause);
   }
 
-  public void connectionUpdated(@NotNull final String previousConnectionId, @NotNull final String updatedConnectionId) {
+  public void connectionUpdated(@NotNull final String connectionId) {
     Loggers.CLOUD.debug(String.format(
-      "Updated AWS Connection '%s' in the Project with ID: '%s', previous connection ID: '%s'",
-      updatedConnectionId,
-      myProject.getExternalId(),
-      previousConnectionId
+      "Updated AWS Connection '%s' in the Project with ID: '%s'",
+      connectionId,
+      myProject.getExternalId()
     ));
   }
 
-  public void failedToUpdate(@NotNull final String previousConnectionId, @NotNull final String updatedConnectionId, @NotNull final Exception cause) {
+  public void failedToUpdate(@NotNull final String connectionId, @NotNull final Exception cause) {
     Loggers.CLOUD.warnAndDebugDetails(String.format(
-      "Can not update AWS Connection '%s' in the Project with ID: '%s', previous connection ID: '%s', reason: <%s>",
-      updatedConnectionId,
+      "Can not update AWS Connection '%s' in the Project with ID: '%s', reason: <%s>",
+      connectionId,
       myProject.getExternalId(),
-      previousConnectionId,
       cause.getMessage()
     ), cause);
   }

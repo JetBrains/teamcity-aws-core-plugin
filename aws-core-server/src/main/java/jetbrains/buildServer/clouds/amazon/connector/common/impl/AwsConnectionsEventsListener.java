@@ -72,10 +72,10 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(after);
       myAwsConnectionsHolder.updateAwsConnection(awsConnectionDescriptor);
-      awsConnectionsLogger.connectionUpdated(before.getId(), after.getId());
+      awsConnectionsLogger.connectionUpdated(after.getId());
 
     } catch (AwsConnectorException e) {
-      awsConnectionsLogger.failedToUpdate(before.getId(), after.getId(), e);
+      awsConnectionsLogger.failedToUpdate(after.getId(), e);
     }
   }
 

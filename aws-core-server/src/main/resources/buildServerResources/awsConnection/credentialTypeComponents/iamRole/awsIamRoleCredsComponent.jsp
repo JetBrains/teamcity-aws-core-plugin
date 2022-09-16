@@ -28,6 +28,8 @@
 <c:set var="iamRoleArn" value="${propertiesBean.properties[iam_role_arn_param]}"/>
 <c:set var="sessionName" value="${propertiesBean.properties[iam_role_session_name_param]}"/>
 
+<c:url var="externalIdsControllerUrl" value="${external_ids_controller_url}"/>
+
 <l:settingsGroup title="IAM Role">
     <jsp:include page="${avail_aws_conns_url}">
         <jsp:param name="projectId" value="${project.externalId}"/>
@@ -41,6 +43,22 @@
             <span class="error" id="error_${iam_role_arn_param}"></span>
         </td>
     </tr>
+
+    <c:choose>
+        <c:when test = "${param.connectionId != ''}">
+            <tr>
+                <th class="nowrap"><label for="${external_id_field_id}">External ID:</label></th>
+                <td>
+                    <bs:copy2ClipboardLink dataId="${external_id_field_id}" title="Copy" stripTags="true">
+                        <label id="${external_id_field_id}" className="longField" maxlength="256"/>
+                    </bs:copy2ClipboardLink>
+                    <span class="error" id="error_${external_id_field_id}"></span>
+                </td>
+            </tr>
+        </c:when>
+
+        <c:otherwise/>
+    </c:choose>
 </l:settingsGroup>
 
 <l:settingsGroup title="Session Settings">
@@ -64,3 +82,18 @@
 </l:settingsGroup>
 
 <%@ include file="../stsEndpointLogic.jsp" %>
+
+
+<script type="text/javascript">
+    $j(document).ready(function () {
+        if("${not empty param.connectionId}" === "true"){
+            BS.ajaxRequest('${externalIdsControllerUrl}', {
+                parameters: '&projectId=${param.projectId}&${aws_conn_id_rest_param}=${param.connectionId}',
+
+                onComplete: function(response) {
+                    document.getElementById("${external_id_field_id}").textContent = response.responseJSON;
+                }
+            });
+        }
+    });
+</script>

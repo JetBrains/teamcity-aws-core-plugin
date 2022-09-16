@@ -41,6 +41,9 @@
 <c:set var="credentials_type_iam_role_option" value="<%=AwsCloudConnectorConstants.IAM_ROLE_CREDENTIALS_TYPE%>"/>
 <c:set var="credentials_type_iam_role_label" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_LABEL%>"/>
 
+<c:set var="credentials_type_default_provider_option" value="<%=AwsCloudConnectorConstants.DEFAULT_PROVIDER_CREDENTIALS_TYPE%>"/>
+<c:set var="credentials_type_default_provider_label" value="<%=AwsCloudConnectorConstants.DEFAULT_PROVIDER_CREDENTIALS_LABEL%>"/>
+
 
 <c:set var="allRegions" value="<%=AWSRegions.getAllRegions()%>"/>
 <c:set var="region_name_param" value="<%=AwsCloudConnectorConstants.REGION_NAME_PARAM%>"/>

@@ -23,6 +23,7 @@
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.IamRoleCredentialsBuilder"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType.DefaultProviderCredentialsBuilder"/>
 
 
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>

@@ -19,6 +19,9 @@ public final class AwsCloudConnectorConstants {
 
   public static final String IAM_ROLE_CREDENTIALS_TYPE = "awsAssumeIamRole";
 
+  public static final String DEFAULT_PROVIDER_CREDENTIALS_TYPE = "defaultProvider";
+  public static final String DEFAULT_PROVIDER_CREDENTIALS_LABEL = "Default provider";
+
 
   public static final String REGION_NAME_PARAM = "awsRegionName";
   public static final String REGION_NAME_LABEL = "AWS region";

@@ -80,6 +80,8 @@
           </description>
         </param>
       </option>
+      <option name="default" value="defaultProvider">
+      </option>
     </param>
   </params>
 </dsl-extension>

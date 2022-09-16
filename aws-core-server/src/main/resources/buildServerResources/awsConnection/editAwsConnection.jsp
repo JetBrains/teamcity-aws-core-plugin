@@ -87,6 +87,7 @@
   <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
     <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
   </props:selectSectionPropertyContent>
+  <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}"/>
 </props:selectSectionProperty>
 
 <admin:showHideAdvancedOpts containerId="OAuthConnectionDialog" optsKey="editAwsConnection"/>

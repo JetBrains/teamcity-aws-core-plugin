@@ -76,11 +76,6 @@ public class AwsExternalIdsManagerImpl extends BuildServerAdapter implements Aws
 
   private void removeExternalId(@NotNull final SProject project, @NotNull final String connectionId) {
     final CustomDataStorage storage = getDataStorage(project);
-    final Map<String, String> values = storage.getValues();
-    if (values != null) {
-      Set<String> removedKey = new HashSet<>();
-      removedKey.add(connectionId);
-      storage.updateValues(Collections.emptyMap(), removedKey);
-    }
+    storage.putValue(connectionId, null);
   }
 }

@@ -5,6 +5,8 @@ import java.util.Map;
 
 import java.util.regex.Pattern;
 
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,5 +74,13 @@ public class ParamUtil {
     }
     Arn resourceArn = Arn.fromString(resourceArnString);
     return resourceArn.getResource().getResource();
+  }
+
+  public static boolean isAwsConnectionFeature(@Nullable final SProjectFeatureDescriptor projectFeature) {
+    if (projectFeature == null || !OAuthConstants.FEATURE_TYPE.equals(projectFeature.getType())) {
+      return false;
+    }
+    String providerType = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
+    return providerType != null && providerType.equals(AwsCloudConnectorConstants.CLOUD_TYPE);
   }
 }

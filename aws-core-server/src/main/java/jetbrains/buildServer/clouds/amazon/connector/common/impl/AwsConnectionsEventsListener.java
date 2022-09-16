@@ -8,10 +8,10 @@ import jetbrains.buildServer.serverSide.BuildServerAdapter;
 import jetbrains.buildServer.serverSide.BuildServerListener;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
-import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isAwsConnectionFeature;
 
 public class AwsConnectionsEventsListener extends BuildServerAdapter {
 
@@ -89,13 +89,5 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
     myAwsConnectionsHolder.removeAwsConnection(projectFeature.getId());
     new AwsConnectionsLogger(project)
       .connectionRemoved(projectFeature.getId());
-  }
-
-  private boolean isAwsConnectionFeature(SProjectFeatureDescriptor projectFeature) {
-    if (!OAuthConstants.FEATURE_TYPE.equals(projectFeature.getType())) {
-      return false;
-    }
-    String providerType = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
-    return providerType != null && providerType.equals(AwsConnectionProvider.TYPE);
   }
 }

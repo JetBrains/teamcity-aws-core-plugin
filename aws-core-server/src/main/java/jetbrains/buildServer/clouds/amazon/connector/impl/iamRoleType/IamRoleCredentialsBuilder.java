@@ -17,24 +17,22 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
 import com.amazonaws.AmazonClientException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.*;
@@ -45,27 +43,24 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   private final ExecutorServices myExecutorServices;
   private final AwsConnectionsManager myAwsConnectionsManager;
-  private final ProjectManager myProjectManager;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                    @NotNull final ExecutorServices executorServices,
-                                   @NotNull final AwsConnectionsManager awsConnectionsManager,
-                                   @NotNull final ProjectManager projectManager) {
+                                   @NotNull final AwsConnectionsManager awsConnectionsManager) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     myExecutorServices = executorServices;
     myAwsConnectionsManager = awsConnectionsManager;
-    myProjectManager = projectManager;
   }
 
   @NotNull
   @Override
-  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
+  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     try {
-      AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(cloudConnectorProperties);
+      AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(featureDescriptor.getParameters());
 
       return new IamRoleSessionCredentialsHolder(
         principalAwsConnection.getAwsCredentialsHolder(),
-        cloudConnectorProperties,
+        featureDescriptor.getParameters(),
         myExecutorServices
       );
     } catch (AmazonClientException ace) {
@@ -75,9 +70,9 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @NotNull
   @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) throws AwsConnectorException {
+  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructSpecificCredentialsProviderImpl(parameters);
+    return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 
   @Override
@@ -111,7 +106,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   public String getPropertiesDescription(@NotNull final Map<String, String> properties) {
     return
       "Assume " +
-        getResourceNameFromArn(properties.get(IAM_ROLE_ARN_PARAM)) +
-        " role to gain temporary credentials with specified privileges";
+      getResourceNameFromArn(properties.get(IAM_ROLE_ARN_PARAM)) +
+      " role to gain temporary credentials with specified privileges";
   }
 }

@@ -16,23 +16,22 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
+import java.util.List;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Map;
 
 public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
 
   @Override
   @NotNull
-  public AwsCredentialsHolder constructSpecificCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException {
-    List<InvalidProperty> invalidProperties = validateProperties(cloudConnectorProperties);
-    if (! invalidProperties.isEmpty()) {
+  public AwsCredentialsHolder constructSpecificCredentialsProvider(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
+    List<InvalidProperty> invalidProperties = validateProperties(featureDescriptor.getParameters());
+    if (!invalidProperties.isEmpty()) {
       InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
       String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
       throw new AwsConnectorException(
@@ -40,9 +39,9 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
         lastInvalidProperty.getPropertyName()
       );
     }
-    return constructSpecificCredentialsProviderImpl(cloudConnectorProperties);
+    return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 
   @NotNull
-  protected abstract AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) throws AwsConnectorException;
+  protected abstract AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;
 }

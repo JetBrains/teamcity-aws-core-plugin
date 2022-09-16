@@ -10,7 +10,10 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImp
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -49,7 +52,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     assertTrue(invalidProperties.isEmpty());
 
     try {
-      AwsCredentialsHolder credentialsHolder = staticCredentialsFactory.constructSpecificCredentialsProvider(myConnectorProperties);
+      AwsCredentialsHolder credentialsHolder = staticCredentialsFactory.constructSpecificCredentialsProvider(createProjectFeatureDescriptor(myConnectorProperties));
       assertEquals(testAccessKeyId, credentialsHolder.getAwsCredentials().getAccessKeyId());
       assertEquals(testSecretAccessKey, credentialsHolder.getAwsCredentials().getSecretAccessKey());
     } catch (AwsConnectorException awsConnectorException) {
@@ -113,7 +116,16 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
 
     myConnectorProperties.remove(CREDENTIALS_TYPE_PARAM);
-    AwsCredentialsHolder awsCredentials = myAwsConnectorFactory.buildAwsCredentialsProvider(myConnectorProperties);
+    AwsCredentialsHolder awsCredentials = myAwsConnectorFactory.buildAwsCredentialsProvider(createProjectFeatureDescriptor(myConnectorProperties));
+  }
+
+  private SProjectFeatureDescriptor createProjectFeatureDescriptor(Map<String, String> connectionProperties) {
+    return new ProjectFeatureDescriptorImpl(
+      "",
+      AwsConnectionProvider.TYPE,
+      connectionProperties,
+      ""
+    );
   }
 
   private Map<String, String> createDefaultProperties() {

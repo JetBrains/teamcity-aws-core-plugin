@@ -12,6 +12,8 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionTesterImpl implements AwsConnectionTester {
@@ -24,14 +26,21 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
   @Override
   @NotNull
   public AwsTestConnectionResult testConnection(@NotNull final Map<String, String> connectionProperties) throws AwsConnectorException {
-    AwsCredentialsHolder credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionProperties);
+    AwsCredentialsHolder testCredentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(
+      new ProjectFeatureDescriptorImpl(
+        "",
+        AwsConnectionProvider.TYPE,
+        connectionProperties,
+        ""
+      )
+    );
 
     AWSSecurityTokenServiceClientBuilder stsClientBuilder = AWSSecurityTokenServiceClientBuilder.standard();
     StsClientBuilder.addConfiguration(stsClientBuilder, connectionProperties);
     AWSSecurityTokenService sts = stsClientBuilder.build();
 
     return new AwsTestConnectionResult(
-      sts.getCallerIdentity(createGetCallerIdentityRequest(credentialsHolder))
+      sts.getCallerIdentity(createGetCallerIdentityRequest(testCredentialsHolder))
     );
   }
 

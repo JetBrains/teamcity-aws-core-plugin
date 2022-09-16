@@ -1,5 +1,8 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
@@ -10,13 +13,10 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSession
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
@@ -30,7 +30,8 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @NotNull
   @Override
-  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final Map<String, String> cloudConnectorProperties) {
+  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
+    Map<String, String> cloudConnectorProperties = featureDescriptor.getParameters();
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
       return createSessionCredentialsHolder(cloudConnectorProperties);
@@ -41,9 +42,9 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @NotNull
   @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull Map<String, String> parameters) {
+  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
     //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructSpecificCredentialsProviderImpl(parameters);
+    return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 
   @Override
@@ -69,11 +70,6 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
     return invalidProperties;
   }
 
-  @NotNull
-  private AwsCredentialsHolder getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) {
-    return new StaticCredentialsHolder(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM), cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM));
-  }
-
   @Override
   @NotNull
   public String getCredentialsType() {
@@ -82,16 +78,22 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   @Override
   @NotNull
-  public String getPropertiesDescription(@NotNull final Map<String, String> properties){
+  public String getPropertiesDescription(@NotNull final Map<String, String> properties) {
     return "Static IAM Access Key";
   }
 
   @NotNull
-  protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties){
+  protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
     return new StaticSessionCredentialsHolder(
       getBasicCredentialsProvider(cloudConnectorProperties),
       cloudConnectorProperties,
       myExecutorServices
     );
+  }
+
+  @NotNull
+  private AwsCredentialsHolder getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) {
+    return new StaticCredentialsHolder(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
+                                       cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM));
   }
 }

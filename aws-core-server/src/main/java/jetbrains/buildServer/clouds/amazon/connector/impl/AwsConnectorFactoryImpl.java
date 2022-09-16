@@ -17,7 +17,9 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,11 +37,11 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   @NotNull
   @Override
-  public AwsCredentialsHolder buildAwsCredentialsProvider(@NotNull final Map<String, String> connectionProperties) throws AwsConnectorException {
-    String credentialsType = connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
+  public AwsCredentialsHolder buildAwsCredentialsProvider(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
+    String credentialsType = featureDescriptor.getParameters().get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
 
     AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
-    return credentialsBuilder.constructSpecificCredentialsProvider(connectionProperties);
+    return credentialsBuilder.constructSpecificCredentialsProvider(featureDescriptor);
   }
 
   @NotNull
@@ -51,7 +53,14 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
     Map<String, String> paramsWithSessionDuration = new HashMap<>(featureDescriptor.getParameters());
     paramsWithSessionDuration.put(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, sessionDuration);
-    return credentialsBuilder.requestNewSessionWithDuration(paramsWithSessionDuration);
+    return credentialsBuilder.requestNewSessionWithDuration(
+      new ProjectFeatureDescriptorImpl(
+        featureDescriptor.getId(),
+        featureDescriptor.getType(),
+        paramsWithSessionDuration,
+        featureDescriptor.getProjectId()
+      )
+    );
   }
 
   @NotNull

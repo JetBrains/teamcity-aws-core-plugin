@@ -42,7 +42,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
   @NotNull
   @Override
   public AwsConnectionDescriptor fromFeatureDescriptor(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    AwsCredentialsHolder awsCredentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(featureDescriptor.getParameters());
+    AwsCredentialsHolder awsCredentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(featureDescriptor);
     return new AwsConnectionDescriptorImpl(
       featureDescriptor,
       awsCredentialsHolder,
@@ -76,7 +76,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
         .requestNewSessionWithDuration(connectionDescriptor, sessionDuration);
 
     } else {
-      credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor.getParameters());
+      credentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionDescriptor);
     }
 
     return new AwsConnectionBean(

@@ -30,13 +30,10 @@ public class AwsExternalIdsManagerImpl extends BuildServerAdapter implements Aws
     String awsConnectionId = featureDescriptor.getId();
 
     final CustomDataStorage storage = getDataStorage(project);
-    final Map<String, String> values = storage.getValues();
-
-    if (values != null) {
-      String storedExternalId = values.get(awsConnectionId);
-      if (storedExternalId != null) {
-        return storedExternalId;
-      }
+    String storedExternalId = storage.getValue(awsConnectionId);
+    
+    if (storedExternalId != null) {
+      return storedExternalId;
     }
 
     String newExternalId = generateExternalId();

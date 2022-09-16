@@ -19,16 +19,18 @@ package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
+import java.util.Date;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Date;
-import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.IAM_ROLE_ARN_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_PARAM;
@@ -39,17 +41,32 @@ public class IamRoleSessionCredentialsHolder extends CredentialsRefresher {
 
   private volatile AssumeRoleResult currentSession;
 
-  public IamRoleSessionCredentialsHolder(@NotNull final AwsCredentialsHolder credentialsHolder,
-                                         @NotNull final Map<String, String> connectionProperties,
-                                         @NotNull final ExecutorServices executorServices) {
-    super(credentialsHolder, connectionProperties, executorServices);
+  public IamRoleSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor iamRoleConnectionFeature,
+                                         @NotNull final AwsConnectionDescriptor principalAwsConnection,
+                                         @NotNull final ExecutorServices executorServices,
+                                         @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
+    super(principalAwsConnection.getAwsCredentialsHolder(), principalAwsConnection.getParameters(), executorServices);
+
+
+    Map<String, String> connectionProperties = iamRoleConnectionFeature.getParameters();
+
+    String externalId = null;
+    try {
+      externalId = awsExternalIdsManager.getAwsConnectionExternalId(iamRoleConnectionFeature);
+    } catch (AwsConnectorException e) {
+      Loggers.CLOUD.debug(
+        String.format("Failed to get the External ID to assume the IAM Role with ARN <%s>, reason: %s", connectionProperties.get(IAM_ROLE_ARN_PARAM), e.getMessage()), e
+      );
+    }
 
     int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
-
     myAssumeRoleRequest = new AssumeRoleRequest()
       .withRoleArn(connectionProperties.get(IAM_ROLE_ARN_PARAM))
       .withRoleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM))
       .withDurationSeconds(sessionDurationMinutes * 60);
+    if (externalId != null) {
+      myAssumeRoleRequest.setExternalId(externalId);
+    }
 
     currentSession = mySts.assumeRole(myAssumeRoleRequest);
   }

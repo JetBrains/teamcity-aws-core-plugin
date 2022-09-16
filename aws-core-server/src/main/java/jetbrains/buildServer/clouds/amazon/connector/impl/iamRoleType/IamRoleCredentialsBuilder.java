@@ -25,6 +25,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -40,16 +41,19 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Par
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isValidSessionName;
 
 public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
-
-  private final ExecutorServices myExecutorServices;
   private final AwsConnectionsManager myAwsConnectionsManager;
+  private final ExecutorServices myExecutorServices;
+  private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                   @NotNull final AwsConnectionsManager awsConnectionsManager,
                                    @NotNull final ExecutorServices executorServices,
-                                   @NotNull final AwsConnectionsManager awsConnectionsManager) {
+                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
-    myExecutorServices = executorServices;
+
     myAwsConnectionsManager = awsConnectionsManager;
+    myExecutorServices = executorServices;
+    myAwsExternalIdsManager = awsExternalIdsManager;
   }
 
   @NotNull
@@ -57,11 +61,11 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     try {
       AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(featureDescriptor.getParameters());
-
       return new IamRoleSessionCredentialsHolder(
-        principalAwsConnection.getAwsCredentialsHolder(),
-        featureDescriptor.getParameters(),
-        myExecutorServices
+        featureDescriptor,
+        principalAwsConnection,
+        myExecutorServices,
+        myAwsExternalIdsManager
       );
     } catch (AmazonClientException ace) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));

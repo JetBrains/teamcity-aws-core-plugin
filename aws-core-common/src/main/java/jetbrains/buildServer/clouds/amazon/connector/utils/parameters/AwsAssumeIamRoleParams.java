@@ -33,4 +33,7 @@ public final class AwsAssumeIamRoleParams {
   public static final String VALID_ROLE_SESSION_NAME_REGEX = "[\\w+=,.@-]*";
 
   public static final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
+
+  public static final String EXTERNAL_IDS_CONTROLLER_URL = "/admin/connections/aws/externalIds.html";
+  public static final String EXTERNAL_ID_FIELD_ID = "externalIdValue";
 }

@@ -26,6 +26,10 @@
 <c:set var="iam_role_arn_param" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_ARN_PARAM%>"/>
 <c:set var="iam_role_arn_label" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_ARN_LABEL%>"/>
 
+<c:set var="external_id_field_id" value="<%=AwsAssumeIamRoleParams.EXTERNAL_ID_FIELD_ID%>"/>
+<c:set var="external_ids_controller_url" value="<%=AwsAssumeIamRoleParams.EXTERNAL_IDS_CONTROLLER_URL%>"/>
+<c:set var="aws_conn_id_rest_param" value="<%=AwsCloudConnectorConstants.AWS_CONN_ID_REST_PARAM%>"/>
+
 <c:set var="iam_role_session_name_param" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_PARAM%>"/>
 <c:set var="iam_role_session_name_label" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_LABEL%>"/>
 <c:set var="iam_role_session_name_default" value="<%=AwsAssumeIamRoleParams.IAM_ROLE_SESSION_NAME_DEFAULT%>"/>

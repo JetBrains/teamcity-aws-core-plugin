@@ -8,14 +8,11 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConne
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
-import jetbrains.buildServer.controllers.RequestPermissionsChecker;
-import jetbrains.buildServer.controllers.RequestPermissionsCheckerEx;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
+import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +27,6 @@ public class AwsExternalIdsController extends BaseAwsConnectionController {
   public static final String PATH = EXTERNAL_IDS_CONTROLLER_URL;
 
   private final AwsConnectionsManager myAwsConnectionsManager;
-  private final ProjectManager myProjectManager;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public AwsExternalIdsController(@NotNull final SBuildServer server,
@@ -41,21 +37,11 @@ public class AwsExternalIdsController extends BaseAwsConnectionController {
                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
     super(server);
     myAwsConnectionsManager = awsConnectionsManager;
-    myProjectManager = projectManager;
     myAwsExternalIdsManager = awsExternalIdsManager;
 
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
-      final RequestPermissionsChecker projectAccessChecker = (RequestPermissionsCheckerEx)(securityContext, request) -> {
-        String projectId = request.getParameter("projectId");
-        SProject curProject = myProjectManager.findProjectByExternalId(projectId);
-        if (curProject == null) {
-          throw new AccessDeniedException(securityContext.getAuthorityHolder(), "Project with id " + request.getParameter("projectId") + " does not exist");
-        }
-        securityContext.getAccessChecker().checkCanEditProject(curProject);
-      };
-
       webControllerManager.registerController(PATH, this);
-      authInterceptor.addPathBasedPermissionsChecker(PATH, projectAccessChecker);
+      authInterceptor.addPathBasedPermissionsChecker(PATH, new ProjectAccessChecker(projectManager));
     }
   }
 

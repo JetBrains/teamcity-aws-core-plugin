@@ -11,13 +11,13 @@ import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isAwsConnectionFeature;
 
-public class AwsExternalIdsManagerImpl extends BuildServerAdapter implements AwsExternalIdsManager {
+public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter implements AwsExternalIdsManager {
 
   private static final Logger LOG = Logger.getInstance(AwsExternalIdsManagerImpl.class.getName());
   private final static String AWS_CONNECTIONS_EXTERNAL_IDX_STORAGE = "aws.connections.external.idx.storage";
   private final ProjectManager myProjectManager;
 
-  public AwsExternalIdsManagerImpl(@NotNull final EventDispatcher<BuildServerListener> buildServerEventDispatcher,
+  public AwsExternalIdsManagerImpl(@NotNull final EventDispatcher<ProjectsModelListener> buildServerEventDispatcher,
                                    @NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
     buildServerEventDispatcher.addListener(this);

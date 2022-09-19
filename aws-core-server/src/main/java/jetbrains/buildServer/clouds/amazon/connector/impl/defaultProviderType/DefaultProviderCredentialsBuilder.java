@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
@@ -17,20 +18,21 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   public DefaultProviderCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
-    if (TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
-      awsConnectorFactory.registerAwsCredentialsBuilder(this);
-    }
+    awsConnectorFactory.registerAwsCredentialsBuilder(this);
   }
 
   @NotNull
   @Override
-  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
+  protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
+    if (! TeamCityProperties.getBooleanOrTrue(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
+      throw new AwsConnectorException("Default Credentials Provider is disabled on this server, please, contact the server Administrator");
+    }
     return new DefaultProviderCredentialsHolder();
   }
 
   @NotNull
   @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
+  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 

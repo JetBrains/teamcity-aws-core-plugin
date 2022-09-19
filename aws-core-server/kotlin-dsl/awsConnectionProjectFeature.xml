@@ -92,6 +92,7 @@
           Credential profiles file at the default location (~/.aws/credentials)
           Credentials delivered through the Amazon EC2 container service if AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" environment variable is set and security manager has permission to access the variable,
           Instance profile credentials delivered through the Amazon EC2 metadata service
+          more: https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
         </description>
       </option>
     </param>

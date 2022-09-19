@@ -6,5 +6,5 @@ import org.jetbrains.annotations.NotNull;
 
 public interface AwsExternalIdsManager {
   @NotNull
-  String getAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor awsConnectionDescriptor) throws AwsConnectorException;
+  String getOrGenerateAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor awsConnectionDescriptor) throws AwsConnectorException;
 }

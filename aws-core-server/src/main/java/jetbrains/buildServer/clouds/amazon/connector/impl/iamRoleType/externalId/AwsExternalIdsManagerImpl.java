@@ -25,7 +25,7 @@ public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter impl
 
   @Override
   @NotNull
-  public String getAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
+  public String getOrGenerateAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     SProject project = getProjectById(featureDescriptor.getProjectId());
     String awsConnectionId = featureDescriptor.getId();
 

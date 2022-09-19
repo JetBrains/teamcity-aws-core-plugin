@@ -72,7 +72,7 @@ public class AwsExternalIdsController extends BaseAwsConnectionController {
       AwsConnectionDescriptor connection = myAwsConnectionsManager.getAwsConnection(connectionId);
       writeAsJson(
         myAwsExternalIdsManager
-          .getAwsConnectionExternalId(connection),
+          .getOrGenerateAwsConnectionExternalId(connection),
         response
       );
 

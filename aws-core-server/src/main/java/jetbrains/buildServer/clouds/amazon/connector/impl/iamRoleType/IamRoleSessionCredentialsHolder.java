@@ -52,7 +52,7 @@ public class IamRoleSessionCredentialsHolder extends CredentialsRefresher {
 
     String externalId = null;
     try {
-      externalId = awsExternalIdsManager.getAwsConnectionExternalId(iamRoleConnectionFeature);
+      externalId = awsExternalIdsManager.getOrGenerateAwsConnectionExternalId(iamRoleConnectionFeature);
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.debug(
         String.format("Failed to get the External ID to assume the IAM Role with ARN <%s>, reason: %s", connectionProperties.get(IAM_ROLE_ARN_PARAM), e.getMessage()), e

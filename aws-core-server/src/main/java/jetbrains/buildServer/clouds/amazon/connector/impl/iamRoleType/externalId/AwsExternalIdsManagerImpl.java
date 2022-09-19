@@ -16,6 +16,7 @@ public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter impl
   private static final Logger LOG = Logger.getInstance(AwsExternalIdsManagerImpl.class.getName());
   private final static String AWS_CONNECTIONS_EXTERNAL_IDX_STORAGE = "aws.connections.external.idx.storage";
   private final ProjectManager myProjectManager;
+  public final static String AWS_CONNECTION_EXTERNAL_ID_PREFIX = "aws-connection-external-id-";
 
   public AwsExternalIdsManagerImpl(@NotNull final EventDispatcher<ProjectsModelListener> buildServerEventDispatcher,
                                    @NotNull final ProjectManager projectManager) {
@@ -71,7 +72,7 @@ public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter impl
 
   @NotNull
   private String generateExternalId() {
-    return UUID.randomUUID().toString();
+    return AWS_CONNECTION_EXTERNAL_ID_PREFIX + UUID.randomUUID();
   }
 
   private void removeExternalId(@NotNull final SProject project, @NotNull final String connectionId) {

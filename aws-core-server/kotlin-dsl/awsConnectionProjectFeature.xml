@@ -59,6 +59,9 @@
         </param>
       </option>
       <option name="iamRole" value="awsAssumeIamRole">
+        <description>
+          Uses another (principal) AWS connection to assume an IAM Role with its permissions. Please, note that the principal connection should have rights to assume the role, more: https://docs.aws.amazon.com/workdocs/latest/developerguide/wd-iam-grantdev.html
+        </description>
         <param name="awsIamRoleArn" dslName="roleArn" type="string" mandatory="true">
           <description>
             AWS IAM Role ARN
@@ -81,6 +84,15 @@
         </param>
       </option>
       <option name="default" value="defaultProvider">
+        <description>
+          Looks for credentials in this order:
+          Env Vars - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+          Java System Properties - aws.accessKeyId and aws.secretKey
+          Web Identity Token credentials from the environment or container
+          Credential profiles file at the default location (~/.aws/credentials)
+          Credentials delivered through the Amazon EC2 container service if AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" environment variable is set and security manager has permission to access the variable,
+          Instance profile credentials delivered through the Amazon EC2 metadata service
+        </description>
       </option>
     </param>
   </params>

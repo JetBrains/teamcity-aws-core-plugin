@@ -3,6 +3,7 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 public final class AwsCloudConnectorConstants {
 
   public static final String FEATURE_PROPERTY_NAME = "teamcity.internal.awsConnectorEnabled";
+  public static final String DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME = "teamcity.internal.aws.connection.defaultCredentialsProviderEnabled";
 
   public static final String CLOUD_TYPE = "AWS";
 

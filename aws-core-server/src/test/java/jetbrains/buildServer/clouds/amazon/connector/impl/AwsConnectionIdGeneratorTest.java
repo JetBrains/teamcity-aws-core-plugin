@@ -48,7 +48,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
     Map<String, String> awsConnProps = createDefaultConnectionProps();
     awsConnProps.put(USER_DEFINED_ID_PARAM, USER_DEFINED_AWS_CONN_ID);
 
-    myAwsConnectionIdGenerator.createNextId(awsConnProps);
+    myAwsConnectionIdGenerator.newId(awsConnProps);
 
     assertEquals(
       USER_DEFINED_AWS_CONN_ID,
@@ -60,7 +60,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
   @Test
   public void whenUserDidNotSpecifiedConnectionIdThenUseCurrentIncrementalId() {
 
-    myAwsConnectionIdGenerator.createNextId(createDefaultConnectionProps());
+    myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
     String resultConnectionId = buildAwsConnId(INITIAL_CURRENT_AWS_CONNECTION_ID + 1);
 
     assertEquals(
@@ -75,7 +75,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
 
     addIds(10);
 
-    myAwsConnectionIdGenerator.createNextId(createDefaultConnectionProps());
+    myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
     String resultConnectionId = buildAwsConnId(11);
 
     assertEquals(

@@ -46,7 +46,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Nullable
   @Override
-  public String newId(@NotNull Map<String, String> props) {
+  public String createNextId(@NotNull Map<String, String> props) {
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
 
     boolean needToGenerateId = false;
@@ -68,6 +68,18 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
 
     return userDefinedConnId;
+  }
+
+  @Nullable
+  @Override
+  public String showNextId(@NotNull Map<String, String> props) {
+    int counter = currentIdentifier.get();
+    String newAwsConnectionId;
+    do {
+      newAwsConnectionId = formatId(++counter);
+    } while (!isUnique(newAwsConnectionId));
+
+    return newAwsConnectionId;
   }
 
   @Override
@@ -100,7 +112,10 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   private String buildNewId() {
-    int newIdNumber = currentIdentifier.incrementAndGet();
+    return formatId(currentIdentifier.incrementAndGet());
+  }
+
+  private static String formatId(int newIdNumber) {
     return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, String.valueOf(newIdNumber));
   }
 }

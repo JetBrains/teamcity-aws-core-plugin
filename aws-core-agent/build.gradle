@@ -20,6 +20,12 @@ plugins {
 
 dependencies {
     compile project(':aws-core-common')
+    compileOnly ("org.jetbrains.teamcity:agent-api:${teamcityVersion}"){
+        exclude group: 'org.jetbrains.teamcity', module: 'common-api'
+    }
+    testCompile "org.testng:testng:6.8.21"
+    testCompile "org.mockito:mockito-core:3.9.0"
+    testCompile "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
 }
 
 teamcity {
@@ -28,4 +34,16 @@ teamcity {
     }
 
     version = teamcityVersion
+}
+
+agentPlugin.version = null
+agentPlugin.baseName = projectIds.artifact + '-agent'
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+
+    if (project.hasProperty('JDK_18')) {
+        options.bootstrapClasspath = layout.files("$JDK_18/jre/lib/rt.jar")
+    }
 }

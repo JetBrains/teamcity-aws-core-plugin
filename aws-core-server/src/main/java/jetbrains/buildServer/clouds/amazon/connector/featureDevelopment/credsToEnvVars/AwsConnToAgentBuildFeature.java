@@ -12,15 +12,15 @@ import org.jetbrains.annotations.Nullable;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_NAME_PARAM;
 
-public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements PropertiesProcessor {
+public class AwsConnToAgentBuildFeature extends BuildFeature implements PropertiesProcessor {
 
-  private final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVarsBuildFeature.jsp";
-  private final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
+  private static final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVarsBuildFeature.jsp";
+  private static final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;
-  private final String displayName = "Put AWS credentials to agent environment variables";
+  public static final String DISPLAY_NAME = "Add AWS credentials to the build";
 
-  public AwsConnToEnvVarsBuildFeature(@NotNull final PluginDescriptor pluginDescriptor) {
+  public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor) {
     myPluginResourcesEditUrl = pluginDescriptor.getPluginResourcesPath(EDIT_PARAMETERS_URL);
   }
 
@@ -50,7 +50,7 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
   @NotNull
   @Override
   public String getDisplayName() {
-    return displayName;
+    return DISPLAY_NAME;
   }
 
   @Nullable
@@ -69,7 +69,7 @@ public class AwsConnToEnvVarsBuildFeature extends BuildFeature implements Proper
       connDisplayNameBuilder.append(connDisplayName);
       connDisplayNameBuilder.append("\"");
     }
-    return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to environment variables";
+    return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to the build";
   }
 
   public String getAvailAwsConnsUrl() {

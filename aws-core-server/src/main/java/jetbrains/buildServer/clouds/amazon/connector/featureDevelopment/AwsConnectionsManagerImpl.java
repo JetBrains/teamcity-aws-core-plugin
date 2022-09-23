@@ -8,7 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
-import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars.AwsConnToEnvVarsBuildFeature;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars.AwsConnToAgentBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.log.Loggers;
@@ -73,7 +73,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
     }
 
-    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(build);
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(build);
     if (awsConnectionsToExpose.isEmpty()) {
       return null;
     }
@@ -126,7 +126,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
     }
 
-    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToEnvVarsBuildFeature.getAwsConnectionsToExpose(build);
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(build);
     if (awsConnectionsToExpose.isEmpty()) {
       return null;
     }

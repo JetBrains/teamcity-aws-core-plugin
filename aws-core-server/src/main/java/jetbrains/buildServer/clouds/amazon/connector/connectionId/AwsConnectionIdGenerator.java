@@ -46,7 +46,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Nullable
   @Override
-  public String createNextId(@NotNull Map<String, String> props) {
+  public String newId(@NotNull Map<String, String> props) {
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
 
     boolean needToGenerateId = false;

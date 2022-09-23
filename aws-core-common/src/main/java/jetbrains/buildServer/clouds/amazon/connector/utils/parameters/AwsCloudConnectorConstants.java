@@ -30,6 +30,7 @@ public final class AwsCloudConnectorConstants {
   public static final String REGION_SELECT_ID = "regionSelect";
 
   public static final String STS_ENDPOINT_FIELD_ID = "stsEndpointField";
+  public static final String STS_ENDPOINT_DEFAULT = "https://sts." + REGION_NAME_DEFAULT + ".amazonaws.com";
 
 
   //Test connection
@@ -49,10 +50,9 @@ public final class AwsCloudConnectorConstants {
   public static final String SESSION_CREDS_CONFIG_JSP_FILE_NAME = "sessionCredentialsConfig.jsp";
 
   public static final String PRINCIPAL_AWS_CONNECTION_ID = "principalAwsConnId";
+  public static final String UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE = "unselected";
   public static final String AWS_CONN_ID_REST_PARAM = "awsConnectionId";
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
-  public static final String CHOSEN_AWS_CONN_NAME_PROP_ID = "hiddenChosenAwsConnDisplayName";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "awsConnectionId";
-  public static final String CHOSEN_AWS_CONN_NAME_PARAM = "awsConnectionDisplayName";
   public static final String CHOSEN_AWS_CONN_ID_LABEL = "AWS Connection";
 }

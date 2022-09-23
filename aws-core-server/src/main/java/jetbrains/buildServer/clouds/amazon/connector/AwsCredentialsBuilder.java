@@ -37,4 +37,7 @@ public interface AwsCredentialsBuilder {
 
   @NotNull
   String getPropertiesDescription(@NotNull final Map<String, String> properties);
+
+  @NotNull
+  Map<String, String> getDefaultProperties();
 }

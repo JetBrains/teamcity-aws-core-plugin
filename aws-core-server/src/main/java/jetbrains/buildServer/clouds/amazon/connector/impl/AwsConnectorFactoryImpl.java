@@ -13,6 +13,7 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescrip
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidIdentifierException;
@@ -110,6 +111,19 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
         "Attempted to register AWS credentials credentialsBuilder for credentials type \"" + credentialsType +
         "\" when another one for this credentials type is already registered.");
     }
+  }
+
+  @NotNull
+  @Override
+  public Map<String, String> getDefaultProperties() {
+    Map<String, String> defaultProperties = new HashMap<>();
+    defaultProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+    defaultProperties.put(AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsCloudConnectorConstants.STS_ENDPOINT_DEFAULT);
+
+    myCredentialBuilders.forEach((type, builder) -> {
+      defaultProperties.putAll(builder.getDefaultProperties());
+    });
+    return defaultProperties;
   }
 
   @NotNull

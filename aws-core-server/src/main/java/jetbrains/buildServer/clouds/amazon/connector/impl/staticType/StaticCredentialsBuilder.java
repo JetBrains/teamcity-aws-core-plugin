@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
@@ -80,6 +81,12 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @NotNull
   public String getPropertiesDescription(@NotNull final Map<String, String> properties) {
     return "Static IAM Access Key";
+  }
+
+  @NotNull
+  @Override
+  public Map<String, String> getDefaultProperties() {
+    return Collections.singletonMap(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM, AwsAccessKeysParams.SESSION_CREDENTIALS_DEFAULT);
   }
 
   @NotNull

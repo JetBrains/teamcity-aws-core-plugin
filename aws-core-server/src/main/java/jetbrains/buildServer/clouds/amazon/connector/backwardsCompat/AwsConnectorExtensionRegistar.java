@@ -10,7 +10,7 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.auth.connections.ConnectionProviderType;
+import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.parameters.types.PasswordsProvider;
@@ -45,7 +45,7 @@ public class AwsConnectorExtensionRegistar {
 
   private void registerAwsConnection() {
     AwsConnectionProvider awsConnectionProvider = new AwsConnectionProvider(myPluginDescriptor, myAwsConnectorFactory);
-    myExtensionHolder.registerExtension(ConnectionProviderType.class, AwsConnectionProvider.class.getName(), awsConnectionProvider);
+    myExtensionHolder.registerExtension(ConnectionProvider.class, AwsConnectionProvider.class.getName(), awsConnectionProvider);
     myExtensionHolder.registerExtension(OAuthProvider.class, AwsConnectionProvider.class.getName(), awsConnectionProvider);
   }
 

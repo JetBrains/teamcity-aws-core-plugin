@@ -37,7 +37,7 @@ teamcity {
 }
 
 agentPlugin.version = null
-agentPlugin.baseName = projectIds.artifact + '-agent'
+agentPlugin.baseName = 'aws-core-agent'
 
 tasks.withType(JavaCompile) {
     sourceCompatibility = "1.8"

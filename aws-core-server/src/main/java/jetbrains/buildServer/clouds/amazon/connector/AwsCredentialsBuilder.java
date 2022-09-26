@@ -26,8 +26,6 @@ public interface AwsCredentialsBuilder {
    */
   @NotNull
   AwsCredentialsHolder constructSpecificCredentialsProvider(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;
-  @NotNull
-  AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;
 
   @NotNull
   List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties);

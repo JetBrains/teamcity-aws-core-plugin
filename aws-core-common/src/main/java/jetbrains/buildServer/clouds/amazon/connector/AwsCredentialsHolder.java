@@ -16,7 +16,9 @@
 
 package jetbrains.buildServer.clouds.amazon.connector;
 
+import java.util.Date;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface AwsCredentialsHolder {
 
@@ -24,4 +26,8 @@ public interface AwsCredentialsHolder {
   AwsCredentialsData getAwsCredentials();
 
   void refreshCredentials();
+
+  @Nullable
+  Date getSessionExpirationDate();
+
 }

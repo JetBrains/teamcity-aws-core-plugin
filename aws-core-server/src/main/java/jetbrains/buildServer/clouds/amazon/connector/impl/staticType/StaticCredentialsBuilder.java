@@ -7,7 +7,6 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
@@ -15,7 +14,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,12 +21,8 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Par
 
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
-  private final ExecutorServices myExecutorServices;
-
-  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
-                                  @NotNull final ExecutorServices executorServices) {
+  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
-    myExecutorServices = executorServices;
   }
 
   @NotNull
@@ -41,13 +35,6 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
     } else {
       return getBasicCredentialsProvider(cloudConnectorProperties);
     }
-  }
-
-  @NotNull
-  @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
-    //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 
   @Override
@@ -97,11 +84,10 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   }
 
   @NotNull
-  protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
+  protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
     return new StaticSessionCredentialsHolder(
       getBasicCredentialsProvider(cloudConnectorProperties),
-      cloudConnectorProperties,
-      myExecutorServices
+      cloudConnectorProperties
     );
   }
 

@@ -54,7 +54,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
     Map<String, String> paramsWithSessionDuration = new HashMap<>(featureDescriptor.getParameters());
     paramsWithSessionDuration.put(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, sessionDuration);
-    return credentialsBuilder.requestNewSessionWithDuration(
+    return credentialsBuilder.constructSpecificCredentialsProvider(
       new ProjectFeatureDescriptorImpl(
         featureDescriptor.getId(),
         featureDescriptor.getType(),

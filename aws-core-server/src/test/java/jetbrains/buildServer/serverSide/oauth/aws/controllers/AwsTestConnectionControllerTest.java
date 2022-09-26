@@ -2,11 +2,16 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
-import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -14,7 +19,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Element;
@@ -22,12 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
@@ -52,8 +50,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   public void setUp() throws IOException {
     super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
-    ExecutorServices myExecutorServices = Mockito.mock(ExecutorServices.class);
-    AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     xmlResponse = new Element("root");
 

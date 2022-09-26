@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
@@ -25,41 +26,43 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   private final AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder;
   private final ProjectManager myProjectManager;
+  private final AwsCredentialsRefresheringManager myAwsCredentialsRefresheringManager;
 
   private final ConcurrentHashMap<String, AwsConnectionDescriptor> awsConnections = new ConcurrentHashMap<>();
 
   public AwsConnectionsHolderImpl(@NotNull final AwsConnectionDescriptorBuilder awsConnectionDescriptorBuilder,
-                                  @NotNull final ProjectManager projectManager) {
+                                  @NotNull final ProjectManager projectManager,
+                                  @NotNull final AwsCredentialsRefresheringManager awsCredentialsRefresheringManager) {
     myAwsConnectionDescriptorBuilder = awsConnectionDescriptorBuilder;
     myProjectManager = projectManager;
+    myAwsCredentialsRefresheringManager = awsCredentialsRefresheringManager;
   }
 
   @Override
   public void addAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String awsConnectionId = awsConnectionDescriptor.getId();
-    String connecionOwnerProjectId = getDataStorageValue(awsConnectionId);
-    if (connecionOwnerProjectId != null) {
+    String connectionOwnerProjectId = getDataStorageValue(awsConnectionId);
+    if (connectionOwnerProjectId != null) {
       throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
     }
-    //TODO: TW-77164 add the refresher task
-    awsConnections.put(awsConnectionId, awsConnectionDescriptor);
+    initAwsConnection(awsConnectionDescriptor);
     putDataStorageValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
   }
 
   @Override
   public void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String connectionId = awsConnectionDescriptor.getId();
-    String connecionOwnerProjectId = getDataStorageValue(connectionId);
-    if (connecionOwnerProjectId == null) {
+    String connectionOwnerProjectId = getDataStorageValue(connectionId);
+    if (connectionOwnerProjectId == null) {
       addAwsConnection(awsConnectionDescriptor);
     } else {
-      //TODO: TW-77164 update the refresher task
-      awsConnections.put(connectionId, awsConnectionDescriptor);
+      initAwsConnection(awsConnectionDescriptor);
     }
   }
 
   @Override
   public void removeAwsConnection(@NotNull final String awsConnectionId) {
+    myAwsCredentialsRefresheringManager.stopCredentialsRefreshingtask(awsConnectionId);
     awsConnections.remove(awsConnectionId);
     removeAwsConnectionFromDataStorage(awsConnectionId);
   }
@@ -69,13 +72,15 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   public AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException {
     AwsConnectionDescriptor awsConnectionDescriptor = awsConnections.get(awsConnectionId);
     if (awsConnectionDescriptor == null) {
-      return getConnectionViaOwnerProject(awsConnectionId);
+      awsConnectionDescriptor = buildConnectionFromOwnerProject(awsConnectionId);
+      initAwsConnection(awsConnectionDescriptor);
     }
     return awsConnectionDescriptor;
   }
 
   @Override
   public void clear() {
+    myAwsCredentialsRefresheringManager.dispose();
     awsConnections.clear();
   }
 
@@ -87,32 +92,29 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
       return;
     }
 
-    for (SProjectFeatureDescriptor connectionFeature : getConnectionFeatures(updatedProject)) {
-      if (isAwsConnection(connectionFeature)) {
-        try {
-          updateAwsConnection(
-            buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
-          );
-        } catch (AwsConnectorException e) {
-          new AwsConnectionsLogger(updatedProject)
-            .failedToBuild(connectionFeature.getId(), e);
-        }
+    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(updatedProject)) {
+      try {
+        updateAwsConnection(
+          buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
+        );
+      } catch (AwsConnectorException e) {
+        new AwsConnectionsLogger(updatedProject)
+          .failedToBuild(connectionFeature.getId(), e);
       }
+
     }
   }
 
   @Override
   public void removeAllConnectionsForProject(@NotNull SProject project) {
-    for (SProjectFeatureDescriptor connectionFeature : getConnectionFeatures(project)) {
-      if (isAwsConnection(connectionFeature)) {
-        removeAwsConnection(connectionFeature.getId());
-      }
+    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(project)) {
+      removeAwsConnection(connectionFeature.getId());
     }
   }
 
 
   @NotNull
-  private AwsConnectionDescriptor getConnectionViaOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
+  private AwsConnectionDescriptor buildConnectionFromOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
     String projectIdWhereToLookForConnection = getDataStorageValue(awsConnectionId);
     if (projectIdWhereToLookForConnection == null) {
       throw new AwsConnectionNotFoundException("There is no AWS Connection with ID: " + awsConnectionId);
@@ -157,12 +159,19 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
   }
 
-  private boolean isAwsConnection(@NotNull final SProjectFeatureDescriptor projectFeature) {
-    String oauthTypeParam = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
-    return AwsConnectionProvider.TYPE.equals(oauthTypeParam);
+  private Collection<SProjectFeatureDescriptor> getAwsConnectionFeatures(@NotNull final SProject project) {
+    return project
+      .getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE)
+      .stream()
+      .filter(featureDescriptor -> {
+        String oauthTypeParam = featureDescriptor.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
+        return AwsConnectionProvider.TYPE.equals(oauthTypeParam);
+      })
+      .collect(Collectors.toList());
   }
 
-  private Collection<SProjectFeatureDescriptor> getConnectionFeatures(@NotNull final SProject project) {
-    return project.getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE);
+  private void initAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
+    myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
+    awsConnections.put(awsConnectionDescriptor.getId(), awsConnectionDescriptor);
   }
 }

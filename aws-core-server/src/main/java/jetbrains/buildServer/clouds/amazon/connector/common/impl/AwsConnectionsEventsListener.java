@@ -42,6 +42,23 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
   }
 
   @Override
+  public void projectFeatureAdded(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor projectFeature) {
+    if (!isAwsConnectionFeature(projectFeature)) {
+      return;
+    }
+
+    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
+    try {
+      AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
+      myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
+      awsConnectionsLogger.connectionAdded(awsConnectionDescriptor.getId());
+
+    } catch (AwsConnectorException e) {
+      awsConnectionsLogger.failedToAdd(projectFeature.getId(), e);
+    }
+  }
+
+  @Override
   public void projectFeatureChanged(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor before, @NotNull final SProjectFeatureDescriptor after) {
     AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
     if (!isAwsConnectionFeature(after)) {

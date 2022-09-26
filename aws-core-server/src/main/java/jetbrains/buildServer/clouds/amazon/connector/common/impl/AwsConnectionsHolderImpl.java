@@ -73,7 +73,8 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   public AwsConnectionDescriptor getAwsConnection(@NotNull final String awsConnectionId) throws AwsConnectorException {
     AwsConnectionDescriptor awsConnectionDescriptor = awsConnections.get(awsConnectionId);
     if (awsConnectionDescriptor == null) {
-      return getConnectionViaOwnerProject(awsConnectionId);
+      awsConnectionDescriptor = buildConnectionFromOwnerProject(awsConnectionId);
+      addAwsConnection(awsConnectionDescriptor);
     }
     return awsConnectionDescriptor;
   }
@@ -117,7 +118,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
 
   @NotNull
-  private AwsConnectionDescriptor getConnectionViaOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
+  private AwsConnectionDescriptor buildConnectionFromOwnerProject(@NotNull final String awsConnectionId) throws AwsConnectorException {
     String projectIdWhereToLookForConnection = getDataStorageValue(awsConnectionId);
     if (projectIdWhereToLookForConnection == null) {
       throw new AwsConnectionNotFoundException("There is no AWS Connection with ID: " + awsConnectionId);

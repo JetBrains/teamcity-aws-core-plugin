@@ -17,9 +17,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
 import com.amazonaws.AmazonClientException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
@@ -112,5 +110,14 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
       "Assume " +
       getResourceNameFromArn(properties.get(IAM_ROLE_ARN_PARAM)) +
       " role to gain temporary credentials with specified privileges";
+  }
+
+  @NotNull
+  @Override
+  public Map<String, String> getDefaultProperties() {
+    Map<String, String> defaultProperties = new HashMap<>();
+    defaultProperties.put(IAM_ROLE_SESSION_NAME_PARAM, IAM_ROLE_SESSION_NAME_DEFAULT);
+    defaultProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE);
+    return defaultProperties;
   }
 }

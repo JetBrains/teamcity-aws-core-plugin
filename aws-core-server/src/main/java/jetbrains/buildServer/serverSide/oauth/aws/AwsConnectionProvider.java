@@ -1,7 +1,6 @@
 package jetbrains.buildServer.serverSide.oauth.aws;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
@@ -69,7 +68,7 @@ public class AwsConnectionProvider extends OAuthProvider {
   @Override
   @Nullable
   public Map<String, String> getDefaultProperties() {
-    return Collections.emptyMap();
+    return myAwsConnectorFactory.getDefaultProperties();
   }
 
   @Override

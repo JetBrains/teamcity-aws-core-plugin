@@ -67,12 +67,12 @@
             AWS IAM Role ARN
           </description>
         </param>
-        <param name="awsIamRoleSessionName" dslName="sessionName" type="string" mandatory="true">
+        <param name="awsIamRoleSessionName" dslName="sessionName" type="string">
           <description>
             An identifier for the assumed role session. Use the role session name to uniquely identify a session when the same role is assumed by different principals or for different reasons.
           </description>
         </param>
-        <param name="awsConnectionId" dslName="awsConnectionId" type="string" mandatory="true">
+        <param name="awsConnectionId" dslName="awsConnectionId" type="string">
           <description>
             Principal AWS Connection ID (Who will assume the IAM Role)
           </description>

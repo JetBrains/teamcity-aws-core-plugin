@@ -2,15 +2,18 @@ package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsTo
 
 import java.util.Collection;
 import java.util.Map;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_NAME_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
 public class AwsConnToAgentBuildFeature extends BuildFeature implements PropertiesProcessor {
 
@@ -19,8 +22,11 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
 
   private final String myPluginResourcesEditUrl;
   public static final String DISPLAY_NAME = "Add AWS credentials to the build";
+  private final AwsConnectionsManager myAwsConnectionsManager;
 
-  public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor) {
+  public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor,
+                                      @NotNull final AwsConnectionsManager awsConnectionsManager) {
+    myAwsConnectionsManager = awsConnectionsManager;
     myPluginResourcesEditUrl = pluginDescriptor.getPluginResourcesPath(EDIT_PARAMETERS_URL);
   }
 
@@ -63,11 +69,16 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
     StringBuilder connDisplayNameBuilder = new StringBuilder();
-    String connDisplayName = params.get(CHOSEN_AWS_CONN_NAME_PARAM);
-    if (connDisplayName != null) {
-      connDisplayNameBuilder.append("\"");
-      connDisplayNameBuilder.append(connDisplayName);
-      connDisplayNameBuilder.append("\"");
+    String connId = params.get(CHOSEN_AWS_CONN_ID_PARAM);
+    if (connId != null) {
+      try {
+        AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(connId);
+        connDisplayNameBuilder.append("\"");
+        connDisplayNameBuilder.append(awsConnectionDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
+        connDisplayNameBuilder.append("\"");
+      } catch (AwsConnectorException e) {
+        throw new RuntimeException(e);
+      }
     }
     return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to the build";
   }

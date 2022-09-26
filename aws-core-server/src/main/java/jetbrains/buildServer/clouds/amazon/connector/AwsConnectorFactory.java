@@ -30,4 +30,7 @@ public interface AwsConnectorFactory {
 
   @NotNull
   String describeAwsConnection(@NotNull final Map<String, String> connectionProperties);
+
+  @NotNull
+  Map<String, String> getDefaultProperties();
 }

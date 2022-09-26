@@ -40,24 +40,22 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   @Override
   public void addAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String awsConnectionId = awsConnectionDescriptor.getId();
-    String connecionOwnerProjectId = getDataStorageValue(awsConnectionId);
-    if (connecionOwnerProjectId != null) {
+    String connectionOwnerProjectId = getDataStorageValue(awsConnectionId);
+    if (connectionOwnerProjectId != null) {
       throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
     }
-    myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
-    awsConnections.put(awsConnectionId, awsConnectionDescriptor);
+    initAwsConnection(awsConnectionDescriptor);
     putDataStorageValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
   }
 
   @Override
   public void updateAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
     String connectionId = awsConnectionDescriptor.getId();
-    String connecionOwnerProjectId = getDataStorageValue(connectionId);
-    if (connecionOwnerProjectId == null) {
+    String connectionOwnerProjectId = getDataStorageValue(connectionId);
+    if (connectionOwnerProjectId == null) {
       addAwsConnection(awsConnectionDescriptor);
     } else {
-      myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
-      awsConnections.put(connectionId, awsConnectionDescriptor);
+      initAwsConnection(awsConnectionDescriptor);
     }
   }
 
@@ -74,7 +72,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     AwsConnectionDescriptor awsConnectionDescriptor = awsConnections.get(awsConnectionId);
     if (awsConnectionDescriptor == null) {
       awsConnectionDescriptor = buildConnectionFromOwnerProject(awsConnectionId);
-      addAwsConnection(awsConnectionDescriptor);
+      initAwsConnection(awsConnectionDescriptor);
     }
     return awsConnectionDescriptor;
   }
@@ -170,5 +168,10 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   private Collection<SProjectFeatureDescriptor> getConnectionFeatures(@NotNull final SProject project) {
     return project.getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE);
+  }
+
+  private void initAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
+    myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
+    awsConnections.put(awsConnectionDescriptor.getId(), awsConnectionDescriptor);
   }
 }

@@ -6,7 +6,6 @@ import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionI
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -22,13 +21,10 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myConnectorProperties;
 
-  private ExecutorServices myExecutorServices;
-
   @BeforeMethod
   public void setup() {
     myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
     myConnectorProperties = new HashMap<>();
-    myExecutorServices = Mockito.mock(ExecutorServices.class);
   }
 
   @Test
@@ -58,7 +54,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
 
   @Test(expectedExceptions = {IllegalStateException.class})
   public void givenAwsConnBuilderWithRegisteredFactory_whenTryingToRegisterTheSameType_thenThrowException() {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
-    StaticCredentialsBuilder secondStaticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    StaticCredentialsBuilder secondStaticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
   }
 }

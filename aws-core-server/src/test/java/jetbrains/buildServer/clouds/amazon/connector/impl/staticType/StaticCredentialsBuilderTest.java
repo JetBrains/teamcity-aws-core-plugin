@@ -11,7 +11,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.mockito.Mockito;
@@ -34,19 +33,17 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
   private final String testSecretAccessKey = "TEST_SECRET";
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myConnectorProperties;
-  private ExecutorServices myExecutorServices;
 
   @BeforeMethod
   public void setup() throws Exception {
     super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
     myConnectorProperties = createDefaultProperties();
-    myExecutorServices = Mockito.mock(ExecutorServices.class);
   }
 
   @Test
   public void givenAwsConnFactory_whenWithAllProperties_thenReturnAwsCredentialsProvider() {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
     assertTrue(invalidProperties.isEmpty());
@@ -62,7 +59,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
   @Test
   public void givenAwsConnFactory_withoutKeys_thenReturnInvalidPropsWithKeysErrors() {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     myConnectorProperties.remove(ACCESS_KEY_ID_PARAM);
     myConnectorProperties.remove(SECURE_SECRET_ACCESS_KEY_PARAM);
@@ -83,7 +80,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
   @Test
   public void givenAwsConnFactory_withoutRegionParam_thenReturnInvalidPropsWithRegionError() {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     myConnectorProperties.remove(REGION_NAME_PARAM);
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
@@ -98,7 +95,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
   @Test
   public void givenAwsConnFactory_withInvalidSessionDuration_thenReturnInvalidPropsWithSessionDurationError() {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     myConnectorProperties.put(SESSION_DURATION_PARAM, String.valueOf(MAX_SESSION_DURATION + 1));
     List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
@@ -113,7 +110,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
   @Test ( expectedExceptions = { NoSuchAwsCredentialsBuilderException.class } )
   public void givenAwsConnFactory_withoutCredentialsType_thenThrowException() throws AwsConnectorException {
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices);
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     myConnectorProperties.remove(CREDENTIALS_TYPE_PARAM);
     AwsCredentialsHolder awsCredentials = myAwsConnectorFactory.buildAwsCredentialsProvider(createProjectFeatureDescriptor(myConnectorProperties));

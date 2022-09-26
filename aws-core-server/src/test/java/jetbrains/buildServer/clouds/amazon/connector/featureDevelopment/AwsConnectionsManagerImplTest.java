@@ -31,7 +31,6 @@ import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionI
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
-import jetbrains.buildServer.clouds.amazon.connector.impl.CredentialsRefresher;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsHolder;
@@ -96,9 +95,9 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory) {
       @Override
       @NotNull
-      protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
+      protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
 
-        return createTestCredentialsRefresher();
+        return createTestCredentialsHolder();
       }
     };
   }
@@ -361,8 +360,8 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     return res;
   }
 
-  private CredentialsRefresher createTestCredentialsRefresher() {
-    return new CredentialsRefresher() {
+  private AwsCredentialsHolder createTestCredentialsHolder() {
+    return new AwsCredentialsHolder() {
       @NotNull
       @Override
       public Date getSessionExpirationDate() {

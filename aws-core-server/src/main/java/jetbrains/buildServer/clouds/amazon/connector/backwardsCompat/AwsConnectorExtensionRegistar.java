@@ -49,7 +49,7 @@ public class AwsConnectorExtensionRegistar {
   }
 
   private void registerExposeToEnvVarsBuildFeature() {
-    myExtensionHolder.registerExtension(BuildFeature.class, AwsConnToAgentBuildFeature.class.getName(), new AwsConnToAgentBuildFeature(myPluginDescriptor));
+    myExtensionHolder.registerExtension(BuildFeature.class, AwsConnToAgentBuildFeature.class.getName(), new AwsConnToAgentBuildFeature(myPluginDescriptor, myAwsConnectionsManager));
 
     InjectAwsCredentialsToTheBuildContext awsConnDataToEnvVars = new InjectAwsCredentialsToTheBuildContext(myAwsConnectionsManager);
     myExtensionHolder.registerExtension(BuildStartContextProcessor.class, InjectAwsCredentialsToTheBuildContext.class.getName(), awsConnDataToEnvVars);

@@ -38,25 +38,7 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
 
   @Override
   public void serverShutdown() {
-    //TODO: TW-77164 cancel all connections refreshing tasks
     myAwsConnectionsHolder.clear();
-  }
-
-  @Override
-  public void projectFeatureAdded(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor projectFeature) {
-    if (!isAwsConnectionFeature(projectFeature)) {
-      return;
-    }
-    //TODO TW-77164 Add refreshing task
-    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
-    try {
-      AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
-      myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
-      awsConnectionsLogger.connectionAdded(awsConnectionDescriptor.getId());
-
-    } catch (AwsConnectorException e) {
-      awsConnectionsLogger.failedToAdd(projectFeature.getId(), e);
-    }
   }
 
   @Override
@@ -70,7 +52,6 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
       return;
     }
 
-    //TODO: TW-77164 update the refresher task
     try {
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(after);
       myAwsConnectionsHolder.updateAwsConnection(awsConnectionDescriptor);

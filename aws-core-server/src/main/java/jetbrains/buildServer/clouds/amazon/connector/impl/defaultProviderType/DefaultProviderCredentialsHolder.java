@@ -18,6 +18,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import java.util.Date;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import org.jetbrains.annotations.NotNull;
@@ -53,5 +54,11 @@ public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
   @Override
   public void refreshCredentials() {
     //...
+  }
+
+  @Nullable
+  @Override
+  public Date getSessionExpirationDate() {
+    return null;
   }
 }

@@ -53,7 +53,6 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
   @NotNull
   @Override
   public AwsConnectionDescriptor buildWithSessionDuration(@NotNull final AwsConnectionDescriptor featureDescriptor, @NotNull String sessionDuration) throws AwsConnectorException {
-    //TODO: TW-77164 When factory will return only configured object, WITHOUT auto-refreshing, just use normal method, but with specified session duration
     return new AwsConnectionDescriptorImpl(
       featureDescriptor,
       myAwsConnectorFactory.requestNewSessionWithDuration(featureDescriptor, sessionDuration),

@@ -26,6 +26,7 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescrip
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorBuilderImpl;
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener;
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl;
+import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsCredentialsRefresheringManager;
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
@@ -36,7 +37,6 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCrede
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
@@ -68,7 +68,6 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
   private final String testConnectionDescription = "Test Connection";
   private AwsConnectorFactory myAwsConnectorFactory;
   private Map<String, String> myAwsDefaultConnectionProperties;
-  private ExecutorServices myExecutorServices;
 
   private OAuthConnectionsManager myOAuthConnectionsManager;
   private SProject myProject;
@@ -94,7 +93,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     initMainMocks();
     initMainTestObjects();
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory, myExecutorServices) {
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory) {
       @Override
       @NotNull
       protected CredentialsRefresher createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
@@ -105,8 +104,6 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
   }
 
   private void initMainMocks() {
-    myExecutorServices = Mockito.mock(ExecutorServices.class);
-
     initProjectMock();
     initProjectManagerMock();
     initOauthConnManagerMock();
@@ -186,7 +183,8 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
 
     myAwsConnectionsHolder = new AwsConnectionsHolderImpl(
       myAwsConnectionDescriptorBuilder,
-      myProjectManager
+      myProjectManager,
+      new AwsCredentialsRefresheringManager()
     );
 
     myAwsConnectionsEventsListener = new AwsConnectionsEventsListener(

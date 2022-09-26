@@ -31,7 +31,6 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuil
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.executors.ExecutorServices;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,17 +41,14 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Par
 
 public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final AwsConnectionsManager myAwsConnectionsManager;
-  private final ExecutorServices myExecutorServices;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                    @NotNull final AwsConnectionsManager awsConnectionsManager,
-                                   @NotNull final ExecutorServices executorServices,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
 
     myAwsConnectionsManager = awsConnectionsManager;
-    myExecutorServices = executorServices;
     myAwsExternalIdsManager = awsExternalIdsManager;
   }
 
@@ -64,19 +60,11 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
       return new IamRoleSessionCredentialsHolder(
         featureDescriptor,
         principalAwsConnection,
-        myExecutorServices,
         myAwsExternalIdsManager
       );
     } catch (AmazonClientException ace) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));
     }
-  }
-
-  @NotNull
-  @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    //TODO: TW-77164 use one-time request after we stop scheduling the refresh task
-    return constructSpecificCredentialsProviderImpl(featureDescriptor);
   }
 
   @Override

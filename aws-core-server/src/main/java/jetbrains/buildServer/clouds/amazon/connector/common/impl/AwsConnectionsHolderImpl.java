@@ -25,13 +25,16 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   private final AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder;
   private final ProjectManager myProjectManager;
+  private final AwsCredentialsRefresheringManager myAwsCredentialsRefresheringManager;
 
   private final ConcurrentHashMap<String, AwsConnectionDescriptor> awsConnections = new ConcurrentHashMap<>();
 
   public AwsConnectionsHolderImpl(@NotNull final AwsConnectionDescriptorBuilder awsConnectionDescriptorBuilder,
-                                  @NotNull final ProjectManager projectManager) {
+                                  @NotNull final ProjectManager projectManager,
+                                  @NotNull final AwsCredentialsRefresheringManager awsCredentialsRefresheringManager) {
     myAwsConnectionDescriptorBuilder = awsConnectionDescriptorBuilder;
     myProjectManager = projectManager;
+    myAwsCredentialsRefresheringManager = awsCredentialsRefresheringManager;
   }
 
   @Override
@@ -41,7 +44,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     if (connecionOwnerProjectId != null) {
       throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
     }
-    //TODO: TW-77164 add the refresher task
+    myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
     awsConnections.put(awsConnectionId, awsConnectionDescriptor);
     putDataStorageValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
   }
@@ -53,13 +56,14 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     if (connecionOwnerProjectId == null) {
       addAwsConnection(awsConnectionDescriptor);
     } else {
-      //TODO: TW-77164 update the refresher task
+      myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
       awsConnections.put(connectionId, awsConnectionDescriptor);
     }
   }
 
   @Override
   public void removeAwsConnection(@NotNull final String awsConnectionId) {
+    myAwsCredentialsRefresheringManager.stopCredentialsRefreshingtask(awsConnectionId);
     awsConnections.remove(awsConnectionId);
     removeAwsConnectionFromDataStorage(awsConnectionId);
   }
@@ -76,6 +80,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
   @Override
   public void clear() {
+    myAwsCredentialsRefresheringManager.dispose();
     awsConnections.clear();
   }
 

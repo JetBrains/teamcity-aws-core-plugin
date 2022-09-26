@@ -30,12 +30,6 @@ public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder
     return new DefaultProviderCredentialsHolder();
   }
 
-  @NotNull
-  @Override
-  public AwsCredentialsHolder requestNewSessionWithDuration(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    return constructSpecificCredentialsProviderImpl(featureDescriptor);
-  }
-
   @Override
   @NotNull
   public List<InvalidProperty> validateProperties(@NotNull final Map<String, String> properties) {

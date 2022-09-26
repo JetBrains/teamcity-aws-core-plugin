@@ -1,62 +1,32 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.externalId;
 
 import com.intellij.openapi.diagnostic.Logger;
-import java.util.*;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
-import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.util.EventDispatcher;
+import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isAwsConnectionFeature;
-
-public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter implements AwsExternalIdsManager {
+public class AwsExternalIdsManagerImpl implements AwsExternalIdsManager {
 
   private static final Logger LOG = Logger.getInstance(AwsExternalIdsManagerImpl.class.getName());
-  private final static String AWS_CONNECTIONS_EXTERNAL_IDX_STORAGE = "aws.connections.external.idx.storage";
   private final ProjectManager myProjectManager;
-  public final static String AWS_CONNECTION_EXTERNAL_ID_PREFIX = "aws-connection-external-id-";
 
-  public AwsExternalIdsManagerImpl(@NotNull final EventDispatcher<ProjectsModelListener> buildServerEventDispatcher,
-                                   @NotNull final ProjectManager projectManager) {
+  public AwsExternalIdsManagerImpl(@NotNull final ProjectManager projectManager) {
     myProjectManager = projectManager;
-    buildServerEventDispatcher.addListener(this);
   }
 
   @Override
   @NotNull
-  public String getOrGenerateAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
+  public String getAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     SProject project = getProjectById(featureDescriptor.getProjectId());
     String awsConnectionId = featureDescriptor.getId();
 
-    final CustomDataStorage storage = getDataStorage(project);
-    String storedExternalId = storage.getValue(awsConnectionId);
-    
-    if (storedExternalId != null) {
-      return storedExternalId;
-    }
-
-    String newExternalId = generateExternalId();
-    storage.putValue(awsConnectionId, newExternalId);
-    storage.flush();
-    LOG.debug(String.format("Added new External ID for AWS Connection '%s' in the Project with ID: '%s'", awsConnectionId, project.getExternalId()));
-    return newExternalId;
-  }
-
-  @Override
-  public void projectFeatureRemoved(@NotNull final SProject project, @NotNull final SProjectFeatureDescriptor projectFeature) {
-    if (!isAwsConnectionFeature(projectFeature)) {
-      return;
-    }
-
-    removeExternalId(project, projectFeature.getId());
-    LOG.debug(String.format("Removed External ID for AWS Connection '%s' in the Project with ID: '%s'", projectFeature.getId(), project.getExternalId()));
-  }
-
-  @NotNull
-  private CustomDataStorage getDataStorage(@NotNull final SProject project) {
-    return project.getCustomDataStorage(AWS_CONNECTIONS_EXTERNAL_IDX_STORAGE);
+    String awsConnectionExternalId = generateExternalId(project, awsConnectionId);
+    LOG.debug(String.format("Returning External ID for AWS Connection: %s", awsConnectionExternalId));
+    return awsConnectionExternalId;
   }
 
   @NotNull
@@ -71,12 +41,7 @@ public class AwsExternalIdsManagerImpl extends ProjectsModelListenerAdapter impl
   }
 
   @NotNull
-  private String generateExternalId() {
-    return AWS_CONNECTION_EXTERNAL_ID_PREFIX + UUID.randomUUID();
-  }
-
-  private void removeExternalId(@NotNull final SProject project, @NotNull final String connectionId) {
-    final CustomDataStorage storage = getDataStorage(project);
-    storage.putValue(connectionId, null);
+  private String generateExternalId(@NotNull final SProject project, @NotNull final String connectionId) {
+    return String.format("%s-%s", project.getExternalId(), connectionId);
   }
 }

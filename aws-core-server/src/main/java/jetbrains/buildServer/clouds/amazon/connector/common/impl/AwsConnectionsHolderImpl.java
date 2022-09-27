@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
@@ -91,26 +92,23 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
       return;
     }
 
-    for (SProjectFeatureDescriptor connectionFeature : getConnectionFeatures(updatedProject)) {
-      if (isAwsConnection(connectionFeature)) {
-        try {
-          updateAwsConnection(
-            buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
-          );
-        } catch (AwsConnectorException e) {
-          new AwsConnectionsLogger(updatedProject)
-            .failedToBuild(connectionFeature.getId(), e);
-        }
+    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(updatedProject)) {
+      try {
+        updateAwsConnection(
+          buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
+        );
+      } catch (AwsConnectorException e) {
+        new AwsConnectionsLogger(updatedProject)
+          .failedToBuild(connectionFeature.getId(), e);
       }
+
     }
   }
 
   @Override
   public void removeAllConnectionsForProject(@NotNull SProject project) {
-    for (SProjectFeatureDescriptor connectionFeature : getConnectionFeatures(project)) {
-      if (isAwsConnection(connectionFeature)) {
-        removeAwsConnection(connectionFeature.getId());
-      }
+    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(project)) {
+      removeAwsConnection(connectionFeature.getId());
     }
   }
 
@@ -161,13 +159,15 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     return myProjectManager.getRootProject().getCustomDataStorage(AWS_CONNECTIONS_IDX_STORAGE);
   }
 
-  private boolean isAwsConnection(@NotNull final SProjectFeatureDescriptor projectFeature) {
-    String oauthTypeParam = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
-    return AwsConnectionProvider.TYPE.equals(oauthTypeParam);
-  }
-
-  private Collection<SProjectFeatureDescriptor> getConnectionFeatures(@NotNull final SProject project) {
-    return project.getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE);
+  private Collection<SProjectFeatureDescriptor> getAwsConnectionFeatures(@NotNull final SProject project) {
+    return project
+      .getOwnFeaturesOfType(OAuthConstants.FEATURE_TYPE)
+      .stream()
+      .filter(featureDescriptor -> {
+        String oauthTypeParam = featureDescriptor.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
+        return AwsConnectionProvider.TYPE.equals(oauthTypeParam);
+      })
+      .collect(Collectors.toList());
   }
 
   private void initAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {

@@ -30,13 +30,11 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.executors.ExecutorServices;
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.*;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.getResourceNameFromArn;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isValidSessionName;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.*;
 
 public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final AwsConnectionsManager myAwsConnectionsManager;
@@ -85,8 +83,9 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
     List<InvalidProperty> invalidProperties =
       new ArrayList<>(chosenAwsConnPropertiesProcessor.process(properties));
 
-    if (StringUtil.isEmpty(properties.get(IAM_ROLE_ARN_PARAM))) {
-      invalidProperties.add(new InvalidProperty(IAM_ROLE_ARN_PARAM, "Please provide the ARN of IAM Role to assume."));
+    String invalidArnReason = getInvalidArnReason(properties.get(IAM_ROLE_ARN_PARAM));
+    if (invalidArnReason != null) {
+      invalidProperties.add(new InvalidProperty(IAM_ROLE_ARN_PARAM, invalidArnReason));
     }
 
     if (!isValidSessionName(properties.get(IAM_ROLE_SESSION_NAME_PARAM))) {

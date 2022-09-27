@@ -62,6 +62,19 @@ public class ParamUtil {
     }
   }
 
+  @Nullable
+  public static String getInvalidArnReason(@Nullable final String resourceArnString) {
+    if(isEmptyOrSpaces(resourceArnString)){
+      return "ARN is empty";
+    }
+    try {
+      Arn.fromString(resourceArnString);
+      return null;
+    } catch (IllegalArgumentException e) {
+      return e.getMessage();
+    }
+  }
+
   /**
    * Extract the <b>resource-id</b> part of the ARN. <a href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">More info.</a>
    * @param  resourceArnString  ARN of the resource from where to extract the resource-id part.
@@ -72,8 +85,12 @@ public class ParamUtil {
     if(isEmptyOrSpaces(resourceArnString)){
       return "";
     }
-    Arn resourceArn = Arn.fromString(resourceArnString);
-    return resourceArn.getResource().getResource();
+    try {
+      Arn resourceArn = Arn.fromString(resourceArnString);
+      return resourceArn.getResource().getResource();
+    } catch (IllegalArgumentException e) {
+      return "";
+    }
   }
 
   public static boolean isAwsConnectionFeature(@Nullable final SProjectFeatureDescriptor projectFeature) {

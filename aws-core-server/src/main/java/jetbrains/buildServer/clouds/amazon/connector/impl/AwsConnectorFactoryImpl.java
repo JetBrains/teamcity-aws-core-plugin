@@ -150,7 +150,10 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server"));
     }
     try {
-      IdGeneratorRegistry.validateId(connectionId, "This ID is invalid");
+      StringBuilder errorMessageBuilder = new StringBuilder();
+      errorMessageBuilder.append("This ID is invalid, please, dont use these symbols: ");
+      errorMessageBuilder.append(IdGeneratorRegistry.PROHIBITED_CHARS);
+      IdGeneratorRegistry.validateId(connectionId, errorMessageBuilder.toString());
     } catch (InvalidIdentifierException e) {
       invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));
     }

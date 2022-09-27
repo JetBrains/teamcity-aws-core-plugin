@@ -30,6 +30,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -51,11 +52,15 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
     mySts = initStsClientBuilder(principalAwsConnection).build();
 
     Map<String, String> connectionProperties = iamRoleConnectionFeature.getParameters();
-    int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
     myAssumeRoleRequest = new AssumeRoleRequest()
       .withRoleArn(connectionProperties.get(IAM_ROLE_ARN_PARAM))
-      .withRoleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM))
-      .withDurationSeconds(sessionDurationMinutes * 60);
+      .withRoleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM));
+
+    String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
+    if (sessionDurationParam != null) {
+      int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
+      myAssumeRoleRequest.withDurationSeconds(sessionDurationMinutes * 60);
+    }
 
     String externalId = getAwsConnectionExternalId(awsExternalIdsManager, iamRoleConnectionFeature);
     if (externalId != null) {

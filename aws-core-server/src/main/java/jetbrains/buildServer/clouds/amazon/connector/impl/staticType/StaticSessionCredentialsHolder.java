@@ -9,6 +9,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +31,12 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
     StsClientBuilder.addConfiguration(stsBuilder, connectionProperties);
     mySts = stsBuilder.build();
 
-    int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
-    mySessionConfiguration = new GetSessionTokenRequest()
-      .withDurationSeconds(sessionDurationMinutes * 60);
+    mySessionConfiguration = new GetSessionTokenRequest();
+    String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
+    if (sessionDurationParam != null) {
+      int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
+      mySessionConfiguration.withDurationSeconds(sessionDurationMinutes * 60);
+    }
 
     currentSession = mySts.getSessionToken(mySessionConfiguration);
   }

@@ -47,22 +47,20 @@
 </tr>
 
 
-<tr class="advancedSetting">
-  <td><label for="displayName">${connection_id_label}:</label></td>
-  <td>
-    <c:choose>
-      <c:when test = "${empty connectionId}">
-        <props:textProperty name="${connection_id_param}" className="longField" style="width: 20em;"
-                            value="${connectionId}"/>
-      </c:when>
-      <c:otherwise>
-        <label className="longField" maxlength="256">${connectionId}</label>
-      </c:otherwise>
-    </c:choose>
-    <span class="smallNote">Specify the identificator for this connection. <br>Default is awsConnection-#</span>
-    <span class="error" id="error_${connection_id_param}"></span>
-  </td>
-</tr>
+<td><label for="${connection_id_param}">${connection_id_label}:</label></td>
+<td>
+  <c:choose>
+    <c:when test = "${empty connectionId}">
+      <props:textProperty name="${connection_id_param}"
+                          value="${connectionId}"/>
+      <span class="smallNote">Specify the identificator for this connection. <br>Default is awsConnection-#</span>
+    </c:when>
+    <c:otherwise>
+      <label>${connectionId}</label>
+    </c:otherwise>
+  </c:choose>
+  <span class="error" id="error_${connection_id_param}"></span>
+</td>
 
 
 
@@ -107,9 +105,6 @@
     </props:selectSectionProperty>
   </c:otherwise>
 </c:choose>
-
-
-<admin:showHideAdvancedOpts containerId="OAuthConnectionDialog" optsKey="editAwsConnection"/>
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {

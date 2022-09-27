@@ -2,6 +2,7 @@ package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
 import com.intellij.openapi.diagnostic.Logger;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -59,7 +60,7 @@ public class AwsCredentialsRefresheringManager {
     }
 
     private boolean currentSessionExpired(@NotNull final Date expirationDate) {
-      return Date.from(Instant.now().plusSeconds((SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES + SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES) * 60L))
+      return Date.from(Instant.now().plus(SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES + SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES, ChronoUnit.MINUTES))
                  .after(expirationDate);
     }
   }

@@ -24,6 +24,7 @@
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <c:set var="useSessionCreds" value="${propertiesBean.properties[use_session_credentials_param]}"/>
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
+<c:set var="credsType" value="${propertiesBean.properties[credentials_type_param]}"/>
 
 <c:set var="rotateKeyControllerUrl"><c:url value="${rotate_key_controller_url}"/></c:set>
 <c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
@@ -44,7 +45,7 @@
     </tr>
 
     <c:choose>
-        <c:when test = "${param.connectionId != ''}">
+        <c:when test = "${param.connectionId != '' and credsType == credentials_type_access_keys_option}">
             <tr>
                 <td>
                     <forms:button id="${rotate_key_button_id}"

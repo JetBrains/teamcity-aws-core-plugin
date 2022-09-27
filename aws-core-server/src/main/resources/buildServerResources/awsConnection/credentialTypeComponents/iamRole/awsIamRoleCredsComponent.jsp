@@ -25,6 +25,7 @@
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean"/>
 
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
+<c:set var="credsType" value="${propertiesBean.properties[credentials_type_param]}"/>
 <c:set var="iamRoleArn" value="${propertiesBean.properties[iam_role_arn_param]}"/>
 <c:set var="sessionName" value="${propertiesBean.properties[iam_role_session_name_param]}"/>
 
@@ -45,7 +46,7 @@
     </tr>
 
     <c:choose>
-        <c:when test = "${param.connectionId != ''}">
+        <c:when test = "${param.connectionId != '' and credsType == credentials_type_iam_role_option}">
             <tr>
                 <th class="nowrap"><label for="${external_id_field_id}">External ID:</label></th>
                 <td>
@@ -86,7 +87,7 @@
 
 <script type="text/javascript">
     $j(document).ready(function () {
-        if("${not empty param.connectionId}" === "true"){
+        if("${not empty param.connectionId}" === "true" && "${credsType == credentials_type_iam_role_option}" === "true"){
             BS.ajaxRequest('${externalIdsControllerUrl}', {
                 parameters: '&projectId=${param.projectId}&${aws_conn_id_rest_param}=${param.connectionId}',
 

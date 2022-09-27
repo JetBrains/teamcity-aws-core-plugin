@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.REGION_NAME_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class StaticCredentialsBuilderTest extends BaseTestCase {
@@ -134,6 +133,7 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     res.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
     res.put(CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);
     res.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+    res.put(STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
     res.put(SESSION_CREDENTIALS_PARAM, "false");
     return res;
   }

@@ -360,6 +360,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     res.put(SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
     res.put(CREDENTIALS_TYPE_PARAM, STATIC_CREDENTIALS_TYPE);
     res.put(REGION_NAME_PARAM, REGION_NAME_DEFAULT);
+    res.put(STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
     return res;
   }
 

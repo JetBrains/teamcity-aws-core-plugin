@@ -42,7 +42,8 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
     } catch (AwsConnectorException awsConnectorException) {
       throw new LinkedAwsConnNotFoundException(
-        "Could not get the AWS Credentials for the connection with ID '" + awsConnectionId + "', reason: " + awsConnectorException.getMessage()
+        "Could not get the AWS Credentials for the connection with ID '" + awsConnectionId + " .",
+        awsConnectorException
       );
     }
   }
@@ -96,7 +97,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       return myAwsConnectionDescriptorBuilder.awsConnBeanFromDescriptor(connectionDescriptor, featureProperties);
     } catch (AwsConnectorException e) {
       throw new LinkedAwsConnNotFoundException(
-        "Could not find the AWS Connection with ID " + awsConnectionId + " in Project with ID: " + project.getExternalId() + ", more info: " + e.getMessage());
+        "Could not find the AWS Connection with ID " + awsConnectionId + " in Project with ID: " + project.getExternalId() + " .", e);
     }
   }
 

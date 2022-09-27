@@ -53,7 +53,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         context.addSharedParameter(Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_REGION_ENV_PARAM_DEFAULT, awsConnection.getRegion());
       } catch (AwsBuildFeatureException e) {
         String warningMessage = "Failed to expose AWS Connection to a build: " + e.getMessage();
-        Loggers.CLOUD.warn(warningMessage);
+        Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
         context.getBuild().getBuildLog()
                .message(
                  warningMessage,

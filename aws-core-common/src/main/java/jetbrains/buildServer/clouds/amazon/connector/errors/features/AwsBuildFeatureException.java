@@ -10,4 +10,8 @@ public class AwsBuildFeatureException extends AwsConnectorException {
   public AwsBuildFeatureException(@NotNull final Exception cause) {
     super(cause);
   }
+
+  public AwsBuildFeatureException(@NotNull final String message, @NotNull final Exception cause) {
+    super(message, cause);
+  }
 }

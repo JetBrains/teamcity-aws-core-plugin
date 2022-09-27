@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import java.util.Collection;
 import java.util.Map;
@@ -18,7 +18,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class AwsConnToAgentBuildFeature extends BuildFeature implements PropertiesProcessor {
 
-  private static final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToEnvVars/editAwsConnToEnvVarsBuildFeature.jsp";
+  private static final String EDIT_PARAMETERS_URL = "awsConnection/buildFeatures/awsConnToAgent/editAwsConnToAgentBuildFeature.jsp";
   private static final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;

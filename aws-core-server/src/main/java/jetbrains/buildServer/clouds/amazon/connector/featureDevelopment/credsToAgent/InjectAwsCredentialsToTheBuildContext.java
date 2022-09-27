@@ -1,4 +1,4 @@
-package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToEnvVars;
+package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

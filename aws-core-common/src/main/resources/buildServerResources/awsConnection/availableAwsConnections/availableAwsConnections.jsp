@@ -73,11 +73,12 @@
           availConnsSelector.empty();
 
           if (json.length !== 0) {
-            availConnsSelector.append(
-              $j("<option></option>")
-              .attr("value", "${unselected_principal_aws_connection_value}")
-              .text(`-- Choose the Principal AWS Connection --`)
-            );
+            //TODO: Decide whether to use <unselected> option
+            <%--availConnsSelector.append(--%>
+            <%--  $j("<option></option>")--%>
+            <%--  .attr("value", "${unselected_principal_aws_connection_value}")--%>
+            <%--  .text(`-- Choose the Principal AWS Connection --`)--%>
+            <%--);--%>
             json.forEach(
               connectionNameIdPair => {
                 availConnsSelector.append(
@@ -91,7 +92,6 @@
 
             let previouslySelectedOptionIndex = json.findIndex(option => option.first === '${previouslyChosenAwsConnId}');
             if(previouslySelectedOptionIndex !== -1){
-              previouslySelectedOptionIndex++;//plus the default unselected value
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
             }

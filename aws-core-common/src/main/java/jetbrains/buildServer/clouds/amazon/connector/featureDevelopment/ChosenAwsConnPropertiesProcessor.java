@@ -17,7 +17,7 @@ public class ChosenAwsConnPropertiesProcessor implements PropertiesProcessor {
   public Collection<InvalidProperty> process(Map<String, String> properties) {
     ArrayList<InvalidProperty> invalidProperties = new ArrayList<>();
     if (StringUtil.nullIfEmpty(properties.get(CHOSEN_AWS_CONN_ID_PARAM)) == null) {
-      invalidProperties.add(new InvalidProperty(CHOSEN_AWS_CONN_ID_PARAM, "AWS Connection was not specified"));
+      invalidProperties.add(new InvalidProperty(CHOSEN_AWS_CONN_ID_PARAM, "Principal AWS Connection is not specified"));
     }
     if (! ParamUtil.isValidSessionDuration(properties.get(SESSION_DURATION_PARAM))) {
       invalidProperties.add(new InvalidProperty(SESSION_DURATION_PARAM, SESSION_DURATION_ERROR));

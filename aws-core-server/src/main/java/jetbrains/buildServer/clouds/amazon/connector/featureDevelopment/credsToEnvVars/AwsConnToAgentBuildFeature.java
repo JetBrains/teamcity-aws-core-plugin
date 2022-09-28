@@ -7,6 +7,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -77,7 +78,7 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
         connDisplayNameBuilder.append(awsConnectionDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
         connDisplayNameBuilder.append("\"");
       } catch (AwsConnectorException e) {
-        throw new RuntimeException(e);
+        Loggers.CLOUD.warnAndDebugDetails("Cannot get description for AWS Connection with ID " + connId + " in BuildFeature", e);
       }
     }
     return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to the build";

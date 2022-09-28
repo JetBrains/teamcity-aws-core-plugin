@@ -1,6 +1,5 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +13,10 @@ import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.TeamCityProperties;
+import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Content;
 import org.jdom.Element;
@@ -29,12 +29,15 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   public static final String PATH = TEST_CONNECTION_CONTROLLER_URL;
 
   private final AwsConnectionTester myAwsConnectionTester;
+  private final ProjectManager myProjectManager;
 
   public AwsTestConnectionController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
-                                     @NotNull final AwsConnectionTester awsConnectionTester) {
+                                     @NotNull final AwsConnectionTester awsConnectionTester,
+                                     @NotNull final ProjectManager projectManager) {
     super(server);
     myAwsConnectionTester = awsConnectionTester;
+    myProjectManager = projectManager;
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
     }
@@ -44,6 +47,12 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   protected void doPost(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response, @NotNull final Element xmlResponse) {
     Loggers.CLOUD.debug("AWS Connection testing has been requested.");
 
+    String externalProjectId = request.getParameter("projectId");
+    String internalProjectId = "";
+    SProject project = myProjectManager.findProjectByExternalId(externalProjectId);
+    if (project != null) {
+      internalProjectId = project.getProjectId();
+    }
     ActionErrors errors = new ActionErrors();
 
     BasePropertiesBean basePropertiesBean = new BasePropertiesBean(null);
@@ -54,7 +63,14 @@ public class AwsTestConnectionController extends BaseFormXmlController {
       List<InvalidProperty> invalidProperties = myAwsConnectionTester.getInvalidProperties(connectionProperties);
 
       if (invalidProperties.isEmpty()) {
-        AwsTestConnectionResult testConnectionResult = myAwsConnectionTester.testConnection(connectionProperties);
+        AwsTestConnectionResult testConnectionResult = myAwsConnectionTester.testConnection(
+          new ProjectFeatureDescriptorImpl(
+            StringUtil.emptyIfNull(request.getParameter("connectionId")),
+            AwsConnectionProvider.TYPE,
+            connectionProperties,
+            internalProjectId
+          )
+        );
         GetCallerIdentityResult getCallerIdentityResult = testConnectionResult.getGetCallerIdentityResult();
         xmlResponse.addContent((Content)createCallerIdentityElement(getCallerIdentityResult));
       } else {

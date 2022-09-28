@@ -18,7 +18,9 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Element;
@@ -57,7 +59,8 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     myAwsTestConnectionController = new AwsTestConnectionController(
       Mockito.mock(SBuildServer.class),
       Mockito.mock(WebControllerManager.class),
-      createTester()
+      createTester(),
+      Mockito.mock(ProjectManager.class)
     );
   }
 
@@ -65,7 +68,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     return new AwsConnectionTester() {
       @NotNull
       @Override
-      public AwsTestConnectionResult testConnection(@NotNull final Map<String, String> connectionProperties) throws AmazonClientException {
+      public AwsTestConnectionResult testConnection(@NotNull final ProjectFeatureDescriptorImpl connectionFeature) throws AmazonClientException {
         return new AwsTestConnectionResult(
           new GetCallerIdentityResult()
             .withAccount(testAccountId)

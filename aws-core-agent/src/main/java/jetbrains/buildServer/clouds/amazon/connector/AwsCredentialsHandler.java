@@ -69,7 +69,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
 
     try {
       //This directory may not exist.
-      final File tempDirectory = build.getBuildTempDirectory();
+      final File tempDirectory = build.getAgentTempDirectory();
 
       //We need directory to create temp file name
       tempDirectory.mkdirs();

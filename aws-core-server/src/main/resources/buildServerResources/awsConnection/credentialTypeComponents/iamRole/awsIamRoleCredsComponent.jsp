@@ -50,9 +50,11 @@
             <tr>
                 <th class="nowrap"><label for="${external_id_field_id}">External ID:</label></th>
                 <td>
-                    <bs:copy2ClipboardLink dataId="${external_id_field_id}" title="Copy" stripTags="true">
-                        <label id="${external_id_field_id}" className="longField" maxlength="256"/>
-                    </bs:copy2ClipboardLink>
+                    <div id="div_${external_id_field_id}">
+                        <bs:copy2ClipboardLink dataId="${external_id_field_id}" title="Copy" stripTags="true">
+                            <label id="${external_id_field_id}" className="longField" maxlength="256"/>
+                        </bs:copy2ClipboardLink>
+                    </div>
                     <span class="error" id="error_${external_id_field_id}"></span>
                 </td>
             </tr>
@@ -92,7 +94,23 @@
                 parameters: '&projectId=${param.projectId}&${aws_conn_id_rest_param}=${param.connectionId}',
 
                 onComplete: function(response) {
-                    document.getElementById("${external_id_field_id}").textContent = response.responseJSON;
+                    const json = response.responseJSON;
+                    const errors = json.errors;
+
+                    const externalIdElement = document.getElementById("${external_id_field_id}");
+                    const externalIdDivElement = document.getElementById("div_${external_id_field_id}");
+                    const externalIdErrorElement = document.getElementById("error_${external_id_field_id}");
+                    if(errors == null) {
+                        externalIdErrorElement.textContent = "";
+                        externalIdDivElement.classList.remove('hidden');
+                        externalIdElement.textContent = json;
+                    } else {
+                        const externalIdError = errors[0];
+                        if (externalIdError != null) {
+                            externalIdDivElement.classList.add('hidden');
+                            externalIdErrorElement.textContent = externalIdError.message;
+                        }
+                    }
                 }
             });
         }

@@ -43,7 +43,7 @@ public class AwsCredentialsRefresheringManager {
 
   public void dispose() {
     myAwsConnectionsWithAutoRefresh.clear();
-    myRefresherExecutor.shutdown();
+    myRefresherExecutor.shutdownNow();
   }
 
   private class CredentialsRefresherTask implements Runnable {

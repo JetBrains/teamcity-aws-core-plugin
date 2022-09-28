@@ -51,10 +51,14 @@ public class AwsCredentialsRefresheringManager {
     @Override
     public void run() {
       myAwsConnectionsWithAutoRefresh.forEach((awsConnectionId, awsConnectionDescriptor) -> {
-        Date expirationDate = awsConnectionDescriptor.getAwsCredentialsHolder().getSessionExpirationDate();
-        if (expirationDate != null && currentSessionExpired(expirationDate)) {
-          Loggers.CLOUD.debug("Refreshing Session Credentials for AWS Connection with ID: " + awsConnectionId);
-          awsConnectionDescriptor.getAwsCredentialsHolder().refreshCredentials();
+        try {
+          Date expirationDate = awsConnectionDescriptor.getAwsCredentialsHolder().getSessionExpirationDate();
+          if (expirationDate != null && currentSessionExpired(expirationDate)) {
+            Loggers.CLOUD.debug("Refreshing Session Credentials for AWS Connection with ID: " + awsConnectionId);
+            awsConnectionDescriptor.getAwsCredentialsHolder().refreshCredentials();
+          }
+        } catch (Exception e) {
+          Loggers.CLOUD.warnAndDebugDetails(String.format("Refreshing Session Credentials for AWS Connection <%s> failed: %s ", awsConnectionId, e.getMessage()), e);
         }
       });
     }

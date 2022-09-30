@@ -39,7 +39,7 @@
     </jsp:include>
 
     <tr id="${iam_role_arn_param}_row">
-        <th class="nowrap"><label for="${iam_role_arn_param}">${iam_role_arn_label}: <l:star/></label></th>
+        <th class="nowrap"><label for="${iam_role_arn_param}">${iam_role_arn_label} <l:star/></label></th>
         <td><props:textProperty name="${iam_role_arn_param}" className="longField" maxlength="256"/>
             <span class="error" id="error_${iam_role_arn_param}"></span>
         </td>

@@ -64,7 +64,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   //TODO: TW-75618 Add support for several AWS Connections exposing
   @Nullable
   @Override
-  public AwsConnectionDescriptor getAwsConnectionFromBuildEnvVar(@NotNull SBuild build) throws AwsBuildFeatureException {
+  public SBuildFeatureDescriptor getAwsConnectionFeatureFromBuild(@NotNull SBuild build) throws AwsBuildFeatureException {
     if (build.getBuildId() < 0) {
       throw new AwsBuildFeatureException("Dummy build with negative id " + build.getBuildId() + " does not have AWS Connections to expose");
     }
@@ -78,8 +78,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     if (awsConnectionsToExpose.isEmpty()) {
       return null;
     }
-    SBuildFeatureDescriptor configuredAwsConnBuildFeature = awsConnectionsToExpose.iterator().next();
-    return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters());
+    return awsConnectionsToExpose.iterator().next();
   }
 
 

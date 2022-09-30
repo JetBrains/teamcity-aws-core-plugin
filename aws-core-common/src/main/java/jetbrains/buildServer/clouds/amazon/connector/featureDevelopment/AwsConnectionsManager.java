@@ -8,6 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsCo
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SBuild;
+import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +48,7 @@ public interface AwsConnectionsManager {
   AwsConnectionDescriptor buildWithSessionDuration(@NotNull final String awsConnectionId, @NotNull final String sessionDuration) throws AwsConnectorException;
 
   @Nullable
-  AwsConnectionDescriptor getAwsConnectionFromBuildEnvVar(@NotNull final SBuild build) throws AwsBuildFeatureException;
+  SBuildFeatureDescriptor getAwsConnectionFeatureFromBuild(@NotNull final SBuild build) throws AwsBuildFeatureException;
 
 
   /**

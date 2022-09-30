@@ -27,7 +27,7 @@
 
 <tr>
   <td colspan="2">
-    <em>Please, choose the AWS Connection to be exposed to the Build via Environment Variables</em>
+    <em>Please, choose the AWS Connection which will be provided to Agent</em>
   </td>
 </tr>
 

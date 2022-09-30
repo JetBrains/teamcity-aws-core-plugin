@@ -96,6 +96,64 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
   }
 
   @Test
+  public void newApi_givenAwsConnManager_whenWithTurnedOffSessionCredentialsAndNoSessionDurationParam_thenDontUseSessionCredentials() {
+
+    Map<String, String> someFeatureProps = new HashMap<>();
+    someFeatureProps.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, testConnectionId);
+
+    myAwsDefaultConnectionProperties.put(SESSION_CREDENTIALS_PARAM, "false");
+    AwsCredentialsHolder credentialsHolder = new StaticCredentialsHolder(testAccessKeyId, testSecretAccessKey);
+    SProjectFeatureDescriptor featureDescriptor = createTestAwsConnDescriptor(credentialsHolder, myAwsDefaultConnectionProperties);
+    getAwsConnectionsEventsListener().projectFeatureChanged(
+      myProject,
+      featureDescriptor,
+      featureDescriptor
+    );
+
+    try {
+      AwsConnectionDescriptor awsConnection = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps);
+      checkDefaultAwsConnProps(awsConnection);
+      assertEquals(testAccessKeyId, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
+      assertEquals(testSecretAccessKey, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
+
+      assertFalse(awsConnection.isUsingSessionCredentials());
+
+    } catch (LinkedAwsConnNotFoundException e) {
+      fail("Could not find linked aws connection: " + e.getMessage());
+    }
+  }
+
+  @Test
+  public void newApi_givenAwsConnManager_getLinkedAwsConnectionWhenWithoutSessionDurationParam_thenUseSessionCredentialsByDefault() {
+
+    Map<String, String> someFeatureProps = new HashMap<>();
+    someFeatureProps.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, testConnectionId);
+
+    try {
+      AwsConnectionDescriptor awsConnection = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps);
+      checkDefaultAwsConnProps(awsConnection);
+      assertEquals(testSessionAccessKeyId, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
+      assertEquals(testSessionSecretAccessKey, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
+      assertEquals(testSessionToken, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
+
+      assertTrue(awsConnection.isUsingSessionCredentials());
+
+    } catch (LinkedAwsConnNotFoundException e) {
+      fail("Could not find linked aws connection: " + e.getMessage());
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+  //Deprecated methods
+  @Test
   public void givenAwsConnManager_whenWithTurnedOffSessionCredentialsAndNoSessionDurationParam_thenDontUseSessionCredentials() {
 
     Map<String, String> someFeatureProps = new HashMap<>();
@@ -124,29 +182,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
   }
 
   @Test
-  public void givenAwsConnManager_whenWithSessionDurationParam_thenUseSessionCredentialsWithSpecifiedDuration() {
-
-    final String testSessionDuration = "70";
-    Map<String, String> someFeatureProps = new HashMap<>();
-    someFeatureProps.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, testConnectionId);
-    someFeatureProps.put(SESSION_DURATION_PARAM, testSessionDuration);
-
-    try {
-      AwsConnectionBean awsConnectionBean = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps, myProject);
-      checkDefaultAwsConnProps(awsConnectionBean);
-      assertEquals(testSessionAccessKeyId, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
-      assertEquals(testSessionSecretAccessKey, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
-      assertEquals(testSessionToken, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
-
-      assertTrue(awsConnectionBean.isUsingSessionCredentials());
-
-    } catch (LinkedAwsConnNotFoundException e) {
-      fail("Could not find linked aws connection: " + e.getMessage());
-    }
-  }
-
-  @Test
-  public void givenAwsConnManager_whenWithoutSessionDurationParam_thenUseSessionCredentials() {
+  public void givenAwsConnManager_getLinkedAwsConnectionWhenWithoutSessionDurationParam_thenUseSessionCredentialsByDefault() {
 
     Map<String, String> someFeatureProps = new HashMap<>();
     someFeatureProps.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, testConnectionId);

@@ -17,6 +17,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType;
 
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import java.util.Date;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
@@ -46,7 +47,11 @@ public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
       @Nullable
       @Override
       public String getSessionToken() {
-        return null;
+        if (credentials instanceof AWSSessionCredentials) {
+          return ((AWSSessionCredentials)credentials).getSessionToken();
+        } else {
+          return null;
+        }
       }
     };
   }

@@ -1,6 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.testUtils;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import jetbrains.buildServer.BaseTestCase;
@@ -14,10 +14,7 @@ import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionI
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManagerImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
-import jetbrains.buildServer.serverSide.BuildServerListener;
-import jetbrains.buildServer.serverSide.CustomDataStorage;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
@@ -27,6 +24,7 @@ import jetbrains.buildServer.util.EventDispatcher;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
@@ -35,15 +33,13 @@ public abstract class AwsConnectionTester extends BaseTestCase {
   protected final String testProjectId = "PROJECT_ID";
   protected final String testConnectionId = "PROJECT_FEATURE_ID";
   protected final String testConnectionDescription = "Test Connection";
+  private final Map<String, SProject> mockedProjectsCollection = new HashMap<>();
+  private final Map<String, OAuthConnectionDescriptor> mockedAwsConnectionsCollection = new HashMap<>();
   protected Map<String, String> myAwsDefaultConnectionProperties;
-
   protected OAuthConnectionsManager myOAuthConnectionsManager;
-  protected SProject myProject;
   protected ProjectManager myProjectManager;
-  protected CustomDataStorage myCustomDataStorage;
+  protected OAuthProvider myAwsOauthProvider;
   protected Map<String, String> myDataStorageValues;
-
-
   private AwsConnectorFactory myAwsConnectorFactory = null;
   private AwsConnectionsManager myAwsConnectionsManager = null;
   private AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder = null;
@@ -56,12 +52,43 @@ public abstract class AwsConnectionTester extends BaseTestCase {
     myAwsConnectionDescriptorBuilder = null;
     myAwsConnectionsHolder = null;
     myAwsConnectionsEventsListener = null;
+
     initMainComponents();
   }
 
   protected abstract Map<String, String> createConnectionDefaultProperties();
 
   protected abstract Map<String, String> createDefaultStorageValues();
+
+
+  public void addTeamCityAwsConnection(SProject featureOwner, SProjectFeatureDescriptor feature) {
+    OAuthConnectionDescriptor awsConnDescriptor = Mockito.mock(OAuthConnectionDescriptor.class);
+    when(awsConnDescriptor.getParameters())
+      .thenReturn(feature.getParameters());
+    when(awsConnDescriptor.getId())
+      .thenReturn(feature.getId());
+    when(awsConnDescriptor.getProject())
+      .thenReturn(featureOwner);
+    when(awsConnDescriptor.getDescription())
+      .thenReturn(testConnectionDescription);
+    when(awsConnDescriptor.getOauthProvider())
+      .thenReturn(myAwsOauthProvider);
+    mockedAwsConnectionsCollection.put(awsConnDescriptor.getId(), awsConnDescriptor);
+  }
+
+  public void removeTeamCityAwsConnection(String awsConnectionId) {
+    mockedAwsConnectionsCollection.remove(awsConnectionId);
+  }
+
+
+  public void addTeamCityProject(SProject project) {
+    mockedProjectsCollection.put(project.getProjectId(), project);
+  }
+
+  public void removeTeamCityProject(SProject project) {
+    mockedProjectsCollection.remove(project.getProjectId());
+  }
+
 
   public AwsConnectorFactory getAwsConnectorFactory() {
     if (myAwsConnectorFactory == null) {
@@ -113,79 +140,69 @@ public abstract class AwsConnectionTester extends BaseTestCase {
   }
 
 
+  public SProject getMockedProject(String projectId, Map<String, String> dataStorageValues) {
+    SProject project = Mockito.mock(SProject.class);
+    when(project.getProjectId())
+      .thenReturn(projectId);
+
+    CustomDataStorage customDataStorage = getMockedDataStorage(dataStorageValues);
+    when(project.getCustomDataStorage(anyString()))
+      .thenReturn(customDataStorage);
+    return project;
+  }
+
+  private CustomDataStorage getMockedDataStorage(Map<String, String> dataStorageValues) {
+    CustomDataStorage customDataStorage = Mockito.mock(CustomDataStorage.class);
+
+    when(customDataStorage.getValues())
+      .thenReturn(dataStorageValues);
+
+    doAnswer(invocation -> {
+      Map<String, String> updatedValues = invocation.getArgument(0);
+      Set<String> removedKeys = invocation.getArgument(1);
+      removedKeys.forEach(removedKey -> myDataStorageValues.remove(removedKey));
+      myDataStorageValues.putAll(updatedValues);
+      return null;
+    }).when(customDataStorage).updateValues(any(), any());
+
+    doAnswer(invocation -> {
+      myDataStorageValues.put(invocation.getArgument(0), invocation.getArgument(1));
+      return null;
+    }).when(customDataStorage).putValue(any(), any());
+
+    return customDataStorage;
+  }
+
+
   private void initMainComponents() {
+    myAwsOauthProvider = Mockito.mock(AwsConnectionProvider.class);
+    when(myAwsOauthProvider.getType())
+      .thenReturn(AwsConnectionProvider.TYPE);
+
     myAwsDefaultConnectionProperties = createConnectionDefaultProperties();
     myDataStorageValues = createDefaultStorageValues();
+
     initMainMocks();
   }
 
   private void initMainMocks() {
-    initProjectMock();
     initProjectManagerMock();
     initOauthConnManagerMock();
   }
 
-  private void initProjectMock() {
-    initDataStorageMock();
-
-    myProject = Mockito.mock(SProject.class);
-    when(myProject.getProjectId())
-      .thenReturn(testProjectId);
-    when(myProject.getCustomDataStorage(any()))
-      .thenReturn(myCustomDataStorage);
-  }
-
-  private void initDataStorageMock() {
-    myCustomDataStorage = Mockito.mock(CustomDataStorage.class);
-
-    when(myCustomDataStorage.getValues())
-      .thenReturn(myDataStorageValues);
-
-    doAnswer(invocation -> {
-      Set<String> removedKey = new HashSet<>();
-      removedKey.add(testConnectionId);
-      assertEquals(removedKey, invocation.getArgument(1));
-      myDataStorageValues.remove(testConnectionId);
-      return null;
-
-    }).when(myCustomDataStorage).updateValues(any(), any());
-
-    doAnswer(invocation -> {
-      assertEquals(testConnectionId, invocation.getArgument(0));
-      assertEquals(testProjectId, invocation.getArgument(1));
-      return null;
-
-    }).when(myCustomDataStorage).putValue(any(), any());
-  }
-
   private void initProjectManagerMock() {
     myProjectManager = Mockito.mock(ProjectManager.class);
+    SProject rootProject = getMockedProject("Root", createDefaultStorageValues());
     when(myProjectManager.getRootProject())
-      .thenReturn(myProject);
-    when(myProjectManager.findProjectById(testProjectId))
-      .thenReturn(myProject);
+      .thenReturn(rootProject);
+    when(myProjectManager.findProjectById(anyString()))
+      .thenAnswer(invocation -> mockedProjectsCollection.get(invocation.getArgument(0)));
   }
 
   private void initOauthConnManagerMock() {
-    OAuthConnectionDescriptor awsConnDescriptor = Mockito.mock(OAuthConnectionDescriptor.class);
-    when(awsConnDescriptor.getParameters())
-      .thenReturn(myAwsDefaultConnectionProperties);
-    when(awsConnDescriptor.getId())
-      .thenReturn(testConnectionId);
-    when(awsConnDescriptor.getProject())
-      .thenReturn(myProject);
-    when(awsConnDescriptor.getDescription())
-      .thenReturn(testConnectionDescription);
-
-    OAuthProvider testAwsOauthProvider = Mockito.mock(AwsConnectionProvider.class);
-    when(testAwsOauthProvider.getType())
-      .thenReturn(AwsConnectionProvider.TYPE);
-    when(awsConnDescriptor.getOauthProvider())
-      .thenReturn(testAwsOauthProvider);
-
-
     myOAuthConnectionsManager = Mockito.mock(OAuthConnectionsManager.class);
-    when(myOAuthConnectionsManager.findConnectionById(myProject, testConnectionId))
-      .thenReturn(awsConnDescriptor);
+
+    when(myOAuthConnectionsManager.findConnectionById(any(), anyString()))
+      .thenAnswer(invocation -> mockedAwsConnectionsCollection.get(invocation.getArgument(1)));
   }
 }

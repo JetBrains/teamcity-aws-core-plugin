@@ -29,7 +29,9 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCrede
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.testUtils.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
@@ -49,11 +51,24 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
   private final String testSessionSecretAccessKey = "TEST_SESSION_SECRET";
   private final String testSessionToken = "TEST_SESSION_TOKEN";
 
+  private SProject myProject;
+
   @BeforeMethod
   public void setup() throws Exception {
     super.setUp();
 
     initAwsConnectionTester();
+
+    myProject = getMockedProject(testProjectId, createDefaultStorageValues());
+
+    addTeamCityProject(myProject);
+
+    addTeamCityAwsConnection(myProject, new ProjectFeatureDescriptorImpl(
+      testConnectionId,
+      AwsConnectionProvider.TYPE,
+      myAwsDefaultConnectionProperties,
+      myProject.getProjectId()
+    ));
 
     StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(getAwsConnectorFactory()) {
       @Override

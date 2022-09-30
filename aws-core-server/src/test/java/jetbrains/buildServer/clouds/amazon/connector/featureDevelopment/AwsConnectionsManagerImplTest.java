@@ -16,45 +16,31 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import java.util.*;
-import jetbrains.buildServer.BaseTestCase;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorBuilderImpl;
-import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener;
-import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl;
-import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsCredentialsRefresheringManager;
-import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
-import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.testUtils.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
-import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
-import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
-import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
-public class AwsConnectionsManagerImplTest extends BaseTestCase {
+public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
 
   private final String testAccessKeyId = "TEST_ACCESS";
   private final String testSecretAccessKey = "TEST_SECRET";
@@ -62,37 +48,14 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
   private final String testSessionAccessKeyId = "TEST_SESSION_ACCESS";
   private final String testSessionSecretAccessKey = "TEST_SESSION_SECRET";
   private final String testSessionToken = "TEST_SESSION_TOKEN";
-  private final String testProjectId = "PROJECT_ID";
-  private final String testConnectionId = "PROJECT_FEATURE_ID";
-  private final String testConnectionDescription = "Test Connection";
-  private AwsConnectorFactory myAwsConnectorFactory;
-  private Map<String, String> myAwsDefaultConnectionProperties;
-
-  private OAuthConnectionsManager myOAuthConnectionsManager;
-  private SProject myProject;
-  private ProjectManager myProjectManager;
-  private CustomDataStorage myCustomDataStorage;
-  private Map<String, String> myDataStorageValues;
-
-
-  private AwsConnectionsManager myAwsConnectionsManager;
-
-  private AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder;
-  private AwsConnectionsHolderImpl myAwsConnectionsHolder;
-
-  private AwsConnectionsEventsListener myAwsConnectionsEventsListener;
 
   @BeforeMethod
   public void setup() throws Exception {
     super.setUp();
 
-    myAwsDefaultConnectionProperties = createDefaultProperties();
-    myDataStorageValues = createDefaultStorageValues();
+    initAwsConnectionTester();
 
-    initMainMocks();
-    initMainTestObjects();
-
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(myAwsConnectorFactory) {
+    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(getAwsConnectorFactory()) {
       @Override
       @NotNull
       protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
@@ -102,106 +65,10 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     };
   }
 
-  private void initMainMocks() {
-    initProjectMock();
-    initProjectManagerMock();
-    initOauthConnManagerMock();
-  }
-
-  private void initProjectMock() {
-    initDataStorageMock();
-
-    myProject = Mockito.mock(SProject.class);
-    when(myProject.getProjectId())
-      .thenReturn(testProjectId);
-    when(myProject.getCustomDataStorage(any()))
-      .thenReturn(myCustomDataStorage);
-  }
-
-  private void initDataStorageMock() {
-    myCustomDataStorage = Mockito.mock(CustomDataStorage.class);
-
-    when(myCustomDataStorage.getValues())
-      .thenReturn(myDataStorageValues);
-
-    doAnswer(invocation -> {
-      Set<String> removedKey = new HashSet<>();
-      removedKey.add(testConnectionId);
-      assertEquals(removedKey, invocation.getArgument(1));
-      myDataStorageValues.remove(testConnectionId);
-      return null;
-
-    }).when(myCustomDataStorage).updateValues(any(), any());
-
-    doAnswer(invocation -> {
-      assertEquals(testConnectionId, invocation.getArgument(0));
-      assertEquals(testProjectId, invocation.getArgument(1));
-      return null;
-
-    }).when(myCustomDataStorage).putValue(any(), any());
-  }
-
-  private void initProjectManagerMock() {
-    myProjectManager = Mockito.mock(ProjectManager.class);
-    when(myProjectManager.getRootProject())
-      .thenReturn(myProject);
-    when(myProjectManager.findProjectById(testProjectId))
-      .thenReturn(myProject);
-  }
-
-  private void initOauthConnManagerMock() {
-    OAuthConnectionDescriptor awsConnDescriptor = Mockito.mock(OAuthConnectionDescriptor.class);
-    when(awsConnDescriptor.getParameters())
-      .thenReturn(myAwsDefaultConnectionProperties);
-    when(awsConnDescriptor.getId())
-      .thenReturn(testConnectionId);
-    when(awsConnDescriptor.getProject())
-      .thenReturn(myProject);
-    when(awsConnDescriptor.getDescription())
-      .thenReturn(testConnectionDescription);
-
-    OAuthProvider testAwsOauthProvider = Mockito.mock(AwsConnectionProvider.class);
-    when(testAwsOauthProvider.getType())
-      .thenReturn(AwsConnectionProvider.TYPE);
-    when(awsConnDescriptor.getOauthProvider())
-      .thenReturn(testAwsOauthProvider);
-
-
-    myOAuthConnectionsManager = Mockito.mock(OAuthConnectionsManager.class);
-    when(myOAuthConnectionsManager.findConnectionById(myProject, testConnectionId))
-      .thenReturn(awsConnDescriptor);
-  }
-
-  private void initMainTestObjects() {
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
-
-    myAwsConnectionDescriptorBuilder = new AwsConnectionDescriptorBuilderImpl(
-      myOAuthConnectionsManager,
-      myAwsConnectorFactory
-    );
-
-    myAwsConnectionsHolder = new AwsConnectionsHolderImpl(
-      myAwsConnectionDescriptorBuilder,
-      myProjectManager,
-      new AwsCredentialsRefresheringManager()
-    );
-
-    myAwsConnectionsEventsListener = new AwsConnectionsEventsListener(
-      myAwsConnectionsHolder,
-      myAwsConnectionDescriptorBuilder,
-      (EventDispatcher<BuildServerListener>)Mockito.mock(EventDispatcher.class)
-    );
-
-    myAwsConnectionsManager = new AwsConnectionsManagerImpl(
-      myAwsConnectionsHolder,
-      myAwsConnectionDescriptorBuilder
-    );
-  }
-
   @Test
   public void givenAwsConnManager_whenRequestAwsConnById_thenReturnDefaultConnection() {
     try {
-      AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(testConnectionId);
+      AwsConnectionDescriptor awsConnectionDescriptor = getAwsConnectionsHolder().getAwsConnection(testConnectionId);
       checkDefaultAwsConnProps(awsConnectionDescriptor);
       assertEquals(testSessionAccessKeyId, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
       assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
@@ -222,14 +89,14 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     myAwsDefaultConnectionProperties.put(SESSION_CREDENTIALS_PARAM, "false");
     AwsCredentialsHolder credentialsHolder = new StaticCredentialsHolder(testAccessKeyId, testSecretAccessKey);
     SProjectFeatureDescriptor featureDescriptor = createTestAwsConnDescriptor(credentialsHolder, myAwsDefaultConnectionProperties);
-    myAwsConnectionsEventsListener.projectFeatureChanged(
+    getAwsConnectionsEventsListener().projectFeatureChanged(
       myProject,
       featureDescriptor,
       featureDescriptor
     );
 
     try {
-      AwsConnectionBean awsConnectionBean = myAwsConnectionsManager.getLinkedAwsConnection(someFeatureProps, myProject);
+      AwsConnectionBean awsConnectionBean = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps, myProject);
       checkDefaultAwsConnProps(awsConnectionBean);
       assertEquals(testAccessKeyId, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
       assertEquals(testSecretAccessKey, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
@@ -250,7 +117,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     someFeatureProps.put(SESSION_DURATION_PARAM, testSessionDuration);
 
     try {
-      AwsConnectionBean awsConnectionBean = myAwsConnectionsManager.getLinkedAwsConnection(someFeatureProps, myProject);
+      AwsConnectionBean awsConnectionBean = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps, myProject);
       checkDefaultAwsConnProps(awsConnectionBean);
       assertEquals(testSessionAccessKeyId, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
       assertEquals(testSessionSecretAccessKey, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
@@ -270,7 +137,7 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     someFeatureProps.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, testConnectionId);
 
     try {
-      AwsConnectionBean awsConnectionBean = myAwsConnectionsManager.getLinkedAwsConnection(someFeatureProps, myProject);
+      AwsConnectionBean awsConnectionBean = getAwsConnectionsManager().getLinkedAwsConnection(someFeatureProps, myProject);
       checkDefaultAwsConnProps(awsConnectionBean);
       assertEquals(testSessionAccessKeyId, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
       assertEquals(testSessionSecretAccessKey, awsConnectionBean.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
@@ -344,13 +211,15 @@ public class AwsConnectionsManagerImplTest extends BaseTestCase {
     assertEquals(REGION_NAME_DEFAULT, awsConnectionDescriptor.getRegion());
   }
 
-  private Map<String, String> createDefaultStorageValues() {
+  @Override
+  protected Map<String, String> createDefaultStorageValues() {
     Map<String, String> res = new HashMap<>();
     res.put(testConnectionId, testProjectId);
     return res;
   }
 
-  private Map<String, String> createDefaultProperties() {
+  @Override
+  protected Map<String, String> createConnectionDefaultProperties() {
     Map<String, String> res = new HashMap<>();
     res.put(OAuthConstants.OAUTH_TYPE_PARAM, AwsConnectionProvider.TYPE);
     res.put(ACCESS_KEY_ID_PARAM, testAccessKeyId);

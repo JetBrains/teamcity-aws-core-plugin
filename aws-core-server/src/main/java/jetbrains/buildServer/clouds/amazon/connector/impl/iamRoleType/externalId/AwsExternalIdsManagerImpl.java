@@ -5,7 +5,6 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,11 +19,8 @@ public class AwsExternalIdsManagerImpl implements AwsExternalIdsManager {
 
   @Override
   @NotNull
-  public String getAwsConnectionExternalId(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    SProject project = getProjectById(featureDescriptor.getProjectId());
-    String awsConnectionId = featureDescriptor.getId();
-
-    String awsConnectionExternalId = generateExternalId(project, awsConnectionId);
+  public String getAwsConnectionExternalId(@NotNull final String awsConnectionId, @NotNull final String projectId) throws AwsConnectorException {
+    String awsConnectionExternalId = generateExternalId(awsConnectionId, getProjectById(projectId).getExternalId());
     LOG.debug(String.format("Returning External ID for AWS Connection: %s", awsConnectionExternalId));
     return awsConnectionExternalId;
   }
@@ -41,7 +37,7 @@ public class AwsExternalIdsManagerImpl implements AwsExternalIdsManager {
   }
 
   @NotNull
-  private String generateExternalId(@NotNull final SProject project, @NotNull final String connectionId) {
-    return String.format("%s-%s", project.getExternalId(), connectionId);
+  private String generateExternalId(@NotNull final String projectExternalId, @NotNull final String connectionId) {
+    return String.format("%s-%s", projectExternalId, connectionId);
   }
 }

@@ -2,15 +2,13 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
@@ -26,17 +24,16 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class AwsExternalIdsController extends BaseAwsConnectionController {
   public static final String PATH = EXTERNAL_IDS_CONTROLLER_URL;
 
-  private final AwsConnectionsManager myAwsConnectionsManager;
+  private final ProjectManager myProjectManager;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public AwsExternalIdsController(@NotNull final SBuildServer server,
                                   @NotNull final WebControllerManager webControllerManager,
-                                  @NotNull final AwsConnectionsManager awsConnectionsManager,
                                   @NotNull final ProjectManager projectManager,
                                   @NotNull final AuthorizationInterceptor authInterceptor,
                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
     super(server);
-    myAwsConnectionsManager = awsConnectionsManager;
+    myProjectManager = projectManager;
     myAwsExternalIdsManager = awsExternalIdsManager;
 
     if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
@@ -54,17 +51,15 @@ public class AwsExternalIdsController extends BaseAwsConnectionController {
 
     final ActionErrors errors = new ActionErrors();
 
-    try {
-      AwsConnectionDescriptor connection = myAwsConnectionsManager.getAwsConnection(connectionId);
+    SProject project = myProjectManager.findProjectByExternalId(projectId);
+    if (project != null) {
       writeAsJson(
         myAwsExternalIdsManager
-          .getAwsConnectionExternalId(connection),
+          .getAwsConnectionExternalId(connectionId, project.getProjectId()),
         response
       );
-
-    } catch (AwsConnectorException e) {
-      Loggers.CLOUD.debug("Failed to get External ID to assume IAM Role: " + e.getMessage(), e);
-      errors.addError("error_" + EXTERNAL_ID_FIELD_ID, e.getMessage());
+    } else {
+      errors.addError("error_" + EXTERNAL_ID_FIELD_ID, "There is no project with ID: " + projectId);
       writeAsJson(errors, response);
     }
 

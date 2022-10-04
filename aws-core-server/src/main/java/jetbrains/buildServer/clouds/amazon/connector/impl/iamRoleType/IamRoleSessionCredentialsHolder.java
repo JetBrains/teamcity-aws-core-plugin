@@ -74,7 +74,7 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
   private String getAwsConnectionExternalId(@NotNull final AwsExternalIdsManager awsExternalIdsManager, @NotNull final SProjectFeatureDescriptor iamRoleConnectionFeature) {
     String externalId = null;
     try {
-      externalId = awsExternalIdsManager.getAwsConnectionExternalId(iamRoleConnectionFeature);
+      externalId = awsExternalIdsManager.getAwsConnectionExternalId(iamRoleConnectionFeature.getId(), iamRoleConnectionFeature.getProjectId());
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.warnAndDebugDetails(
         String.format("Failed to get the External ID to assume the IAM Role with ARN <%s>, reason: %s", iamRoleConnectionFeature.getParameters().get(IAM_ROLE_ARN_PARAM),

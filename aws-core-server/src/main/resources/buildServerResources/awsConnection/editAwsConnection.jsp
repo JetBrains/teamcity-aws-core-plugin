@@ -42,7 +42,7 @@
   <td>
     <props:textProperty name="displayName" className="longField" style="width: 20em;"/>
     <span class="smallNote nowrap">Provide some name to distinguish this connection from others.</span>
-    <span class="error" id="error_displayName"></span>
+    <span class="error" id="error_displayName" style="word-break: break-all;"></span>
   </td>
 </tr>
 
@@ -56,10 +56,10 @@
       <span class="smallNote">Specify the identificator for this connection. <br>Default is awsConnection-#</span>
     </c:when>
     <c:otherwise>
-      <label>${connectionId}</label>
+      <label style="word-break: break-all;">${connectionId}</label>
     </c:otherwise>
   </c:choose>
-  <span class="error" id="error_${connection_id_param}"></span>
+  <span style="word-break: break-all;" class="error" id="error_${connection_id_param}"></span>
 </td>
 
 
@@ -72,7 +72,7 @@
         <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>
     </props:selectProperty>
-    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>
+    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}" style="word-break: break-all;"></span>
   </td>
 </tr>
 

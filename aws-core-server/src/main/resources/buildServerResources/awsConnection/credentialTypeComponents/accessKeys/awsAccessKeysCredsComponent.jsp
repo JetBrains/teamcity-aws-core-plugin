@@ -34,13 +34,13 @@
     <tr id="${access_key_id_param}_row">
         <th><label for="${access_key_id_param}">${access_key_id_label}: <l:star/></label></th>
         <td><props:textProperty name="${access_key_id_param}" className="longField" maxlength="256" noAutoComplete="true"/>
-            <span class="error" id="error_${access_key_id_param}"></span>
+            <span class="error" id="error_${access_key_id_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
     <tr id="${secret_access_key_param}_row">
         <th class="nowrap"><label for="${secure_secret_access_key_param}">${secret_access_key_label}: <l:star/></label></th>
         <td><props:passwordProperty name="${secure_secret_access_key_param}" className="longField" maxlength="256"/>
-            <span class="error" id="error_${secure_secret_access_key_param}"></span>
+            <span class="error" id="error_${secure_secret_access_key_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
 
@@ -83,7 +83,7 @@
                                 name="${sts_endpoint_param}"
                                 value="${stsEndpoint}" className="longField" maxlength="256"/>
             <span class="smallNote">The global endpoint is: ${sts_global_endpoint}</span>
-            <span class="error" id="error_${sts_endpoint_param}"></span>
+            <span class="error" id="error_${sts_endpoint_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
 </l:settingsGroup>

@@ -28,10 +28,8 @@
   };
 
   $j(document).ready(function () {
-    if (${empty stsEndpoint}) {
-      setStsEndpoint($regionSelectObject.value);
-      toggleStsEndpint();
-    }
+    setStsEndpoint($regionSelectObject.value);
+    toggleStsEndpint();
   });
 
   let setStsEndpoint = function (stsEndpoint) {

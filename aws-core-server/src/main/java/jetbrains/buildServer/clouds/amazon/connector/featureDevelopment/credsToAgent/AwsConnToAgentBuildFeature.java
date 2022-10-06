@@ -22,7 +22,7 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
   private static final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
 
   private final String myPluginResourcesEditUrl;
-  public static final String DISPLAY_NAME = "Add AWS credentials to the build";
+  public static final String DISPLAY_NAME = "AWS Ñredentials";
   private final AwsConnectionsManager myAwsConnectionsManager;
 
   public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor,

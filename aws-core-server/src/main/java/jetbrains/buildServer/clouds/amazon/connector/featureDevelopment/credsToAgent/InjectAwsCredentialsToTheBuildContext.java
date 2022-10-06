@@ -88,7 +88,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
 
         } else {
           awsConnection = myAwsConnectionsManager.getAwsConnection(awsConnectionId);
-          String message = String.format("There is no %s param in the BuildFeature, will use Default SessionDuration Afor the WS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
+          String message = String.format("There is no %s param in the BuildFeature, will use Default SessionDuration for the AWS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
           context.getBuild().getBuildLog()
                  .message(
                    message,

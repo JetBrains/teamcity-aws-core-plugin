@@ -27,7 +27,7 @@
 
 <tr>
   <td colspan="2">
-    <em>Please, choose the AWS Connection which will be provided to Agent</em>
+    <em>Select the AWS connection, which will be provided to a build agent</em>
   </td>
 </tr>
 

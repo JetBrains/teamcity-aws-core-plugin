@@ -27,13 +27,10 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.controllers.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.ModelAndView;
-
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME;
 
 public class AwsRotateKeysController extends BaseAwsConnectionController {
   private final AwsKeyRotator myAwsKeyRotator;
@@ -44,23 +41,9 @@ public class AwsRotateKeysController extends BaseAwsConnectionController {
                                  @NotNull final ProjectManager projectManager,
                                  @NotNull final AuthorizationInterceptor authInterceptor,
                                  @NotNull final AwsKeyRotator awsKeyRotator) {
-    super(server);
+    super(AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL, server, projectManager, webControllerManager, authInterceptor);
     myAwsKeyRotator = awsKeyRotator;
     myProjectManager = projectManager;
-
-    if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
-      final RequestPermissionsChecker projectAccessChecker = (RequestPermissionsCheckerEx)(securityContext, request) -> {
-        String projectId = request.getParameter("projectId");
-        SProject curProject = myProjectManager.findProjectByExternalId(projectId);
-        if (curProject == null) {
-          throw new AccessDeniedException(securityContext.getAuthorityHolder(), "Project with id " + request.getParameter("projectId") + " does not exist");
-        }
-        securityContext.getAccessChecker().checkCanEditProject(curProject);
-      };
-
-      webControllerManager.registerController(AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL, this);
-      authInterceptor.addPathBasedPermissionsChecker(AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL, projectAccessChecker);
-    }
   }
 
   @Nullable

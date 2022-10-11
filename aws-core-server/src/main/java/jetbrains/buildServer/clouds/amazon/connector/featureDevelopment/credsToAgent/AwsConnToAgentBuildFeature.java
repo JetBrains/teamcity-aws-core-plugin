@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
@@ -15,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
 
 public class AwsConnToAgentBuildFeature extends BuildFeature implements PropertiesProcessor {
 
@@ -46,6 +49,11 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
   @Override
   public PropertiesProcessor getParametersProcessor() {
     return this;
+  }
+
+  @Override
+  public Map<String, String> getDefaultParameters() {
+    return Collections.singletonMap(SESSION_DURATION_PARAM, SESSION_DURATION_DEFAULT);
   }
 
   @NotNull

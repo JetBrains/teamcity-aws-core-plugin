@@ -1,7 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
 public final class AwsConnBuildFeatureParams {
-  public static final String AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE = "AWS_CREDS_TO_AGENT";
+  public static final String AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE = "PROVIDE_AWS_CREDS";
 
   public static final String AWS_ACCESS_KEY_ENV_PARAM_DEFAULT = "aws_access_key_id";
   public static final String AWS_SECRET_KEY_ENV_PARAM_DEFAULT = "aws_secret_access_key";

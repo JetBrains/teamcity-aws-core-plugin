@@ -43,7 +43,7 @@ public abstract class BaseAwsConnectionController extends BaseController {
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final AuthorizationInterceptor authInterceptor){
     super(server);
-    if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
+    if (TeamCityProperties.getBooleanOrTrue(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(controllerPath, this);
       authInterceptor.addPathBasedPermissionsChecker(controllerPath, new ProjectAccessChecker(projectManager));
     }

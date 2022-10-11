@@ -45,7 +45,7 @@ public class ParamUtil {
       return true;
     }
     try {
-      int sessionDurationNumber = parseInt(strSessionDuration, SESSION_DURATION_DEFAULT_NUMBER);
+      int sessionDurationNumber = Integer.parseInt(strSessionDuration);
       if(sessionDurationNumber < AwsSessionCredentialsParams.MIN_SESSION_DURATION || sessionDurationNumber > AwsSessionCredentialsParams.MAX_SESSION_DURATION)
         return false;
     } catch (NumberFormatException nfe) {

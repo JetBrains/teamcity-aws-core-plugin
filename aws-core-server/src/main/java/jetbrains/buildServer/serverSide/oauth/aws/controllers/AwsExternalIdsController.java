@@ -9,8 +9,6 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +17,6 @@ import org.springframework.web.servlet.ModelAndView;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.EXTERNAL_IDS_CONTROLLER_URL;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.EXTERNAL_ID_FIELD_ID;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AWS_CONN_ID_REST_PARAM;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME;
 
 public class AwsExternalIdsController extends BaseAwsConnectionController {
   public static final String PATH = EXTERNAL_IDS_CONTROLLER_URL;
@@ -32,14 +29,9 @@ public class AwsExternalIdsController extends BaseAwsConnectionController {
                                   @NotNull final ProjectManager projectManager,
                                   @NotNull final AuthorizationInterceptor authInterceptor,
                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
-    super(server);
+    super(PATH, server, projectManager, webControllerManager, authInterceptor);
     myProjectManager = projectManager;
     myAwsExternalIdsManager = awsExternalIdsManager;
-
-    if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
-      webControllerManager.registerController(PATH, this);
-      authInterceptor.addPathBasedPermissionsChecker(PATH, new ProjectAccessChecker(projectManager));
-    }
   }
 
   @Nullable

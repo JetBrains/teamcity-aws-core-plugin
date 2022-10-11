@@ -22,7 +22,6 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:set var="aws_feature_prop_name" value="<%=AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME%>"/>
 <c:set var="default_creds_provider_prop_name" value="<%=AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME%>"/>
 
 <c:set var="aws_caller_identity_element" value="<%=AwsCloudConnectorConstants.AWS_CALLER_IDENTITY_ELEMENT%>"/>

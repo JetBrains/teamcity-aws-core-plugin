@@ -32,7 +32,7 @@ public class AwsConnectorExtensionRegistar {
     myAwsConnectorFactory = awsConnectorFactory;
     myAwsConnectionsManager = awsConnectionsManager;
 
-    if (TeamCityProperties.getBoolean(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME)) {
+    if (TeamCityProperties.getBooleanOrTrue(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME)) {
 
       registerAwsConnection();
       registerExposeToEnvVarsBuildFeature();

@@ -1,11 +1,7 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.intellij.openapi.util.Pair;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -16,8 +12,6 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -44,23 +38,10 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
                                      @NotNull final ProjectManager projectManager,
                                      @NotNull final AuthorizationInterceptor authInterceptor,
                                      @NotNull final PluginDescriptor descriptor) {
-    super(server);
+    super(PATH, server, projectManager, webControllerManager, authInterceptor);
     myConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
     myDescriptor = descriptor;
-    if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
-      final RequestPermissionsChecker projectAccessChecker = (RequestPermissionsCheckerEx)(securityContext, request) -> {
-        String projectId = request.getParameter("projectId");
-        SProject curProject = myProjectManager.findProjectByExternalId(projectId);
-        if (curProject == null) {
-          throw new AccessDeniedException(securityContext.getAuthorityHolder(), "Project with id " + request.getParameter("projectId") + " does not exist");
-        }
-        securityContext.getAccessChecker().checkCanEditProject(curProject);
-      };
-
-      webControllerManager.registerController(PATH, this);
-      authInterceptor.addPathBasedPermissionsChecker(PATH, projectAccessChecker);
-    }
   }
 
   @Nullable

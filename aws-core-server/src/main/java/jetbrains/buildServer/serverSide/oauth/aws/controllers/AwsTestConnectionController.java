@@ -38,7 +38,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     super(server);
     myAwsConnectionTester = awsConnectionTester;
     myProjectManager = projectManager;
-    if (TeamCityProperties.getBoolean(FEATURE_PROPERTY_NAME)) {
+    if (TeamCityProperties.getBooleanOrTrue(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
     }
   }

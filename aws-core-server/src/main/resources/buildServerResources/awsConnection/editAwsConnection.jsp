@@ -53,7 +53,7 @@
     <c:when test = "${empty connectionId}">
       <props:textProperty name="${connection_id_param}"
                           value="${connectionId}"/>
-      <span class="smallNote">Specify the identificator for this connection. <br>Default is awsConnection-#</span>
+      <span class="smallNote">Specify the identificator for this connection. <br>Allowed symbols: letters, numbers, <b>_</b> and <b>-</b></span>
     </c:when>
     <c:otherwise>
       <label style="word-break: break-all;">${connectionId}</label>

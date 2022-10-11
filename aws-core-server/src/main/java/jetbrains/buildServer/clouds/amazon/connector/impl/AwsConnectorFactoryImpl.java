@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
@@ -28,6 +29,8 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
+
+  public static final Pattern ID_PATTERN = Pattern.compile("^(\\w|-)+$");
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
   private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
@@ -154,6 +157,9 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       errorMessageBuilder.append("This ID is invalid, please, dont use these symbols: ");
       errorMessageBuilder.append(IdGeneratorRegistry.PROHIBITED_CHARS);
       IdGeneratorRegistry.validateId(connectionId, errorMessageBuilder.toString());
+      if (!ID_PATTERN.matcher(connectionId).matches()) {
+        throw new InvalidIdentifierException("Provided AWS Connection ID contains prohibited characters", connectionId);
+      }
     } catch (InvalidIdentifierException e) {
       invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));
     }

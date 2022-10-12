@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
@@ -20,6 +19,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSession
 import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.identifiers.IdentifiersUtil;
 import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +29,6 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
-
-  public static final Pattern ID_PATTERN = Pattern.compile("^(\\w|-)+$");
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
   private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
@@ -156,10 +154,7 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       StringBuilder errorMessageBuilder = new StringBuilder();
       errorMessageBuilder.append("This ID is invalid, please, dont use these symbols: ");
       errorMessageBuilder.append(IdGeneratorRegistry.PROHIBITED_CHARS);
-      IdGeneratorRegistry.validateId(connectionId, errorMessageBuilder.toString());
-      if (!ID_PATTERN.matcher(connectionId).matches()) {
-        throw new InvalidIdentifierException("Provided AWS Connection ID contains prohibited characters", connectionId);
-      }
+      IdentifiersUtil.validateExternalId(connectionId, "AWS Connection ID", IdentifiersUtil.EXT_ID_LENGTH);
     } catch (InvalidIdentifierException e) {
       invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));
     }

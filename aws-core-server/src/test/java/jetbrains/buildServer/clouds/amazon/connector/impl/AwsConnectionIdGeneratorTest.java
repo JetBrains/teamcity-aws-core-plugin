@@ -61,7 +61,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
   public void whenUserDidNotSpecifiedConnectionIdThenUseCurrentIncrementalId() {
 
     myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
-    String resultConnectionId = buildAwsConnId(INITIAL_AWS_CONNECTION_ID + 1);
+    String resultConnectionId = AwsConnectionIdGenerator.formatId(AWS_CONNECTION_ID_PREFIX, INITIAL_AWS_CONNECTION_ID + 1);
 
     assertEquals(
       resultConnectionId,
@@ -76,7 +76,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
     addIds(10);
 
     myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
-    String resultConnectionId = buildAwsConnId(11);
+    String resultConnectionId = AwsConnectionIdGenerator.formatId(AWS_CONNECTION_ID_PREFIX, 11);
 
     assertEquals(
       resultConnectionId,
@@ -96,12 +96,8 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
 
   private void addIds(int quantity) {
     for (int i = 1; i <= quantity; i++) {
-      myAwsConnectionIdGenerator.addGeneratedId(buildAwsConnId(i), Collections.emptyMap());
+      myAwsConnectionIdGenerator.addGeneratedId(AwsConnectionIdGenerator.formatId(AWS_CONNECTION_ID_PREFIX, i), Collections.emptyMap());
     }
-  }
-
-  private String buildAwsConnId(int number) {
-    return AWS_CONNECTION_ID_PREFIX + "-" + String.valueOf(number);
   }
 
   private Map<String, String> createDefaultConnectionProps() {

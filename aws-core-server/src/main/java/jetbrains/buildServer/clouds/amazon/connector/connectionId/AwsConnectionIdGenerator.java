@@ -41,6 +41,10 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
   }
 
+  public static String formatId(@NotNull final String connectionId, int newIdNumber) {
+    return String.format("%s_%s", connectionId, String.valueOf(newIdNumber));
+  }
+
   @Nullable
   @Override
   public String newId(@NotNull Map<String, String> props) {
@@ -89,9 +93,9 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   @NotNull
   private String makeUnique(@NotNull final String userDefinedConnId) {
     int counter = INITIAL_AWS_CONNECTION_ID;
-    String newAwsConnectionId = userDefinedConnId;
+    String newAwsConnectionId;
     do {
-      newAwsConnectionId = formatId(newAwsConnectionId, ++counter);
+      newAwsConnectionId = formatId(userDefinedConnId, ++counter);
     } while (!isUnique(newAwsConnectionId));
     return newAwsConnectionId;
   }
@@ -99,9 +103,5 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   private void writeNewId(@NotNull String connectionId) {
     awsConnectionIdxMap.put(connectionId, connectionId);
     LOG.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
-  }
-
-  private String formatId(@NotNull final String connectionId, int newIdNumber) {
-    return String.format("%s_%s", connectionId, String.valueOf(newIdNumber));
   }
 }

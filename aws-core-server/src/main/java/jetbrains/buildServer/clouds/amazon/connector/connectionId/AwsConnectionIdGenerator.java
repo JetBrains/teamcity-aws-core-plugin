@@ -20,7 +20,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
@@ -32,13 +31,11 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
-  public final static int INITIAL_CURRENT_AWS_CONNECTION_ID = 0;
+  public final static int INITIAL_AWS_CONNECTION_ID = 0;
 
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdGenerator.class.getName());
 
   private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
-
-  private final AtomicInteger currentIdentifier = new AtomicInteger(INITIAL_CURRENT_AWS_CONNECTION_ID);
 
   public AwsConnectionIdGenerator(@NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator) {
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
@@ -48,24 +45,18 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   @Override
   public String newId(@NotNull Map<String, String> props) {
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
+    props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
 
-    boolean needToGenerateId = false;
     if (userDefinedConnId == null) {
-      needToGenerateId = true;
-      LOG.debug("User did not define the connection id, will generate it using incremental ID");
-    } else if (!isUnique(userDefinedConnId)) {
-      needToGenerateId = true;
-      LOG.warn("User-defined connection id is not unique, will generate it using incremental ID");
-    }
-    if (needToGenerateId) {
       userDefinedConnId = generateNewId();
-      props.put(USER_DEFINED_ID_PARAM, userDefinedConnId);
+      LOG.debug("User did not define the connection id, will generate it using awsConnection_<incremental ID>");
+    } else if (!isUnique(userDefinedConnId)) {
+      userDefinedConnId = makeUnique(userDefinedConnId);
+      LOG.warn("User-defined connection id is not unique, will add incremental ID");
     }
 
     writeNewId(userDefinedConnId);
     LOG.debug("Will use: \"" + userDefinedConnId + "\" as AWS Connection id");
-
-    props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
 
     return userDefinedConnId;
   }
@@ -73,13 +64,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   @Nullable
   @Override
   public String showNextId(@NotNull Map<String, String> props) {
-    int counter = currentIdentifier.get();
-    String newAwsConnectionId;
-    do {
-      newAwsConnectionId = formatId(++counter);
-    } while (!isUnique(newAwsConnectionId));
-
-    return newAwsConnectionId;
+    return generateNewId();
   }
 
   @Override
@@ -98,11 +83,16 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @NotNull
   private String generateNewId() {
-    String newAwsConnectionId = buildNewId();
-    while (!isUnique(newAwsConnectionId)) {
-      newAwsConnectionId = buildNewId();
-    }
+    return makeUnique(AWS_CONNECTION_ID_PREFIX);
+  }
 
+  @NotNull
+  private String makeUnique(@NotNull final String userDefinedConnId) {
+    int counter = INITIAL_AWS_CONNECTION_ID;
+    String newAwsConnectionId = userDefinedConnId;
+    do {
+      newAwsConnectionId = formatId(newAwsConnectionId, ++counter);
+    } while (!isUnique(newAwsConnectionId));
     return newAwsConnectionId;
   }
 
@@ -111,11 +101,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
     LOG.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
   }
 
-  private String buildNewId() {
-    return formatId(currentIdentifier.incrementAndGet());
-  }
-
-  private static String formatId(int newIdNumber) {
-    return String.format("%s-%s", AWS_CONNECTION_ID_PREFIX, String.valueOf(newIdNumber));
+  private String formatId(@NotNull final String connectionId, int newIdNumber) {
+    return String.format("%s_%s", connectionId, String.valueOf(newIdNumber));
   }
 }

@@ -9,7 +9,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.AWS_CONNECTION_ID_PREFIX;
-import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.INITIAL_CURRENT_AWS_CONNECTION_ID;
+import static jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator.INITIAL_AWS_CONNECTION_ID;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.ACCESS_KEY_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
@@ -61,7 +61,7 @@ public class AwsConnectionIdGeneratorTest extends BaseTestCase {
   public void whenUserDidNotSpecifiedConnectionIdThenUseCurrentIncrementalId() {
 
     myAwsConnectionIdGenerator.newId(createDefaultConnectionProps());
-    String resultConnectionId = buildAwsConnId(INITIAL_CURRENT_AWS_CONNECTION_ID + 1);
+    String resultConnectionId = buildAwsConnId(INITIAL_AWS_CONNECTION_ID + 1);
 
     assertEquals(
       resultConnectionId,

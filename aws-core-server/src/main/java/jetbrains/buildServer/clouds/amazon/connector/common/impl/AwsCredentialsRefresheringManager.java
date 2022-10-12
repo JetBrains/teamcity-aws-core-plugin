@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.util.executors.ExecutorsFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +56,7 @@ public class AwsCredentialsRefresheringManager {
           Date expirationDate = awsConnectionDescriptor.getAwsCredentialsHolder().getSessionExpirationDate();
           if (expirationDate != null && currentSessionExpired(expirationDate)) {
             Loggers.CLOUD.debug("Refreshing Session Credentials for AWS Connection with ID: " + awsConnectionId);
-            awsConnectionDescriptor.getAwsCredentialsHolder().refreshCredentials();
+            IOGuard.allowNetworkCall(() -> awsConnectionDescriptor.getAwsCredentialsHolder().refreshCredentials());
           }
         } catch (Exception e) {
           Loggers.CLOUD.warnAndDebugDetails(String.format("Refreshing Session Credentials for AWS Connection <%s> failed: %s ", awsConnectionId, e.getMessage()), e);

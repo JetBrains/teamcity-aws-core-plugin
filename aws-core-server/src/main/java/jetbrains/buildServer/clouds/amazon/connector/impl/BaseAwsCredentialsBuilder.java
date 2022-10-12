@@ -20,10 +20,13 @@ import java.util.List;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.isAmazonServiceException;
 
 public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder {
 
@@ -39,7 +42,14 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
         lastInvalidProperty.getPropertyName()
       );
     }
-    return constructSpecificCredentialsProviderImpl(featureDescriptor);
+    try {
+      return IOGuard.allowNetworkCall(() -> constructSpecificCredentialsProviderImpl(featureDescriptor));
+    } catch (Exception e) {
+      if (isAmazonServiceException(e)) {
+        throw new AwsConnectorException(e);
+      }
+      throw e;
+    }
   }
 
   @NotNull

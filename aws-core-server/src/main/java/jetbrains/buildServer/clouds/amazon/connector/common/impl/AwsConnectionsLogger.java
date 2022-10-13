@@ -30,6 +30,14 @@ public class AwsConnectionsLogger {
     ));
   }
 
+  public static void dataStorageDesynchronised(@NotNull final String awsConnectionId) {
+    Loggers.CLOUD.debug(String.format(
+      "AWS Connection ID <%s> is not stored in the CustemdataStorage <%s>, but this ID was requested as already added. Please, check the CustemdataStorage and your AWS Connection",
+      awsConnectionId,
+      AwsConnectionsHolderImpl.AWS_CONNECTIONS_IDX_STORAGE
+    ));
+  }
+
   public void connectionAdded(@NotNull final String awsConnectionId) {
     LOG.debug(String.format(
       "Added AWS Connection '%s' in the Project with ID: '%s'",

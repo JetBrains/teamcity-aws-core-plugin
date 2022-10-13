@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
-  public final String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
+  public static final String AWS_CONNECTIONS_IDX_STORAGE = "aws.connections.idx.storage";
 
   private final AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder;
   private final ProjectManager myProjectManager;
@@ -109,6 +109,18 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   public void removeAllConnectionsForProject(@NotNull SProject project) {
     for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(project)) {
       removeAwsConnection(connectionFeature.getId());
+    }
+  }
+
+  @Override
+  public boolean isUniqueAwsConnectionId(@NotNull final String awsConnectionId) {
+    return getDataStorageValue(awsConnectionId) == null;
+  }
+
+  @Override
+  public void addGeneratedAwsConnectionId(@NotNull final String awsConnectionId) {
+    if (getDataStorageValue(awsConnectionId) == null) {
+      AwsConnectionsLogger.dataStorageDesynchronised(awsConnectionId);
     }
   }
 

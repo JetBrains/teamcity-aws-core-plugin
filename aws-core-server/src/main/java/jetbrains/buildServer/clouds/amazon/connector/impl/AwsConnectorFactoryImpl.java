@@ -10,7 +10,6 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -31,11 +30,6 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
-  private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
-
-  public AwsConnectorFactoryImpl(@NotNull final AwsConnectionIdGenerator awsConnectionIdGenerator) {
-    myAwsConnectionIdGenerator = awsConnectionIdGenerator;
-  }
 
   @NotNull
   @Override
@@ -147,9 +141,6 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
       return;
     }
 
-    if (!myAwsConnectionIdGenerator.isUnique(connectionId)) {
-      invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, "The Connection ID must be unique on the whole server"));
-    }
     try {
       StringBuilder errorMessageBuilder = new StringBuilder();
       errorMessageBuilder.append("This ID is invalid, please, dont use these symbols: ");

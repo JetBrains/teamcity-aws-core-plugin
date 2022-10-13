@@ -23,7 +23,7 @@
 
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean"/>
-
+<jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 
 <%@include file="awsConnectionConstants.jspf" %>
 <%@include file="credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf" %>
@@ -32,6 +32,7 @@
 
 <c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
 <c:set var="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
+<c:set var="connectionDisplayNameProp" value="displayName"/>
 
 <bs:linkScript>
   /js/bs/testConnection.js
@@ -46,7 +47,7 @@
 <tr>
   <td><label for="displayName">Name:</label><l:star/></td>
   <td>
-    <props:textProperty name="displayName" className="longField" style="width: 20em;"/>
+    <props:textProperty name="${connectionDisplayNameProp}" className="longField" style="width: 20em;"/>
     <span class="smallNote nowrap">Provide some name to distinguish this connection from others.</span>
     <span class="error" id="error_displayName"></span>
   </td>
@@ -60,6 +61,9 @@
       <props:textProperty name="${connection_id_param}"
                           value="${connectionId}"/>
       <span class="smallNote">This ID is used in URLs, REST API, HTTP requests to the server and configuration settings in the TeamCity Data Directory.</span>
+      <script type="application/javascript">
+        BS.AdminActions.prepareCustomIdGenerator("buildType", ${connection_id_param}, ${connectionDisplayNameProp});
+      </script>
     </c:when>
     <c:otherwise>
       <label style="word-break: break-all;">${connectionId}</label>

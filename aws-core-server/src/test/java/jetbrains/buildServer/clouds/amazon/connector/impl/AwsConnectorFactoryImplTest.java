@@ -1,18 +1,15 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import jetbrains.buildServer.BaseTestCase;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
-import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import org.mockito.Mockito;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jetbrains.buildServer.BaseTestCase;
+import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.serverSide.InvalidProperty;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
 
@@ -23,7 +20,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
 
   @BeforeMethod
   public void setup() {
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
+    myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     myConnectorProperties = new HashMap<>();
   }
 

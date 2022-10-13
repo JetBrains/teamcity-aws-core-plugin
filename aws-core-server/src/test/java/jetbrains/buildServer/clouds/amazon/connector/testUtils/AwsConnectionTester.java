@@ -17,12 +17,16 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImp
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.EventDispatcher;
 import org.mockito.Mockito;
+import org.testng.annotations.BeforeMethod;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -32,6 +36,8 @@ public abstract class AwsConnectionTester extends BaseTestCase {
 
   protected final String testProjectId = "PROJECT_ID";
   protected final String testConnectionId = "PROJECT_FEATURE_ID";
+
+  protected final String testConnectionParam = "SOME_CONNECTION_PARAM";
   protected final String testConnectionDescription = "Test Connection";
   private final Map<String, SProject> mockedProjectsCollection = new HashMap<>();
   private final Map<String, OAuthConnectionDescriptor> mockedAwsConnectionsCollection = new HashMap<>();
@@ -44,19 +50,37 @@ public abstract class AwsConnectionTester extends BaseTestCase {
   private AwsConnectionsManager myAwsConnectionsManager = null;
   private AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder = null;
   private AwsConnectionsHolderImpl myAwsConnectionsHolder = null;
+  private AwsConnectionIdGenerator myAwsConnectionIdGenerator = null;
   private AwsConnectionsEventsListener myAwsConnectionsEventsListener = null;
+
+  @Override
+  @BeforeMethod (alwaysRun = true)
+  protected void setUp() throws Exception {
+    super.setUp();
+    initAwsConnectionTester();
+  }
 
   public void initAwsConnectionTester() {
     myAwsConnectorFactory = null;
     myAwsConnectionsManager = null;
     myAwsConnectionDescriptorBuilder = null;
     myAwsConnectionsHolder = null;
+    myAwsConnectionIdGenerator = null;
     myAwsConnectionsEventsListener = null;
 
     initMainComponents();
   }
 
-  protected abstract Map<String, String> createConnectionDefaultProperties();
+  protected Map<String, String> createConnectionDefaultProperties() {
+    Map<String, String> res = new HashMap<>();
+    res.put(OAuthConstants.OAUTH_TYPE_PARAM, AwsConnectionProvider.TYPE);
+    res.put(ACCESS_KEY_ID_PARAM, testConnectionParam);
+    res.put(SECURE_SECRET_ACCESS_KEY_PARAM, testConnectionParam);
+    res.put(STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
+    res.put(REGION_NAME_PARAM, REGION_NAME_DEFAULT);
+    res.put(CREDENTIALS_TYPE_PARAM, STATIC_CREDENTIALS_TYPE);
+    return res;
+  }
 
   protected abstract Map<String, String> createDefaultStorageValues();
 
@@ -92,7 +116,7 @@ public abstract class AwsConnectionTester extends BaseTestCase {
 
   public AwsConnectorFactory getAwsConnectorFactory() {
     if (myAwsConnectorFactory == null) {
-      myAwsConnectorFactory = new AwsConnectorFactoryImpl(new AwsConnectionIdGenerator(Mockito.mock(OAuthConnectionsIdGenerator.class)));
+      myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     }
     return myAwsConnectorFactory;
   }
@@ -126,6 +150,16 @@ public abstract class AwsConnectionTester extends BaseTestCase {
       );
     }
     return myAwsConnectionsHolder;
+  }
+
+  public AwsConnectionIdGenerator getAwsConnectionIdGenerator() {
+    if (myAwsConnectionIdGenerator == null) {
+      myAwsConnectionIdGenerator = new AwsConnectionIdGenerator(
+        getAwsConnectionsHolder(),
+        Mockito.mock(OAuthConnectionsIdGenerator.class)
+      );
+    }
+    return myAwsConnectionIdGenerator;
   }
 
   public AwsConnectionsEventsListener getAwsConnectionsEventsListener() {
@@ -192,7 +226,7 @@ public abstract class AwsConnectionTester extends BaseTestCase {
 
   private void initProjectManagerMock() {
     myProjectManager = Mockito.mock(ProjectManager.class);
-    SProject rootProject = getMockedProject("Root", createDefaultStorageValues());
+    SProject rootProject = getMockedProject("Root", myDataStorageValues);
     when(myProjectManager.getRootProject())
       .thenReturn(rootProject);
     when(myProjectManager.findProjectById(anyString()))

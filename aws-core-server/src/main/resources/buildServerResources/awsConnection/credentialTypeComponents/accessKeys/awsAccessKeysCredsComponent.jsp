@@ -118,7 +118,7 @@
 
                 } else {
                     for(let i = 0; i < errors.length; i ++) {
-                        this.addError(errors[i].message, $j(".error_" + errors[i].id))
+                        this.addError(errors[i].message, errors[i].id)
                     }
                 }
             }.bind(this),

@@ -5,6 +5,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
@@ -34,7 +35,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
   public AwsConnectionDescriptor buildFromProject(@NotNull final SProject project, @NotNull final String awsFeatureConnectionId) throws AwsConnectorException {
     OAuthConnectionDescriptor awsConnectionFeature = myOAuthConnectionsManager.findConnectionById(project, awsFeatureConnectionId);
     if (awsConnectionFeature == null) {
-      throw new AwsConnectorException("There is no AWS Connection with ID: " + awsFeatureConnectionId + " in the project with ID: " + project.getExternalId());
+      throw new AwsConnectionNotFoundException(awsFeatureConnectionId);
     }
     return fromFeatureDescriptor(projectFeatureDescriptorFromOauthConn(awsConnectionFeature));
   }

@@ -37,12 +37,18 @@
   /js/bs/testConnection.js
 </bs:linkScript>
 
+<style type="text/css">
+  .error {
+    word-break: break-all;
+  }
+</style>
+
 <tr>
   <td><label for="displayName">Name:</label><l:star/></td>
   <td>
     <props:textProperty name="displayName" className="longField" style="width: 20em;"/>
     <span class="smallNote nowrap">Provide some name to distinguish this connection from others.</span>
-    <span class="error" id="error_displayName" style="word-break: break-all;"></span>
+    <span class="error" id="error_displayName"></span>
   </td>
 </tr>
 
@@ -59,7 +65,7 @@
       <label style="word-break: break-all;">${connectionId}</label>
     </c:otherwise>
   </c:choose>
-  <span style="word-break: break-all;" class="error" id="error_${connection_id_param}"></span>
+  <span class="error" id="error_${connection_id_param}"></span>
 </td>
 
 
@@ -72,7 +78,7 @@
         <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>
     </props:selectProperty>
-    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}" style="word-break: break-all;"></span>
+    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>
   </td>
 </tr>
 
@@ -142,6 +148,7 @@
         BS.TestConnectionDialog.show(true, additionalInfo, $('testConnectionButton'));
       }
     }));
+    $j('.error').css({"word-break": "break-all"});
     return false;
   };
 
@@ -151,12 +158,13 @@
     afterClose()
   };
 
-  BS.OAuthConnectionDialog.addError = function (errorHTML, target){
-    target.append(errorHTML);
+  BS.OAuthConnectionDialog.addError = function (errorHTML, errorId){
+    const target = document.getElementById('error_' + errorId);
+    target.innerHTML = errorHTML;
   };
   BS.OAuthConnectionDialog.clearError = function (errorId){
-    const target = $j('.error_' + errorId);
-    target.empty();
+    const target = document.getElementById('error_' + errorId);
+    target.innerHTML = '';
   };
   BS.OAuthConnectionDialog.clearAllErrors = function (errorIdsArray){
     errorIdsArray.forEach(errorId => {

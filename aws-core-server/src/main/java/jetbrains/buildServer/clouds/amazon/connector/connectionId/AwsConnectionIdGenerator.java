@@ -17,9 +17,8 @@
 package jetbrains.buildServer.clouds.amazon.connector.connectionId;
 
 import com.intellij.openapi.diagnostic.Logger;
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
@@ -35,9 +34,13 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   private final static Logger LOG = Logger.getInstance(AwsConnectionIdGenerator.class.getName());
 
-  private final ConcurrentHashMap<String, String> awsConnectionIdxMap = new ConcurrentHashMap<>();
 
-  public AwsConnectionIdGenerator(@NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator) {
+  private final AwsConnectionsHolder myAwsConnectionsHolder;
+
+  public AwsConnectionIdGenerator(@NotNull final AwsConnectionsHolder awsConnectionsHolder,
+                                  @NotNull final OAuthConnectionsIdGenerator OAuthConnectionsIdGenerator) {
+    myAwsConnectionsHolder = awsConnectionsHolder;
+
     OAuthConnectionsIdGenerator.registerProviderTypeGenerator(ID_GENERATOR_TYPE, this);
   }
 
@@ -59,7 +62,6 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       LOG.warn("User-defined connection id is not unique, will add incremental ID");
     }
 
-    writeNewId(userDefinedConnId);
     LOG.debug("Will use: \"" + userDefinedConnId + "\" as AWS Connection id");
 
     return userDefinedConnId;
@@ -73,16 +75,11 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Override
   public void addGeneratedId(@NotNull final String id, @NotNull final Map<String, String> props) {
-    writeNewId(id);
+    myAwsConnectionsHolder.addGeneratedAwsConnectionId(id);
   }
 
   public boolean isUnique(@NotNull final String connectionId) {
-    return awsConnectionIdxMap.get(connectionId) == null;
-  }
-
-  @NotNull
-  public Map<String, String> getAwsConnectionIdx() {
-    return Collections.unmodifiableMap(awsConnectionIdxMap);
+    return myAwsConnectionsHolder.isUniqueAwsConnectionId(connectionId);
   }
 
   @NotNull
@@ -91,17 +88,12 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
   }
 
   @NotNull
-  private String makeUnique(@NotNull final String userDefinedConnId) {
+  private synchronized String makeUnique(@NotNull final String userDefinedConnId) {
     int counter = INITIAL_AWS_CONNECTION_ID;
     String newAwsConnectionId;
     do {
       newAwsConnectionId = formatId(userDefinedConnId, ++counter);
     } while (!isUnique(newAwsConnectionId));
     return newAwsConnectionId;
-  }
-
-  private void writeNewId(@NotNull String connectionId) {
-    awsConnectionIdxMap.put(connectionId, connectionId);
-    LOG.debug(String.format("Added AWS Connection with ID '%s'", connectionId));
   }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
@@ -51,7 +50,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   @BeforeMethod
   public void setUp() throws IOException {
     super.setUp();
-    myAwsConnectorFactory = new AwsConnectorFactoryImpl(Mockito.mock(AwsConnectionIdGenerator.class));
+    myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory);
 
     xmlResponse = new Element("root");

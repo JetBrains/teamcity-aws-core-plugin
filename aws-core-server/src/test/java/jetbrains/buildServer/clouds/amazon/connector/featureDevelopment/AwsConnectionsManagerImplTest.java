@@ -57,8 +57,6 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
   public void setup() throws Exception {
     super.setUp();
 
-    initAwsConnectionTester();
-
     myProject = getMockedProject(testProjectId, createDefaultStorageValues());
 
     addTeamCityProject(myProject);

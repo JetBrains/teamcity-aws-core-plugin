@@ -23,6 +23,4 @@ public interface AwsConnectionsHolder {
   void removeAllConnectionsForProject(@NotNull final SProject project);
 
   boolean isUniqueAwsConnectionId(@NotNull final String awsConnectionId);
-
-  void addGeneratedAwsConnectionId(@NotNull final String awsConnectionId);
 }

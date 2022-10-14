@@ -97,7 +97,10 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
       return;
     }
 
-    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(updatedProject)) {
+    Collection<SProjectFeatureDescriptor> updatedAwsConnections = getAwsConnectionFeatures(updatedProject);
+    freeChangedIds(updatedAwsConnections, projectId);
+
+    for (SProjectFeatureDescriptor connectionFeature : updatedAwsConnections) {
       try {
         updateAwsConnection(
           buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
@@ -183,5 +186,28 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   private void initAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
     myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
     awsConnections.put(awsConnectionDescriptor.getId(), awsConnectionDescriptor);
+  }
+
+  private void freeChangedIds(@NotNull final Collection<SProjectFeatureDescriptor> updatedAwsConnections, @NotNull final String projectId) {
+    Map<String, String> dataStorageValues = getDataStorage().getValues();
+    if (dataStorageValues != null) {
+      ArrayList<String> previousOwnedByProjectAwsConnections = new ArrayList<>();
+      dataStorageValues.forEach((connectionId, projectOwnerId) -> {
+        if (projectOwnerId.equals(projectId)) {
+          previousOwnedByProjectAwsConnections.add(connectionId);
+        }
+      });
+
+      previousOwnedByProjectAwsConnections
+        .removeAll(
+          updatedAwsConnections
+            .stream()
+            .map(SProjectFeatureDescriptor::getId)
+            .collect(Collectors.toList())
+        );
+      for (String removedAwsConnectionId: previousOwnedByProjectAwsConnections) {
+        removeAwsConnectionFromDataStorage(removedAwsConnectionId);
+      }
+    }
   }
 }

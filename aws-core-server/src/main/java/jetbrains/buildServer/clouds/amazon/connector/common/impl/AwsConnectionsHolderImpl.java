@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -55,6 +56,10 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     String connectionOwnerProjectId = getDataStorageValue(connectionId);
     if (connectionOwnerProjectId == null) {
       addAwsConnection(awsConnectionDescriptor);
+    } else if (!connectionOwnerProjectId.equals(awsConnectionDescriptor.getProjectId())){
+      SProject originalConnectionProject = myProjectManager.findProjectById(connectionOwnerProjectId);
+      SProject duplicatedConnectionProject = myProjectManager.findProjectById(awsConnectionDescriptor.getProjectId());
+      AwsConnectionsLogger.duplicatedAwsConnectionExistsOnTheServer(connectionId, originalConnectionProject, duplicatedConnectionProject);
     } else {
       initAwsConnection(awsConnectionDescriptor);
     }
@@ -115,13 +120,6 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   @Override
   public boolean isUniqueAwsConnectionId(@NotNull final String awsConnectionId) {
     return getDataStorageValue(awsConnectionId) == null;
-  }
-
-  @Override
-  public void addGeneratedAwsConnectionId(@NotNull final String awsConnectionId) {
-    if (getDataStorageValue(awsConnectionId) == null) {
-      AwsConnectionsLogger.dataStorageDesynchronised(awsConnectionId);
-    }
   }
 
 

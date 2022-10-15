@@ -20,7 +20,7 @@ public class AwsExternalIdsManagerImpl implements AwsExternalIdsManager {
   @Override
   @NotNull
   public String getAwsConnectionExternalId(@NotNull final String awsConnectionId, @NotNull final String projectId) throws AwsConnectorException {
-    String awsConnectionExternalId = generateExternalId(awsConnectionId, getProjectById(projectId).getExternalId());
+    String awsConnectionExternalId = generateExternalId(getProjectById(projectId).getExternalId(), awsConnectionId);
     LOG.debug(String.format("Returning External ID for AWS Connection: %s", awsConnectionExternalId));
     return awsConnectionExternalId;
   }

@@ -75,7 +75,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Override
   public void addGeneratedId(@NotNull final String id, @NotNull final Map<String, String> props) {
-    //ignored, all AWS Connections IDs are handled by AwsConnectionsHandler via AwsConnectionsEventListener
+    myAwsConnectionsHolder.addGeneratedAwsConnectionId(id);
   }
 
   public boolean isUnique(@NotNull final String connectionId) {

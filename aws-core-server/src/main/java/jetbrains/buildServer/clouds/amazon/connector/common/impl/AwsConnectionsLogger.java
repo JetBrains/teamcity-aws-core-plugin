@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class AwsConnectionsLogger {
 
@@ -31,22 +30,11 @@ public class AwsConnectionsLogger {
     ));
   }
 
-  public static void duplicatedAwsConnectionExistsOnTheServer(@NotNull final String awsConnectionId,
-                                                              @Nullable final SProject originalConnectionProject,
-                                                              @Nullable final SProject duplicatedConnectionProject) {
-    String originalConnectionProjectId = "";
-    if (originalConnectionProject != null) {
-      originalConnectionProjectId = originalConnectionProject.getExternalId();
-    }
-    String duplicatedConnectionProjectId = "";
-    if (duplicatedConnectionProject != null) {
-      duplicatedConnectionProjectId = duplicatedConnectionProject.getExternalId();
-    }
-    Loggers.CLOUD.error(String.format(
-      "AWS Connection with ID <%s> in the project <%s> is broken, because another AWS Connection with the same ID already exists in the project <%s>",
+  public static void dataStorageDesynchronised(@NotNull final String awsConnectionId) {
+    Loggers.CLOUD.debug(String.format(
+      "AWS Connection ID <%s> is not stored in the CustemdataStorage <%s>, but this ID was requested as already added. Please, check the CustemdataStorage and your AWS Connection",
       awsConnectionId,
-      duplicatedConnectionProjectId,
-      originalConnectionProjectId
+      AwsConnectionsHolderImpl.AWS_CONNECTIONS_IDX_STORAGE
     ));
   }
 

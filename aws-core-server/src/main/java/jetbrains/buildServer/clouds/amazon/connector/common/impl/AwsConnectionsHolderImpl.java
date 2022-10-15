@@ -12,7 +12,6 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
@@ -101,22 +100,16 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     Collection<SProjectFeatureDescriptor> updatedAwsConnections = getAwsConnectionFeatures(updatedProject);
     freeChangedIds(updatedAwsConnections, projectId);
 
-    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(updatedProject);
     for (SProjectFeatureDescriptor connectionFeature : updatedAwsConnections) {
-      awsConnectionsLogger.rebuildAwsConnectionOnProjectRestore(connectionFeature.getId());
       try {
         updateAwsConnection(
           buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
         );
       } catch (AwsConnectorException e) {
-        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
-      } catch (Exception e) {
-        if (AwsExceptionUtils.isAmazonServiceException(e)) {
-          awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
-        } else {
-          throw e;
-        }
+        new AwsConnectionsLogger(updatedProject)
+          .failedToBuild(connectionFeature.getId(), e);
       }
+
     }
   }
 

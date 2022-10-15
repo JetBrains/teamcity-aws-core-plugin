@@ -1,14 +1,13 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import java.util.ArrayList;
+import com.google.common.base.Function;
+import com.intellij.openapi.util.Pair;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
-import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
+import jetbrains.buildServer.controllers.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -45,18 +44,6 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
     myDescriptor = descriptor;
   }
 
-  public static List<List<String>> getAvailableAwsConnectionsParams(List<OAuthConnectionDescriptor> awsConnections) {
-    List<List<String>> res = new ArrayList<>();
-    for (OAuthConnectionDescriptor awsConnection : awsConnections) {
-      List<String> props = new ArrayList<>();
-      props.add(awsConnection.getId());
-      props.add(awsConnection.getConnectionDisplayName());
-      props.add(ParamUtil.useSessionCredentials(awsConnection.getParameters()) ? "true" : "false");
-      res.add(props);
-    }
-    return res;
-  }
-
   @Nullable
   @Override
   protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
@@ -74,19 +61,20 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
         throw new AwsConnectorException("Could not find the project with id: " + projectId);
       }
 
-      List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-      List<List<String>> readyAvailAwsConnProps = getAvailableAwsConnectionsParams(processAvailableAwsConnections(awsConnections, request));
 
       String resourceName = request.getParameter("resource");
       if (resourceName == null) {
         ModelAndView mv = new ModelAndView(myDescriptor.getPluginResourcesPath(AwsConnectionProvider.EDIT_PARAMS_URL));
         mv.getModel().put("projectId", project.getProjectId());
-        mv.getModel().put(availableAwsConnsBeanName, readyAvailAwsConnProps);
+        final List<OAuthConnectionDescriptor> connections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+        mv.getModel().put(availableAwsConnsBeanName, asPairs(connections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName));
+
         return mv;
 
       } else if (resourceName.equals(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME)) {
+        List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
         writeAsJson(
-          readyAvailAwsConnProps,
+          asPairs(processAvailableAwsConnections(awsConnections, request), OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName),
           response
         );
 
@@ -111,6 +99,11 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
     }
 
     return awsConnections;
+  }
+
+  @NotNull
+  public <T> List<Pair<String, String>> asPairs(@NotNull List<T> values, @NotNull Function<T, String> getValue, @NotNull Function<T, String> getLabel) {
+    return values.stream().map(c -> new Pair<>(getValue.apply(c), getLabel.apply(c))).collect(Collectors.toList());
   }
 }
 

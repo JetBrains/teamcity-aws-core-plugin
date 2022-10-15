@@ -19,7 +19,6 @@
 
 <%@include file="awsIamRoleCredsConstants.jspf" %>
 <%@include file="../../awsConnectionConstants.jspf"%>
-<%@include file="../../sessionCredentials/sessionCredentialsConst.jspf"%>
 
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
@@ -36,7 +35,7 @@
     <jsp:include page="${avail_aws_conns_url}">
         <jsp:param name="projectId" value="${project.externalId}"/>
         <jsp:param name="principalAwsConnId" value="${oauthConnectionBean.getConnectionId()}"/>
-        <jsp:param name="sessionDuration" value="${session_duration_default}"/>
+        <jsp:param name="sessionDuration" value="exclude"/>
     </jsp:include>
 
     <tr id="${iam_role_arn_param}_row">

@@ -22,14 +22,12 @@
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 
 <%@include file="../awsConnectionConstants.jspf"%>
-<%@include file="../sessionCredentials/sessionCredentialsConst.jspf"%>
-<%@include file="../credentialTypeComponents/accessKeys/awsAccessKeysCredsConstants.jspf"%>
 
 <c:url var="availableAwsConnectionsControllerUrl" value="${avail_connections_controller_url}"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
-<c:set var="isUsingSessionCredentials" value="${(empty propertiesBean.properties[use_session_credentials_param]) ? 'true' : propertiesBean.properties[use_session_credentials_param]}"/>
+
 <c:set var="awsCredsType" value="${propertiesBean.properties[aws_creds_type_param]}"/>
 
 <tr class="noBorder">
@@ -40,7 +38,14 @@
   </td>
 </tr>
 
-<jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp"/>
+<c:choose>
+  <c:when test="${empty param.sessionDuration}">
+    <jsp:include page="../sessionCredentials/sessionCredentialsConfig.jsp"/>
+  </c:when>
+
+  <c:otherwise/>
+</c:choose>
+
 
 <script type="text/javascript">
 
@@ -51,25 +56,11 @@
   const availConnsSelector = $j(availConnsSelectorId);
   const $availConnsSelectorObject = $j(availConnsSelectorId)[0];
 
-  const awsConnectionsMap = new Map();
-
   const _errorIds = [
     errorPrefix + availConnPrefix
   ];
 
-  let sessionCredentialsMuted = true;
-
-
-  availConnsSelector.on('change', function () {
-    toggleSessionDurationField();
-  });
-
   $j(document).ready(function () {
-
-    if ('${empty param.sessionDuration}' === 'true') {
-      sessionCredentialsMuted = false;
-    }
-
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
       parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${principal_aws_conn_id}=${param.principalAwsConnId}',
 
@@ -82,24 +73,24 @@
           availConnsSelector.empty();
 
           if (json.length !== 0) {
+            //TODO: Decide whether to use <unselected> option
+            <%--availConnsSelector.append(--%>
+            <%--  $j("<option></option>")--%>
+            <%--  .attr("value", "${unselected_principal_aws_connection_value}")--%>
+            <%--  .text(`-- Choose the Principal AWS Connection --`)--%>
+            <%--);--%>
             json.forEach(
-              awsConnectionProps => {
+              connectionNameIdPair => {
                 availConnsSelector.append(
                   $j("<option></option>")
-                  .attr("value", awsConnectionProps[0])
-                  .text(`\${awsConnectionProps[1]}`)
+                  .attr("value", connectionNameIdPair.first)
+                  .text(`\${connectionNameIdPair.second}`)
                 );
-
-                awsConnectionsMap.set(awsConnectionProps[0], {
-                  "name": awsConnectionProps[1],
-                  "isUsingSessionCredentials": awsConnectionProps[2]
-                })
               }
             );
             availConnsSelector.prop('disabled', false);
-            toggleSessionDurationField();
 
-            let previouslySelectedOptionIndex = json.findIndex(awsConnectionProps => awsConnectionProps[0] === '${previouslyChosenAwsConnId}');
+            let previouslySelectedOptionIndex = json.findIndex(option => option.first === '${previouslyChosenAwsConnId}');
             if(previouslySelectedOptionIndex !== -1){
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
@@ -126,23 +117,6 @@
 
     BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
   });
-
-  let toggleSessionDurationField = function () {
-    var sessionDurationParam = document.getElementById('${session_duration_param}_row');
-
-    if (sessionCredentialsMuted) {
-      sessionDurationParam.classList.add("hidden");
-      return;
-    }
-
-    const selectedConnectionId = document.getElementById('${avail_connections_select_id}').value;
-    const awsConnection = awsConnectionsMap.get(selectedConnectionId);
-    if (awsConnection.isUsingSessionCredentials != 'true') {
-      sessionDurationParam.classList.add("hidden");
-    } else {
-      sessionDurationParam.classList.remove("hidden");
-    }
-  };
 
   let toggleErrors = function (showErrors){
     _errorIds.forEach(errorId => {

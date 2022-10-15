@@ -18,16 +18,13 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -112,18 +109,14 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     when(request.getParameter("resource"))
       .thenReturn(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME);
 
-    mockedAwsConnection = new OAuthConnectionDescriptor(
-      project,
-      new ProjectFeatureDescriptorImpl(
-        AWS_CONNECTION_ID,
-        OAuthConstants.FEATURE_TYPE,
-        Collections.emptyMap(),
-        PROJECT_ID
-      ),
-      Mockito.mock(ExtensionHolder.class)
-    );
     when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
       .thenReturn(Collections.singletonList(mockedAwsConnection));
+
+    when(mockedAwsConnection.getId())
+      .thenReturn(AWS_CONNECTION_ID);
+    when(mockedAwsConnection.getConnectionDisplayName())
+      .thenReturn(AWS_CONNECTION_DISPLAY_NAME);
+
 
     try {
       availableAwsConnsController.doHandle(request, response);
@@ -134,7 +127,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     String result = responseOutputStream.toString();
 
-    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(Collections.singletonList(mockedAwsConnection)));
+    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(availableAwsConnsController.asPairs(Collections.singletonList(mockedAwsConnection), OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName));
 
     assertEquals(expectedResponseJson, result);
   }
@@ -157,7 +150,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     String result = responseOutputStream.toString();
 
-    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(Collections.emptyList()));
+    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(new ArrayList<>());
 
     assertEquals(expectedResponseJson, result);
   }
@@ -186,7 +179,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     String result = responseOutputStream.toString();
 
-    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(availableAsConnections));
+    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(availableAwsConnsController.asPairs(availableAsConnections, OAuthConnectionDescriptor::getId, OAuthConnectionDescriptor::getConnectionDisplayName));
 
     assertEquals(expectedResponseJson, result);
   }

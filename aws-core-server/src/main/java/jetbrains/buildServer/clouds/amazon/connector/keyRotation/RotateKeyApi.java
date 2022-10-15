@@ -20,6 +20,4 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException
 
 public interface RotateKeyApi {
   void rotateKey() throws KeyRotationException;
-
-  void deletePreviousAccessKey() throws KeyRotationException;
 }

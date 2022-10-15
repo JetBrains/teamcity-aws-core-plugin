@@ -34,6 +34,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ConfigActionFactory;
+import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.serverSide.auth.AuthorityHolder;
@@ -98,25 +99,13 @@ public class AwsRotateKeyApi implements RotateKeyApi {
   @Override
   public void rotateKey() throws KeyRotationException {
     Loggers.CLOUD.debug("Creating a new key...");
-    createNewKey();
+    IOGuard.allowNetworkCall(() -> createNewKey());
 
     Loggers.CLOUD.debug("Waiting for the new key to become available...");
-    waitUntilRotatedKeyIsAvailable();
+    IOGuard.allowNetworkCall(() -> waitUntilRotatedKeyIsAvailable());
 
     Loggers.CLOUD.debug("Updating the AWS Connection...");
-    updateConnection();
-  }
-
-  @Override
-  public void deletePreviousAccessKey() throws KeyRotationException {
-    DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
-      .withAccessKeyId(myPreviousCredentials.getCredentials().getAWSAccessKeyId())
-      .withRequestCredentialsProvider(myPreviousCredentials);
-    try {
-      myIam.deleteAccessKey(deleteAccessKeyRequest);
-    } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
-      throw new KeyRotationException(e);
-    }
+    IOGuard.allowNetworkCall(() -> updateConnection());
   }
 
   private void createNewKey() throws KeyRotationException {

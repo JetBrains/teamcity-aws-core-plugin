@@ -139,7 +139,7 @@ public class OldKeysCleaner {
     DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
       .withAccessKeyId(awsAccessKeyId);
     try {
-      iam.deleteAccessKey(deleteAccessKeyRequest);
+      IOGuard.allowNetworkCall(() -> iam.deleteAccessKey(deleteAccessKeyRequest));
     } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
       throw new KeyRotationException(e);
     }

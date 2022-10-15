@@ -82,7 +82,7 @@
         <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>
     </props:selectProperty>
-    <span class="smallNote">The region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>
+    <span class="smallNote">Select the region where this connection will be used</span><span class="error" id="error_${region_name_param}"></span>
   </td>
 </tr>
 

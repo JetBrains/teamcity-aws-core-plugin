@@ -42,6 +42,7 @@
     <tr id="${iam_role_arn_param}_row">
         <th class="nowrap"><label for="${iam_role_arn_param}">${iam_role_arn_label} <l:star/></label></th>
         <td><props:textProperty name="${iam_role_arn_param}" className="longField" maxlength="256"/>
+            <span class="smallNote">Pre-configured IAM role with necessary permissions</span>
             <span class="error" id="error_${iam_role_arn_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
@@ -56,6 +57,7 @@
                             <label id="${external_id_field_id}" className="longField" maxlength="256"/>
                         </bs:copy2ClipboardLink>
                     </div>
+                    <span class="smallNote">External ID is strongly recommended to be used in role trust relationship condition</span>
                     <span class="error" id="error_${external_id_field_id}" style="word-break: break-all;"></span>
                 </td>
             </tr>
@@ -70,6 +72,7 @@
         <th><label for="${iam_role_session_name_param}">${iam_role_session_name_label}</label></th>
         <td><props:textProperty name="${iam_role_session_name_param}"
                                 value="${empty sessionName ? iam_role_session_name_default : sessionName}" className="longField" maxlength="256"/>
+            <span class="smallNote">The tag to distinguish which AWS Connection has assumed the role</span>
             <span class="error" id="error_${iam_role_session_name_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
@@ -79,7 +82,7 @@
         <td><props:textProperty id="${sts_endpoint_field_id_iam_role}"
                                 name="${sts_endpoint_param}"
                                 value="${stsEndpoint}" className="longField" maxlength="256"/>
-            <span class="smallNote">The global endpoint is: ${sts_global_endpoint}</span>
+            <span class="smallNote">The global endpoint is ${sts_global_endpoint}</span>
             <span class="error" id="error_${sts_endpoint_param}" style="word-break: break-all;"></span>
         </td>
     </tr>

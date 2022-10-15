@@ -100,4 +100,12 @@ public class AwsConnectionsLogger {
       cause.getMessage()
     ), cause);
   }
+
+  public void rebuildAwsConnectionOnProjectRestore(@NotNull final String awsConnectionId) {
+    Loggers.CLOUD.debug(String.format(
+      "Found AWS Connection to rebuild after Project restore: rebuilding AWS Connection <%s> in the Project <%s>",
+      awsConnectionId,
+      myProject.getExternalId()
+    ));
+  }
 }

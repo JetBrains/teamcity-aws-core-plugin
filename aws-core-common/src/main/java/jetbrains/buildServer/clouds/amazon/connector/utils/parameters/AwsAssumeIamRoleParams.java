@@ -25,7 +25,7 @@ public final class AwsAssumeIamRoleParams {
   public static final String IAM_ROLE_ARN_PARAM = "awsIamRoleArn";
   public static final String IAM_ROLE_ARN_LABEL = "Role ARN:";
   public static final String IAM_ROLE_SESSION_NAME_PARAM = "awsIamRoleSessionName";
-  public static final String IAM_ROLE_SESSION_NAME_LABEL = "Session name tag:";
+  public static final String IAM_ROLE_SESSION_NAME_LABEL = "Session tag:";
   public static final String IAM_ROLE_SESSION_NAME_DEFAULT = "TeamCity-session";
 
   public static final String STS_ENDPOINT_FIELD_ID_IAM_ROLE = "stsEndpointFieldIamRole";

@@ -30,16 +30,18 @@
 <c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
 <c:set var="rotateKeySpinnerId" value="spinner_${rotate_key_button_id}"/>
 
-<l:settingsGroup title="Access Key">
+<l:settingsGroup title="Access keys">
     <tr id="${access_key_id_param}_row">
         <th><label for="${access_key_id_param}">${access_key_id_label}: <l:star/></label></th>
         <td><props:textProperty name="${access_key_id_param}" className="longField" maxlength="256" noAutoComplete="true"/>
+            <span class="smallNote">AWS account access key ID</span>
             <span class="error" id="error_${access_key_id_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
     <tr id="${secret_access_key_param}_row">
         <th class="nowrap"><label for="${secure_secret_access_key_param}">${secret_access_key_label}: <l:star/></label></th>
         <td><props:passwordProperty name="${secure_secret_access_key_param}" className="longField" maxlength="256"/>
+            <span class="smallNote">AWS account secret access key</span>
             <span class="error" id="error_${secure_secret_access_key_param}" style="word-break: break-all;"></span>
         </td>
     </tr>
@@ -49,7 +51,7 @@
             <tr>
                 <td>
                     <forms:button id="${rotate_key_button_id}"
-                                  onclick="return BS.OAuthConnectionDialog.rotateKey('${param.connectionId}');">Rotate key</forms:button>
+                                  onclick="return BS.OAuthConnectionDialog.rotateKey('${param.connectionId}');">Rotate keys</forms:button>
                     <forms:saving id="${rotateKeySpinnerId}" className="progressRingInline"/>
                 </td>
                 <td>
@@ -64,7 +66,7 @@
 
 </l:settingsGroup>
 
-<l:settingsGroup title="Session Settings">
+<l:settingsGroup title="Session settings">
     <tr class="non_serializable_form_elements_container" id="${use_session_credentials_param}_row">
         <th><label for="${use_session_credentials_param}">${use_session_credentials_label}</label></th>
         <td>

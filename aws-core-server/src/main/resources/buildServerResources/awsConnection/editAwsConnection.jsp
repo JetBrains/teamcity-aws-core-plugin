@@ -45,10 +45,10 @@
 </style>
 
 <tr>
-  <td><label for="displayName">Name:</label><l:star/></td>
+  <td><label for="displayName">Display name:</label><l:star/></td>
   <td>
     <props:textProperty name="${connectionDisplayNameProp}" className="longField" style="width: 20em;"/>
-    <span class="smallNote nowrap">Provide some name to distinguish this connection from others.</span>
+    <span class="smallNote nowrap">Provide a name to distinguish this connection from others</span>
     <span class="error" id="error_displayName"></span>
   </td>
 </tr>

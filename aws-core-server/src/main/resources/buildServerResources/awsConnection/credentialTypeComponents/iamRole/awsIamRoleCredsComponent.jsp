@@ -67,7 +67,7 @@
     </c:choose>
 </l:settingsGroup>
 
-<l:settingsGroup title="Session Settings">
+<l:settingsGroup title="Session settings">
     <tr id="${iam_role_session_name_param}_row">
         <th><label for="${iam_role_session_name_param}">${iam_role_session_name_label}</label></th>
         <td><props:textProperty name="${iam_role_session_name_param}"

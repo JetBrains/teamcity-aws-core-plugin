@@ -8,6 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
@@ -77,19 +78,29 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
   @NotNull
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
-    StringBuilder connDisplayNameBuilder = new StringBuilder();
+    StringBuilder featureDescriptionBuilder = new StringBuilder();
+    featureDescriptionBuilder.append("Adds credentials of AWS Connection ");
+
     String connId = params.get(CHOSEN_AWS_CONN_ID_PARAM);
     if (connId != null) {
       try {
         AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(connId);
-        connDisplayNameBuilder.append("\"");
-        connDisplayNameBuilder.append(awsConnectionDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
-        connDisplayNameBuilder.append("\"");
+        featureDescriptionBuilder.append("\"");
+        featureDescriptionBuilder.append(awsConnectionDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
+        featureDescriptionBuilder.append("\"");
       } catch (AwsConnectorException e) {
-        Loggers.CLOUD.warnAndDebugDetails("Cannot get description for AWS Connection with ID " + connId + " in BuildFeature", e);
+        String erroMessage = "Cannot get description for AWS Connection with ID " + connId;
+        Loggers.CLOUD.warnAndDebugDetails(erroMessage + " in BuildFeature", e);
+        return erroMessage;
       }
     }
-    return "Adds credentials of AWS Connection " + connDisplayNameBuilder + " to the build";
+    featureDescriptionBuilder.append(" to the build");
+    String sessionDurationParam = params.get(SESSION_DURATION_PARAM);
+    if (sessionDurationParam != null && ParamUtil.isValidSessionDuration(sessionDurationParam)) {
+      featureDescriptionBuilder.append(String.format(", credentials will be valid for %s minutes", sessionDurationParam));
+    }
+
+    return featureDescriptionBuilder.toString();
   }
 
   public String getAvailAwsConnsUrl() {

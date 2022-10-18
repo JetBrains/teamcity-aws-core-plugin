@@ -2,12 +2,12 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
 public final class AwsAccessKeysParams {
   public static final String ACCESS_KEY_ID_PARAM = "awsAccessKeyId";
-  public static final String ACCESS_KEY_ID_LABEL = "Access Key ID";
+  public static final String ACCESS_KEY_ID_LABEL = "Access key ID";
 
 
   public static final String SECURE_SECRET_ACCESS_KEY_PARAM = "secure:awsSecretAccessKey";
   public static final String SECRET_ACCESS_KEY_PARAM = "awsSecretAccessKey";
-  public static final String SECRET_ACCESS_KEY_LABEL = "Secret Access Key";
+  public static final String SECRET_ACCESS_KEY_LABEL = "Secret access key";
   public static final String ROTATE_KEY_CONTROLLER_URL = "/aws-rotate-keys.html";
   public static final String ROTATE_KEY_BTTN_ID = "rotateKeyButton";
   public static final String AWS_CONN_DIALOG_NAME = "Amazon Web Services";

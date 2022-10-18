@@ -102,7 +102,7 @@
           } else {
             addError(
               'There are no available AWS connections.<br>\
-              <span class="smallNote">To configure connections, use the <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${aws_connection_type}'/>" target="_blank" rel="noreferrer">Project Connections</a> page</span>',
+              <span class="smallNote">First, create an <a href="<c:url value='/admin/editProject.html?projectId=${param.projectId}&tab=oauthConnections#addDialog=${aws_connection_type}'/>" target="_blank" rel="noreferrer">AWS Connection</a></span>',
               $j('.' + errorPrefix + availConnPrefix)
             );
             toggleErrors(true);

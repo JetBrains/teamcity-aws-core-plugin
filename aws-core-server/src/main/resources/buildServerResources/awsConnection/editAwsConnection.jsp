@@ -62,7 +62,7 @@
                           value="${connectionId}"/>
       <span class="smallNote">This ID is used in URLs, REST API, HTTP requests to the server and configuration settings in the TeamCity Data Directory.</span>
       <script type="application/javascript">
-        BS.AdminActions.prepareCustomIdGenerator("buildType", ${connection_id_param}, ${connectionDisplayNameProp});
+        BS.AdminActions.prepareCustomIdGenerator('${aws_connection_id_generator_type}', ${connection_id_param}, ${connectionDisplayNameProp});
       </script>
     </c:when>
     <c:otherwise>

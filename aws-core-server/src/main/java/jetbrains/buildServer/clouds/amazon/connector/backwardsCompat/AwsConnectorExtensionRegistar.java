@@ -2,10 +2,13 @@ package jetbrains.buildServer.clouds.amazon.connector.backwardsCompat;
 
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;
+import jetbrains.buildServer.clouds.amazon.connector.connectionId.GenerateAwsIdExtension;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.AwsConnToAgentBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.InjectAwsCredentialsToTheBuildContext;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.controllers.admin.projects.GenerateExternalIdExtension;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
@@ -22,15 +25,18 @@ public class AwsConnectorExtensionRegistar {
   private final PluginDescriptor myPluginDescriptor;
   private final AwsConnectorFactory myAwsConnectorFactory;
   private final AwsConnectionsManager myAwsConnectionsManager;
+  private final AwsConnectionIdGenerator myAwsConnectionIdGenerator;
 
   public AwsConnectorExtensionRegistar(@NotNull final ExtensionHolder extensionHolder,
                                        @NotNull final PluginDescriptor pluginDescriptor,
                                        @NotNull final AwsConnectorFactory awsConnectorFactory,
-                                       @NotNull final AwsConnectionsManager awsConnectionsManager) {
+                                       @NotNull final AwsConnectionsManager awsConnectionsManager,
+                                       @NotNull final AwsConnectionIdGenerator awsConnectionIdGenerator) {
     myExtensionHolder = extensionHolder;
     myPluginDescriptor = pluginDescriptor;
     myAwsConnectorFactory = awsConnectorFactory;
     myAwsConnectionsManager = awsConnectionsManager;
+    myAwsConnectionIdGenerator = awsConnectionIdGenerator;
 
     if (TeamCityProperties.getBooleanOrTrue(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME)) {
 
@@ -46,6 +52,9 @@ public class AwsConnectorExtensionRegistar {
     AwsConnectionProvider awsConnectionProvider = new AwsConnectionProvider(myPluginDescriptor, myAwsConnectorFactory);
     myExtensionHolder.registerExtension(ConnectionProvider.class, AwsConnectionProvider.class.getName(), awsConnectionProvider);
     myExtensionHolder.registerExtension(OAuthProvider.class, AwsConnectionProvider.class.getName(), awsConnectionProvider);
+
+    GenerateAwsIdExtension generateAwsIdExtension = new GenerateAwsIdExtension(myAwsConnectionIdGenerator);
+    myExtensionHolder.registerExtension(GenerateExternalIdExtension.class, GenerateAwsIdExtension.class.getName(), generateAwsIdExtension);
   }
 
   private void registerExposeToEnvVarsBuildFeature() {

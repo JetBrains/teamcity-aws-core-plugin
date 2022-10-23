@@ -168,7 +168,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     return dataStorageValues.get(key);
   }
 
-  private void putDataStorageValue(@NotNull final String key, @NotNull final String value) {
+  public void putDataStorageValue(@NotNull final String key, @NotNull final String value) {
     CustomDataStorage dataStorage = getDataStorage();
     dataStorage.putValue(key, value);
     dataStorage.flush();

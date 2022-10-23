@@ -49,6 +49,7 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
 
     AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(project);
     try {
+      myAwsConnectionsHolder.putDataStorageValue(projectFeature.getId(), projectFeature.getProjectId());
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(projectFeature);
       myAwsConnectionsHolder.addAwsConnection(awsConnectionDescriptor);
       awsConnectionsLogger.connectionAdded(awsConnectionDescriptor.getId());
@@ -70,6 +71,7 @@ public class AwsConnectionsEventsListener extends BuildServerAdapter {
     }
 
     try {
+      myAwsConnectionsHolder.putDataStorageValue(after.getId(), after.getProjectId());
       AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionDescriptorBuilder.fromFeatureDescriptor(after);
       myAwsConnectionsHolder.updateAwsConnection(awsConnectionDescriptor);
       awsConnectionsLogger.connectionUpdated(after.getId());

@@ -19,6 +19,7 @@ package jetbrains.buildServer.clouds.amazon.connector.connectionId;
 import com.intellij.openapi.diagnostic.Logger;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder;
+import jetbrains.buildServer.serverSide.identifiers.BaseExternalIdGenerator;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
 import jetbrains.buildServer.util.CachingTypedIdGenerator;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
 
-public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
+public class AwsConnectionIdGenerator extends BaseExternalIdGenerator implements CachingTypedIdGenerator {
   public final static String ID_GENERATOR_TYPE = AwsConnectionProvider.TYPE;
   public final static String AWS_CONNECTION_ID_PREFIX = "awsConnection";
   public final static int INITIAL_AWS_CONNECTION_ID = 0;
@@ -75,7 +76,7 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
 
   @Override
   public void addGeneratedId(@NotNull final String id, @NotNull final Map<String, String> props) {
-    myAwsConnectionsHolder.addGeneratedAwsConnectionId(id);
+    //ignored, all AWS Connections IDs are handled by AwsConnectionsHandler via AwsConnectionsEventListener
   }
 
   public boolean isUnique(@NotNull final String connectionId) {
@@ -95,5 +96,10 @@ public class AwsConnectionIdGenerator implements CachingTypedIdGenerator {
       newAwsConnectionId = formatId(userDefinedConnId, ++counter);
     } while (!isUnique(newAwsConnectionId));
     return newAwsConnectionId;
+  }
+
+  @Override
+  protected boolean isExternalIdOccupied(@NotNull String newExtId) {
+    return !isUnique(newExtId);
   }
 }

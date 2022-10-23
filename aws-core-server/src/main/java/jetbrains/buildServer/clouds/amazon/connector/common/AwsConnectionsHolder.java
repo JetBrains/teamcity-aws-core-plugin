@@ -24,5 +24,5 @@ public interface AwsConnectionsHolder {
 
   boolean isUniqueAwsConnectionId(@NotNull final String awsConnectionId);
 
-  void addGeneratedAwsConnectionId(@NotNull final String awsConnectionId);
+  void putDataStorageValue(@NotNull final String awsConnectionId, @NotNull final String projectOwnerid);
 }

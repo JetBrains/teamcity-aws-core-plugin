@@ -33,6 +33,9 @@ public final class AwsCloudConnectorConstants {
   public static final String STS_ENDPOINT_DEFAULT = "https://sts." + REGION_NAME_DEFAULT + ".amazonaws.com";
 
 
+  //UI
+  public static final String AWS_CONNECTION_ID_GENERATOR_TYPE = "awsConnection";
+
   //Test connection
   public static final String TEST_CONNECTION_CONTROLLER_URL = "/repo/aws-test-connection.html";
 

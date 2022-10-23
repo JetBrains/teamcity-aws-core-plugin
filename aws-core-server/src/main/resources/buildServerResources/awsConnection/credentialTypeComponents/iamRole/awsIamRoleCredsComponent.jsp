@@ -19,6 +19,7 @@
 
 <%@include file="awsIamRoleCredsConstants.jspf" %>
 <%@include file="../../awsConnectionConstants.jspf"%>
+<%@include file="../../sessionCredentials/sessionCredentialsConst.jspf"%>
 
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
@@ -35,7 +36,7 @@
     <jsp:include page="${avail_aws_conns_url}">
         <jsp:param name="projectId" value="${project.externalId}"/>
         <jsp:param name="principalAwsConnId" value="${oauthConnectionBean.getConnectionId()}"/>
-        <jsp:param name="sessionDuration" value="exclude"/>
+        <jsp:param name="sessionDuration" value="${session_duration_default}"/>
     </jsp:include>
 
     <tr id="${iam_role_arn_param}_row">
@@ -71,7 +72,7 @@
         <th><label for="${iam_role_session_name_param}">${iam_role_session_name_label}</label></th>
         <td><props:textProperty name="${iam_role_session_name_param}"
                                 value="${empty sessionName ? iam_role_session_name_default : sessionName}" className="longField" maxlength="256"/>
-            <span class="smallNote">The tag to distinguish which AWS Connection has assumed the role</span>
+            <span class="smallNote">Identifies which TeamCity connection assumes the role</span>
             <span class="error" id="error_${iam_role_session_name_param}" style="word-break: break-all;"></span>
         </td>
     </tr>

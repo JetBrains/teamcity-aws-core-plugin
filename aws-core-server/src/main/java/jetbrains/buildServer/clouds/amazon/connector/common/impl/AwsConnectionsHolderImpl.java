@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -11,6 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.serverSide.CustomDataStorage;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProject;
@@ -55,6 +57,10 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     String connectionOwnerProjectId = getDataStorageValue(connectionId);
     if (connectionOwnerProjectId == null) {
       addAwsConnection(awsConnectionDescriptor);
+    } else if (!connectionOwnerProjectId.equals(awsConnectionDescriptor.getProjectId())){
+      SProject originalConnectionProject = myProjectManager.findProjectById(connectionOwnerProjectId);
+      SProject duplicatedConnectionProject = myProjectManager.findProjectById(awsConnectionDescriptor.getProjectId());
+      AwsConnectionsLogger.duplicatedAwsConnectionExistsOnTheServer(connectionId, originalConnectionProject, duplicatedConnectionProject);
     } else {
       initAwsConnection(awsConnectionDescriptor);
     }
@@ -92,16 +98,25 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
       return;
     }
 
-    for (SProjectFeatureDescriptor connectionFeature : getAwsConnectionFeatures(updatedProject)) {
+    Collection<SProjectFeatureDescriptor> updatedAwsConnections = getAwsConnectionFeatures(updatedProject);
+    freeChangedIds(updatedAwsConnections, projectId);
+
+    AwsConnectionsLogger awsConnectionsLogger = new AwsConnectionsLogger(updatedProject);
+    for (SProjectFeatureDescriptor connectionFeature : updatedAwsConnections) {
+      awsConnectionsLogger.rebuildAwsConnectionOnProjectRestore(connectionFeature.getId());
       try {
         updateAwsConnection(
           buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
         );
       } catch (AwsConnectorException e) {
-        new AwsConnectionsLogger(updatedProject)
-          .failedToBuild(connectionFeature.getId(), e);
+        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
+      } catch (Exception e) {
+        if (AwsExceptionUtils.isAmazonServiceException(e)) {
+          awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
+        } else {
+          throw e;
+        }
       }
-
     }
   }
 
@@ -115,13 +130,6 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   @Override
   public boolean isUniqueAwsConnectionId(@NotNull final String awsConnectionId) {
     return getDataStorageValue(awsConnectionId) == null;
-  }
-
-  @Override
-  public void addGeneratedAwsConnectionId(@NotNull final String awsConnectionId) {
-    if (getDataStorageValue(awsConnectionId) == null) {
-      AwsConnectionsLogger.dataStorageDesynchronised(awsConnectionId);
-    }
   }
 
 
@@ -160,7 +168,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     return dataStorageValues.get(key);
   }
 
-  private void putDataStorageValue(@NotNull final String key, @NotNull final String value) {
+  public void putDataStorageValue(@NotNull final String key, @NotNull final String value) {
     CustomDataStorage dataStorage = getDataStorage();
     dataStorage.putValue(key, value);
     dataStorage.flush();
@@ -185,5 +193,28 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   private void initAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
     myAwsCredentialsRefresheringManager.scheduleCredentialRefreshingTask(awsConnectionDescriptor);
     awsConnections.put(awsConnectionDescriptor.getId(), awsConnectionDescriptor);
+  }
+
+  private void freeChangedIds(@NotNull final Collection<SProjectFeatureDescriptor> updatedAwsConnections, @NotNull final String projectId) {
+    Map<String, String> dataStorageValues = getDataStorage().getValues();
+    if (dataStorageValues != null) {
+      ArrayList<String> previousOwnedByProjectAwsConnections = new ArrayList<>();
+      dataStorageValues.forEach((connectionId, projectOwnerId) -> {
+        if (projectOwnerId.equals(projectId)) {
+          previousOwnedByProjectAwsConnections.add(connectionId);
+        }
+      });
+
+      previousOwnedByProjectAwsConnections
+        .removeAll(
+          updatedAwsConnections
+            .stream()
+            .map(SProjectFeatureDescriptor::getId)
+            .collect(Collectors.toList())
+        );
+      for (String removedAwsConnectionId: previousOwnedByProjectAwsConnections) {
+        removeAwsConnectionFromDataStorage(removedAwsConnectionId);
+      }
+    }
   }
 }

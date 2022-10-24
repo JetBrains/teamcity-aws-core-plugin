@@ -41,12 +41,8 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
   }
 
   @Override
-  public void addAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) throws DuplicatedAwsConnectionIdException {
+  public void addAwsConnection(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
     String awsConnectionId = awsConnectionDescriptor.getId();
-    String connectionOwnerProjectId = getDataStorageValue(awsConnectionId);
-    if (connectionOwnerProjectId != null) {
-      throw new DuplicatedAwsConnectionIdException("AWS Connection with ID " + awsConnectionId + " already exists");
-    }
     initAwsConnection(awsConnectionDescriptor);
     putDataStorageValue(awsConnectionId, awsConnectionDescriptor.getProjectId());
   }

@@ -15,17 +15,17 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-agent' version "1.1.1"
+    id 'com.github.rodm.teamcity-agent' version "1.4.1"
 }
 
 dependencies {
-    compile project(':aws-core-common')
+    implementation project(':aws-core-common')
     compileOnly ("org.jetbrains.teamcity:agent-api:${teamcityVersion}"){
         exclude group: 'org.jetbrains.teamcity', module: 'common-api'
     }
-    testCompile "org.testng:testng:6.8.21"
-    testCompile "org.mockito:mockito-core:3.9.0"
-    testCompile "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
+    testImplementation "org.testng:testng:6.8.21"
+    testImplementation "org.mockito:mockito-core:3.9.0"
+    testImplementation "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
 }
 
 teamcity {
@@ -33,6 +33,7 @@ teamcity {
         descriptor = project(':aws-core-agent').file('teamcity-plugin.xml')
     }
 
+    allowSnapshotVersions = true
     version = teamcityVersion
 }
 

@@ -23,7 +23,7 @@ import jetbrains.buildServer.controllers.BaseController;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.oauth.ProjectAccessChecker;
+import jetbrains.buildServer.serverSide.oauth.aws.ProjectAccessChecker;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 

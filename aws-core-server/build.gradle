@@ -39,6 +39,7 @@ teamcity {
     server {
         descriptor = file("$rootDir/teamcity-plugin.xml")
         tokens = [Plugin_Version: buildUtils.getPluginVersion()]
+        archiveName = "aws-core-plugin"
 
         files {
             into("kotlin-dsl") {

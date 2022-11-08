@@ -46,6 +46,7 @@ teamcity {
     server {
         descriptor = file("$rootDir/teamcity-plugin.xml")
         tokens = [Plugin_Version: 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')]
+        archiveName = "aws-core-plugin"
 
         environments {
             teamcity {

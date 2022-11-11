@@ -88,7 +88,7 @@
 
 
 <c:choose>
-  <c:when test="${intprop:getProperty(default_creds_provider_prop_name, 'true') == 'true'}">
+  <c:when test="${intprop:getProperty(default_creds_provider_prop_name, 'false') == 'true'}">
     <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
       <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
         <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">

@@ -25,7 +25,7 @@ public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder
   @NotNull
   @Override
   protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    if (! TeamCityProperties.getBooleanOrTrue(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
+    if (! TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
       throw new AwsConnectorException("Default Credentials Provider is disabled on this server, please, contact the server Administrator");
     }
     return new DefaultProviderCredentialsHolder();

@@ -16,6 +16,7 @@
 
 <!--    core logic of aws connections-->
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
+    <bean class="jetbrains.buildServer.connections.aws.AwsConnectionCredentialsFactoryImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorBuilderImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl"/>

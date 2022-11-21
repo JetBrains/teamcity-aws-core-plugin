@@ -11,6 +11,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -21,8 +22,10 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Par
 
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
-  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
+  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                  @NotNull final AwsCredentialsFactory awsCredentialsFactory) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    awsCredentialsFactory.registerAwsCredentialsBuilder(this);
   }
 
   @NotNull

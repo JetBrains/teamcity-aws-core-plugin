@@ -11,18 +11,15 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
-import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
+import jetbrains.buildServer.connections.common.ConnectionCredentialsService;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import jetbrains.buildServer.messages.Status;
-import jetbrains.buildServer.serverSide.BuildStartContext;
-import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.buildLog.MessageAttrs;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,9 +29,15 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextProcessor {
 
   private final AwsConnectionsManager myAwsConnectionsManager;
+  private final ConnectionCredentialsService myConnectionCredentialsService;
+  private final ProjectManager myProjectManager;
 
-  public InjectAwsCredentialsToTheBuildContext(@NotNull final AwsConnectionsManager awsConnectionsManager) {
+  public InjectAwsCredentialsToTheBuildContext(@NotNull final AwsConnectionsManager awsConnectionsManager,
+                                               @NotNull final ConnectionCredentialsService connectionCredentialsService,
+                                               @NotNull final ProjectManager projectManager) {
     myAwsConnectionsManager = awsConnectionsManager;
+    myConnectionCredentialsService = connectionCredentialsService;
+    myProjectManager = projectManager;
   }
 
   @Override
@@ -60,7 +63,8 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         Collection<InvalidProperty> invalidProps = awsConnsPropertiesProcessor.process(connectionBuildFeatureProps);
         if (!invalidProps.isEmpty()) {
           InvalidProperty invalidProperty = invalidProps.iterator().next();
-          String message = String.format("Add AWS Connection BuildFeature problem detected: %s property is not valid, reason: %s", invalidProperty.getPropertyName(), invalidProperty.getInvalidReason());
+          String message = String.format("Add AWS Connection BuildFeature problem detected: %s property is not valid, reason: %s", invalidProperty.getPropertyName(),
+                                         invalidProperty.getInvalidReason());
           context.getBuild().getBuildLog()
                  .message(
                    message,
@@ -84,11 +88,15 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         String sessionDuration = connectionBuildFeatureProps.get(SESSION_DURATION_PARAM);
         AwsConnectionDescriptor awsConnection;
         if (sessionDuration != null) {
-          awsConnection = myAwsConnectionsManager.buildWithSessionDuration(awsConnectionId, sessionDuration);
+          awsConnection = myConnectionCredentialsService.getConnectionCredentialsDescriptor(myProjectManager.findProjectById(context.getBuild().getProjectId()),
+                                                                                            awsConnectionId,
+                                                                                            AwsCloudConnectorConstants.CLOUD_TYPE,
+                                                                                            AwsConnectionDescriptor.class);
 
         } else {
           awsConnection = myAwsConnectionsManager.getAwsConnection(awsConnectionId);
-          String message = String.format("There is no %s param in the BuildFeature, will use Default SessionDuration for the AWS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
+          String message =
+            String.format("There is no %s param in the BuildFeature, will use Default SessionDuration for the AWS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
           context.getBuild().getBuildLog()
                  .message(
                    message,
@@ -97,6 +105,15 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
                  );
         }
 
+        if (awsConnection == null) {
+          context.getBuild().getBuildLog()
+                 .message(
+                   String.format("Failed to inject AWS Connection with id: <%s> from the Project with id: <%s>, please, check that this connection exists", awsConnectionId, context.getBuild().getProjectId()),
+                   Status.WARNING,
+                   MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage("Please check that the connection is working"))
+                 );
+          return;
+        }
         Map<String, String> parameters = getConnectionParametersToExpose(awsConnection);
         String encodedCredentials = parametersToEncodedString(parameters);
 

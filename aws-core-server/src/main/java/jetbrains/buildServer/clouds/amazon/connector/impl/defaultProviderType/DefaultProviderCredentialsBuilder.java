@@ -9,6 +9,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
@@ -18,8 +19,10 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
-  public DefaultProviderCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
+  public DefaultProviderCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                           @NotNull final AwsCredentialsFactory awsCredentialsFactory) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    awsCredentialsFactory.registerAwsCredentialsBuilder(this);
   }
 
   @NotNull

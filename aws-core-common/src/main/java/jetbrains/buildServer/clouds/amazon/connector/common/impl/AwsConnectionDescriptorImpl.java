@@ -1,10 +1,13 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
 import java.util.Map;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
@@ -55,6 +58,12 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
 
   @NotNull
   @Override
+  public String getConnectionDisplayName() {
+    return StringUtil.emptyIfNull(myProjectFeatureDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
+  }
+
+  @NotNull
+  @Override
   public Map<String, String> getParameters() {
     return myProjectFeatureDescriptor.getParameters();
   }
@@ -69,5 +78,11 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
   @Override
   public String getId() {
     return myProjectFeatureDescriptor.getId();
+  }
+
+  @NotNull
+  @Override
+  public AwsCredentialsData getConnectionCredentials() {
+    return myAwsCredentialsHolder.getAwsCredentials();
   }
 }

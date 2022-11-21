@@ -28,9 +28,9 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAw
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
@@ -42,9 +42,11 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                   @NotNull final AwsCredentialsFactory awsCredentialsFactory,
                                    @NotNull final AwsConnectionsManager awsConnectionsManager,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
     myAwsConnectionsManager = awsConnectionsManager;
     myAwsExternalIdsManager = awsExternalIdsManager;

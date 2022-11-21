@@ -19,6 +19,7 @@ import jetbrains.buildServer.serverSide.SProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   private final AwsConnectionsHolder myAwsConnectionsHolder;

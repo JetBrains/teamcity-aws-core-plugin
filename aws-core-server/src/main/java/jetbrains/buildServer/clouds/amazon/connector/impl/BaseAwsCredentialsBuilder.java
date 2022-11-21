@@ -17,6 +17,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
@@ -33,15 +34,7 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
   @Override
   @NotNull
   public AwsCredentialsHolder constructSpecificCredentialsProvider(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
-    List<InvalidProperty> invalidProperties = validateProperties(featureDescriptor.getParameters());
-    if (!invalidProperties.isEmpty()) {
-      InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
-      String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
-      throw new AwsConnectorException(
-        errorDescription,
-        lastInvalidProperty.getPropertyName()
-      );
-    }
+    throwExceptionOnInvalidProperties(featureDescriptor.getParameters());
     try {
       return IOGuard.allowNetworkCall(() -> constructSpecificCredentialsProviderImpl(featureDescriptor));
     } catch (Exception e) {
@@ -54,4 +47,16 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
 
   @NotNull
   protected abstract AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;
+
+  private void throwExceptionOnInvalidProperties(@NotNull final Map<String, String> properties) throws AwsConnectorException {
+    List<InvalidProperty> invalidProperties = validateProperties(properties);
+    if (!invalidProperties.isEmpty()) {
+      InvalidProperty lastInvalidProperty = invalidProperties.get(invalidProperties.size() - 1);
+      String errorDescription = StringUtil.emptyIfNull(lastInvalidProperty.getInvalidReason());
+      throw new AwsConnectorException(
+        errorDescription,
+        lastInvalidProperty.getPropertyName()
+      );
+    }
+  }
 }

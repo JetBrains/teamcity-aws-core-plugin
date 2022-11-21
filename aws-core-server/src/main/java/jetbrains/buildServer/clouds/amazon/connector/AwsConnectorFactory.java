@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public interface AwsConnectorFactory {
 
   /**

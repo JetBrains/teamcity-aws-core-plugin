@@ -28,5 +28,6 @@
     <orderEntry type="module" module-name="server-test-core" />
     <orderEntry type="module" module-name="web" />
     <orderEntry type="library" name="org.mockito:mockito-core" level="project" />
+    <orderEntry type="module" module-name="common-connections" />
   </component>
 </module>

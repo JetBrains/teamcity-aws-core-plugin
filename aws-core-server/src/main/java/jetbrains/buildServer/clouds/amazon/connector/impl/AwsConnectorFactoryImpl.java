@@ -114,11 +114,16 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
     Map<String, String> defaultProperties = new HashMap<>();
     defaultProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
     defaultProperties.put(AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsCloudConnectorConstants.STS_ENDPOINT_DEFAULT);
+    putIgnoredDefaultSessionDurationValue(defaultProperties);
 
     myCredentialBuilders.forEach((type, builder) -> {
       defaultProperties.putAll(builder.getDefaultProperties());
     });
     return defaultProperties;
+  }
+
+  private void putIgnoredDefaultSessionDurationValue(@NotNull Map<String, String> defaultProperties) {
+    defaultProperties.put(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT);
   }
 
   @NotNull

@@ -30,7 +30,6 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
@@ -87,6 +86,8 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
       invalidProperties.add(
         new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
     }
+    //AwsCloudConnectorConstants.IAM_ROLE_CREDENTIALS_TYPE.equals(properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM)) && AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE.equals(properties.get(AwsCloudConnectorConstants.PRINCIPAL_AWS_CONNECTION_ID))
+
 
     return invalidProperties;
   }
@@ -111,7 +112,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   public Map<String, String> getDefaultProperties() {
     Map<String, String> defaultProperties = new HashMap<>();
     defaultProperties.put(IAM_ROLE_SESSION_NAME_PARAM, IAM_ROLE_SESSION_NAME_DEFAULT);
-    defaultProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE);
+    defaultProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, AwsCloudConnectorConstants.UNSELECTED_AWS_CONNECTION_ID_VALUE);
     return defaultProperties;
   }
 }

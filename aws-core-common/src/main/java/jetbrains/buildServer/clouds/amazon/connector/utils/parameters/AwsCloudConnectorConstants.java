@@ -4,6 +4,7 @@ public final class AwsCloudConnectorConstants {
 
   public static final String FEATURE_PROPERTY_NAME = "teamcity.internal.awsConnectorEnabled";
   public static final String DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME = "teamcity.internal.aws.connection.defaultCredentialsProviderEnabled";
+  public static final String DEFAULT_CREDS_PROVIDER_DOCS_URL = "https://www.jetbrains.com/help/teamcity/configuring-connections.html#AmazonWebServices";
 
   public static final String CLOUD_TYPE = "AWS";
 

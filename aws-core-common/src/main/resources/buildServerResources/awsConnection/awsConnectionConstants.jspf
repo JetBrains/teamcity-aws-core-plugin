@@ -75,7 +75,7 @@
 <c:set var="aws_connection_type" value="<%=AwsConnectionProvider.TYPE%>"/>
 
 <c:set var="principal_aws_conn_id" value="<%=AwsCloudConnectorConstants.PRINCIPAL_AWS_CONNECTION_ID%>"/>
-<c:set var="unselected_principal_aws_connection_value" value="<%=AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE%>"/>
+<c:set var="unselected_principal_aws_connection_value" value="<%=AwsCloudConnectorConstants.UNSELECTED_AWS_CONNECTION_ID_VALUE%>"/>
 
 
 <c:set var="aws_connection_id_generator_type" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ID_GENERATOR_TYPE%>"/>

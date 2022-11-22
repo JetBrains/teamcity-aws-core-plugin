@@ -37,6 +37,7 @@
   <td>
     <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
     <span class="error error_${avail_connections_select_id} hidden"></span>
+    <span class="error" id="error_${chosen_aws_conn_id}" style="word-break: break-all;"></span>
   </td>
 </tr>
 
@@ -82,6 +83,13 @@
           availConnsSelector.empty();
 
           if (json.length !== 0) {
+
+            availConnsSelector.append(
+              $j("<option></option>")
+              .attr("value", "${unselected_principal_aws_connection_value}")
+              .text(`-- Choose the Principal AWS Connection --`)
+            );
+
             json.forEach(
               awsConnectionProps => {
                 availConnsSelector.append(
@@ -97,16 +105,17 @@
               }
             );
             availConnsSelector.prop('disabled', false);
-            toggleSessionDurationField();
 
             let previouslySelectedOptionIndex = json.findIndex(awsConnectionProps => awsConnectionProps[0] === '${previouslyChosenAwsConnId}');
             if(previouslySelectedOptionIndex !== -1){
+              previouslySelectedOptionIndex++;// add one for the unselected option
               let newSelector = $(availConnsSelector.attr('id'));
               newSelector.selectedIndex = previouslySelectedOptionIndex;
             }
 
             BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
             toggleErrors(false);
+            toggleSessionDurationField();
 
           } else {
             addError(
@@ -136,8 +145,13 @@
     }
 
     const selectedConnectionId = document.getElementById('${avail_connections_select_id}').value;
+    if("${unselected_principal_aws_connection_value}" == selectedConnectionId) {
+      sessionDurationParam.classList.add("hidden");
+      return;
+    }
+
     const awsConnection = awsConnectionsMap.get(selectedConnectionId);
-    if (awsConnection.isUsingSessionCredentials != 'true') {
+    if (awsConnection.isUsingSessionCredentials == 'false') {
       sessionDurationParam.classList.add("hidden");
     } else {
       sessionDurationParam.classList.remove("hidden");

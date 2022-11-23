@@ -97,4 +97,59 @@
       </option>
     </param>
   </params>
+
+  <examples>
+    <example>
+      <description>
+        Adds a new Connection that allows TeamCity to store and manage AWS Credentials (IAM User Access Key).
+        When using Session Credentials a new temporary Access Key will be ge created each time this connection is used.
+      </description>
+      <code>
+        awsConnection {
+          id = "AwsIamUser"
+          name = "AWS IAM User"
+          regionName = "eu-central-1"
+          credentialsType = static {
+            accessKeyId = "keyId"
+            secretAccessKey = "Link to credentialsJSON property containing AWS secret access key"
+            useSessionCredentials = true
+            stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
+          }
+        }
+      </code>
+    </example>
+
+    <example>
+      <description>
+        Adds a new Connection that allows TeamCity to assume AWS IAM Role using another AWS Connection.
+      </description>
+      <code>
+        awsConnection {
+          id = "AwsIamRole"
+          name = "AWS IAM Role"
+          regionName = "eu-central-1"
+          credentialsType = iamRole {
+            roleArn = "arn:aws:iam::account:role/role-name-with-path"
+            sessionName = "TeamCity-session-identifier"
+            awsConnectionId = "AwsIamUser"
+            stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
+          }
+        }
+      </code>
+    </example>
+
+    <example>
+      <description>
+        Adds a new Connection that allows TeamCity to extract credentials from default places on the TeamCity server machine using the Default Credentials Provider Chain.
+      </description>
+      <code>
+        awsConnection {
+          id = "AwsDefaultCredsProviderChain"
+          name = "AWS Default Creds Provider Chain"
+          regionName = "eu-central-1"
+          credentialsType = default()
+        }
+      </code>
+    </example>
+  </examples>
 </dsl-extension>

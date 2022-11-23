@@ -98,8 +98,15 @@ public class AwsTestConnectionController extends BaseFormXmlController {
 
   private void handleException(@NotNull final Exception exception, @NotNull ActionErrors errors) {
     String actionDescription = "Unable to run AmazonSts.getCallerIdentity: ";
-    Loggers.CLOUD.debug(actionDescription, exception);
-    errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AwsExceptionUtils.getAwsErrorMessage(exception)));
+
+    if(AwsExceptionUtils.isAmazonServiceException(exception) || AwsExceptionUtils.isAmazonServiceException(exception.getCause())) {
+      Loggers.CLOUD.warnAndDebugDetails(actionDescription, exception);
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AwsExceptionUtils.getAwsErrorMessage(exception)));
+    } else {
+      String unrelatedToAwsExcaptionMessage = " Got exception which is unrelated to AWS STS, please, make sure that your call hits correct endpoint";
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + unrelatedToAwsExcaptionMessage));
+      Loggers.CLOUD.debug(unrelatedToAwsExcaptionMessage);
+    }
   }
 
   @Override

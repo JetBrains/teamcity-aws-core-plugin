@@ -23,9 +23,26 @@ import org.jetbrains.annotations.Nullable;
 public final class AwsExceptionUtils {
   @Nullable
   public static String getAwsErrorMessage(@NotNull final Throwable exception){
-    if (isAmazonServiceException(exception)) {
-      return ((AmazonServiceException)exception).getErrorMessage();
-    } else {
+    Throwable cause = exception.getCause();
+
+    try {
+      if (isAmazonServiceException(exception)) {
+        return String.format(
+          "Error type: <%s>, message: %s",
+          ((AmazonServiceException)exception).getErrorType(),
+          ((AmazonServiceException)exception).getErrorMessage()
+        );
+      } else if (cause != null && isAmazonServiceException(cause)) {
+        return String.format(
+          "Error type: <%s>, message: %s",
+          ((AmazonServiceException)cause).getErrorType(),
+          ((AmazonServiceException)cause).getErrorMessage()
+        );
+      } else {
+        return exception.getMessage();
+      }
+
+    } catch (ClassCastException classCastException) {
       return exception.getMessage();
     }
   }

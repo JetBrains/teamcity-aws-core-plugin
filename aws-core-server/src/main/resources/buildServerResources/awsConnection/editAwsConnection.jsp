@@ -111,6 +111,7 @@
         if (elem.firstChild) {
           text = elem.firstChild.nodeValue;
         }
+        text += "Running STS get-caller-identity...";
         BS.TestConnectionDialog.show(false, text, $('testConnectionButton'));
       },
       onCompleteSave: function (form, responseXML) {
@@ -124,15 +125,15 @@
         enableForm();
         const testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
 
-        let additionalInfo;
+        let additionalInfo = "Running STS get-caller-identity...\n";;
         if (testConnectionResultNodes.length > 0) {
-          additionalInfo = "Caller Identity:";
+          additionalInfo += "Caller Identity:";
           const testConnectionResult = testConnectionResultNodes.item(0);
           additionalInfo += "\n Account ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_account_id}');
           additionalInfo += "\n User ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_id}');
           additionalInfo += "\n ARN: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_arn}');
         } else {
-          additionalInfo = "Could not get the Caller Identity information from the response.";
+          additionalInfo += "Could not get the Caller Identity information from the response.";
         }
 
         BS.TestConnectionDialog.show(true, additionalInfo, $('testConnectionButton'));

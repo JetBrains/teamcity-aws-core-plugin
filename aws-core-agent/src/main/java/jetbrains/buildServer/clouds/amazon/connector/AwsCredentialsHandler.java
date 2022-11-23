@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Base64;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import jetbrains.buildServer.util.EventDispatcher;
 import jetbrains.buildServer.util.FileUtil;
@@ -31,14 +32,13 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
                                       .get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT);
 
     if (Strings.isBlank(encodedCredentials)) {
-      LOG.debug("Encoded AWS credentials were not provided with this build");
       return;
     }
+    LOG.debug(String.format("Encoded AWS credentials were provided in build with id <%s>", runningBuild.getBuildId()));
+    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Found AWS Credentials with Access Key ID: " + ParamUtil.maskKey(awsAccessKey)));
 
     try {
       myCredentialsData = Base64.getDecoder().decode(encodedCredentials);
-      runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Using AWS Access key: " + awsAccessKey));
-      runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("AWS credentials are successfully associated with this build"));
     } catch (Exception e) {
       String msg = "Parsing of AWS credentials failed. Error: " + e.getMessage();
       LOG.warn(msg, e);
@@ -54,20 +54,23 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
       return;
     }
 
+    runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Creating a file with AWS Credentials..."));
     try {
       final File awsCredentialsFile = createFileInTempDirectory(runner.getBuild());
 
       try (FileOutputStream os = new FileOutputStream(awsCredentialsFile)) {
         os.write(myCredentialsData);
       }
+      runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Created the AWS Credentials file"));
 
       runner.addEnvironmentVariable(
         AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE,
         awsCredentialsFile.getAbsolutePath()
       );
+      runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(String.format("Added Environment Variable <%s> which points to the AWS Credentials file", AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE)));
 
     } catch (Exception e) {
-      String msg = "Failed to create temporary file for AWS credentials. Error: " + e.getMessage();
+      String msg = "Failed to create temporary file for AWS credentials, reason: " + e.getMessage();
       LOG.warn(msg, e);
       runner.getBuild().getBuildLogger().warning(msg);
     }
@@ -99,6 +102,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
       }
 
       return FileUtil.getCanonicalFile(file);
+
     } catch (final IOException e) {
       LOG.warn(e.getMessage(), e);
       throw new IOException(e.getMessage()) {{

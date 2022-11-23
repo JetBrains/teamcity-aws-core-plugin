@@ -19,7 +19,7 @@ public class ParamUtil {
 
   private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
   private static final String URL_REGEX =
-    "^((((https?|ftps?|gopher|telnet|nntp)://)|(mailto:|news:))" +
+    "^((((https?|ftps?|gopher|telnet|nntp)://(?!localhost:))|(mailto:|news:))" +
     "(%[0-9A-Fa-f]{2}|[-()_.!~*';/?:@&=+$,A-Za-z0-9])+)" +
     "([).!';/?:,][[:blank:]])?$";
 

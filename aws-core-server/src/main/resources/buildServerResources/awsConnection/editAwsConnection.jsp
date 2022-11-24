@@ -44,6 +44,13 @@
   }
 </style>
 
+<tr class="awsConnectionNote">
+  <td></td>
+  <td>
+    Adds a new Connection that allows TeamCity to store and manage AWS Credentials. <a target="_blank" rel="noreferrer" href="https://www.jetbrains.com/help/teamcity/configuring-connections.html#AmazonWebServices"><bs:helpIcon/></a>
+  </td>
+</tr>
+
 <tr>
   <td><label for="displayName">Display name:</label><l:star/></td>
   <td>

@@ -22,15 +22,25 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import java.util.Date;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
 
+  private final AWSCredentials credentials;
+
+  public DefaultProviderCredentialsHolder() throws AwsConnectorException {
+    try {
+      credentials = new DefaultAWSCredentialsProviderChain().getCredentials();
+    } catch (Exception e) {
+      throw new AwsConnectorException("Failed to use the DefaultAWSCredentialsProviderChain, reason: " + e.getMessage(), e);
+    }
+  }
+
   @NotNull
   @Override
   public AwsCredentialsData getAwsCredentials() {
-    AWSCredentials credentials = new DefaultAWSCredentialsProviderChain().getCredentials();
     return new AwsCredentialsData() {
       @NotNull
       @Override

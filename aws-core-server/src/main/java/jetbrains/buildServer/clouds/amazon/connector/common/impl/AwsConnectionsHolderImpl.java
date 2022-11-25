@@ -12,7 +12,6 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
@@ -109,14 +108,8 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
         updateAwsConnection(
           buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
         );
-      } catch (AwsConnectorException e) {
-        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
       } catch (Exception e) {
-        if (AwsExceptionUtils.isAmazonServiceException(e)) {
-          awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
-        } else {
-          throw e;
-        }
+        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
       }
     }
   }

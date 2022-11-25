@@ -86,8 +86,6 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
       invalidProperties.add(
         new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
     }
-    //AwsCloudConnectorConstants.IAM_ROLE_CREDENTIALS_TYPE.equals(properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM)) && AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE.equals(properties.get(AwsCloudConnectorConstants.PRINCIPAL_AWS_CONNECTION_ID))
-
 
     return invalidProperties;
   }

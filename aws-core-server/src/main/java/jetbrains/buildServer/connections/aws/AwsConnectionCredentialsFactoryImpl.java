@@ -33,7 +33,7 @@ public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredential
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
 
   public AwsConnectionCredentialsFactoryImpl(@NotNull final ConnectionCredentialsService connectionCredentialsService) {
-    connectionCredentialsService.registerCredentialsFacotry(this);
+    connectionCredentialsService.registerCredentialsFactory(this);
   }
 
   @NotNull

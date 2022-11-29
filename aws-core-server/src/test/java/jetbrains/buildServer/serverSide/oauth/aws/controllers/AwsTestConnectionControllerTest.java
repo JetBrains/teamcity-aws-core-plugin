@@ -16,6 +16,7 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCrede
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -40,6 +41,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   private final String testAccountId = "TEST ACCOUNT";
   private final String testArn = "TEST ARN";
   private final String testUserId = "TEST USER";
+  private final String propertyPrefix = "prop:";
 
   private AwsConnectorFactory myAwsConnectorFactory;
   private AwsTestConnectionController myAwsTestConnectionController;
@@ -109,6 +111,55 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   }
 
   @Test
+  public void givenAwsConnectionPropertiesWithCustomStsEndpoint_whenTesting_thenReturnCallerIdentity() {
+    String whiteListedStsEndpoint1 = "https://someEndpoint1";
+    String whiteListedStsEndpoint2 = "https://someEndpoint2";
+    setInternalProperty(StsEndpointParamValidator.WHITELISTED_STS_ENDPOINTS_PROPERTY_NAME, whiteListedStsEndpoint1 + "," + whiteListedStsEndpoint2);
+
+    Map<String, String> defaultProperties = createDefaultProperties();
+    defaultProperties.put(propertyPrefix + STS_ENDPOINT_PARAM, whiteListedStsEndpoint2);
+
+    Map<String, String[]> parametersMapMock = Mockito.mock(Map.class);
+    when(parametersMapMock.keySet())
+      .thenReturn(defaultProperties.keySet());
+
+    defaultProperties.forEach((k, v) -> when(request.getParameter(k))
+      .thenReturn(v));
+
+    when(request.getParameterMap())
+      .thenReturn(parametersMapMock);
+
+    myAwsTestConnectionController.doPost(request, response, xmlResponse);
+
+    List<Element> testResults = getAwsConnectionTestResultFromXmlResponse(xmlResponse);
+
+    assertEquals(1, testResults.size());
+    assertEquals(testAccountId, testResults.get(0).getAttributeValue(AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID));
+    assertEquals(testUserId, testResults.get(0).getAttributeValue(AWS_CALLER_IDENTITY_ATTR_USER_ID));
+    assertEquals(testArn, testResults.get(0).getAttributeValue(AWS_CALLER_IDENTITY_ATTR_USER_ARN));
+  }
+
+  @Test
+  public void givenAwsConnectionPropertiesWithCustomStsEndpoint_whenItsNotWhitelisted_thenReturnCorrespondingError() {
+    Map<String, String> defaultProperties = createDefaultProperties();
+    defaultProperties.put(propertyPrefix + STS_ENDPOINT_PARAM, "https://someEndpoint");
+
+    Map<String, String[]> parametersMapMock = Mockito.mock(Map.class);
+    when(parametersMapMock.keySet())
+      .thenReturn(defaultProperties.keySet());
+
+    defaultProperties.forEach((k, v) -> when(request.getParameter(k))
+      .thenReturn(v));
+
+    when(request.getParameterMap())
+      .thenReturn(parametersMapMock);
+
+    myAwsTestConnectionController.doPost(request, response, xmlResponse);
+
+    assertEquals("The STS endpoint is not a valid URL, please, provide a valid URL", xmlResponse.getValue());
+  }
+
+  @Test
   public void givenAwsConnectionProperties_withoutCredentialsType_thenReturnCorrespondingError() {
     myAwsTestConnectionController.doPost(request, response, xmlResponse);
     assertEquals("The credentials type null is not supported.", xmlResponse.getValue());
@@ -122,7 +173,6 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
 
   private Map<String, String> createDefaultProperties() {
     Map<String, String> res = new HashMap<>();
-    String propertyPrefix = "prop:";
     res.put(propertyPrefix + ACCESS_KEY_ID_PARAM, testAccessKeyId);
     res.put(propertyPrefix + AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, testSecretAccessKey);
     res.put(propertyPrefix + AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, AwsCloudConnectorConstants.STATIC_CREDENTIALS_TYPE);

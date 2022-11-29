@@ -3,7 +3,6 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 import com.amazonaws.arn.Arn;
 import java.util.Map;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -18,12 +17,6 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class ParamUtil {
 
   private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
-  private static final String URL_REGEX =
-    "^((((https?|ftps?|gopher|telnet|nntp)://(?!localhost:))|(mailto:|news:))" +
-    "(%[0-9A-Fa-f]{2}|[-()_.!~*';/?:@&=+$,A-Za-z0-9])+)" +
-    "([).!';/?:,][[:blank:]])?$";
-
-  private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEX);
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
     String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
@@ -67,14 +60,6 @@ public class ParamUtil {
     } else {
       return parseInt(sessionDurationStr, SESSION_DURATION_DEFAULT_NUMBER);
     }
-  }
-
-  public static boolean isValidStsEndpoint(@Nullable final String url) {
-    if (url == null) {
-      return false;
-    }
-    Matcher matcher = URL_PATTERN.matcher(url);
-    return matcher.matches();
   }
 
   @Nullable

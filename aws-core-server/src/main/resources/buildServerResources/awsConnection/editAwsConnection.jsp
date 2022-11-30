@@ -93,34 +93,21 @@
   </td>
 </tr>
 
-<c:choose>
-  <c:when test="${intprop:getProperty(default_creds_provider_prop_name, 'false') == 'true'}">
-    <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
-      <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
-        <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
-          <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-        </jsp:include>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
-        <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}"/>
-    </props:selectSectionProperty>
-  </c:when>
+<props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
+  <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
+    <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
+      <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
+    </jsp:include>
+  </props:selectSectionPropertyContent>
 
-  <c:otherwise>
-    <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
-      <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
-        <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
-          <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-        </jsp:include>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
-        <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
-      </props:selectSectionPropertyContent>
-    </props:selectSectionProperty>
-  </c:otherwise>
-</c:choose>
+  <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
+    <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
+  </props:selectSectionPropertyContent>
+
+  <c:if test="${intprop:getBoolean(default_creds_provider_prop_name) == 'true'}">
+    <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}"/>
+  </c:if>
+</props:selectSectionProperty>
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {

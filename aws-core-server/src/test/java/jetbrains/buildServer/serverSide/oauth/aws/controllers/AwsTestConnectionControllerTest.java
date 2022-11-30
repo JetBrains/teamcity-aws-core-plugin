@@ -114,7 +114,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   public void givenAwsConnectionPropertiesWithCustomStsEndpoint_whenTesting_thenReturnCallerIdentity() {
     String whiteListedStsEndpoint1 = "https://someEndpoint1";
     String whiteListedStsEndpoint2 = "https://someEndpoint2";
-    setInternalProperty(StsEndpointParamValidator.WHITELISTED_STS_ENDPOINTS_PROPERTY_NAME, whiteListedStsEndpoint1 + "," + whiteListedStsEndpoint2);
+    setInternalProperty(StsEndpointParamValidator.STS_ENDPOINTS_ALLOWLIST_PROPERTY_NAME, whiteListedStsEndpoint1 + "," + whiteListedStsEndpoint2);
 
     Map<String, String> defaultProperties = createDefaultProperties();
     defaultProperties.put(propertyPrefix + STS_ENDPOINT_PARAM, whiteListedStsEndpoint2);

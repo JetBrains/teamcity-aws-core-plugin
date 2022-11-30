@@ -111,4 +111,8 @@ public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredential
     }
     return builder;
   }
+
+  public Class<AwsConnectionDescriptor> getConnectionDescriptorType() {
+    return AwsConnectionDescriptor.class;
+  }
 }

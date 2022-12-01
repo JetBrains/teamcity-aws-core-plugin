@@ -47,7 +47,8 @@
 <tr class="awsConnectionNote">
   <td></td>
   <td>
-    Adds a new Connection that allows TeamCity to store and manage AWS Credentials. <a target="_blank" rel="noreferrer" href="https://www.jetbrains.com/help/teamcity/configuring-connections.html#AmazonWebServices"><bs:helpIcon/></a>
+    Adds a new Connection that allows TeamCity to store and manage AWS Credentials.
+    <bs:helpLink file="configuring-connections#AmazonWebServices"><bs:helpIcon/></bs:helpLink>
   </td>
 </tr>
 

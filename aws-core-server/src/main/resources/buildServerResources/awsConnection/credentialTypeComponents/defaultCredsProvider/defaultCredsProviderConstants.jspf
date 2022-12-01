@@ -17,5 +17,3 @@
 <%@ page import="jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<c:set var="default_creds_type_documentation_url" value="<%=AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_DOCS_URL%>"/>

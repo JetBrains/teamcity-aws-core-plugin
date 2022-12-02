@@ -280,7 +280,7 @@ public final class AWSCommonParams {
 
   @NotNull
   static ClientConfiguration createClientConfiguration() {
-    return new ClientConfiguration().withUserAgentPrefix("JetBrains TeamCity " + ServerVersionHolder.getVersion().getDisplayVersion());
+    return createClientConfigurationEx(null);
   }
 
   public static ClientConfiguration createClientConfigurationEx(@Nullable String suffix){
@@ -397,6 +397,7 @@ public final class AWSCommonParams {
     return AWSSecurityTokenServiceClientBuilder
       .standard()
       .withRegion(region)
+      .withClientConfiguration(createClientConfigurationEx("sts"))
       .withCredentials(getCredentialsProvider(params, true))
       .build();
   }

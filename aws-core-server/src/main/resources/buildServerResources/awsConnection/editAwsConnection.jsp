@@ -105,9 +105,9 @@
     <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
   </props:selectSectionPropertyContent>
 
-  <c:if test="${intprop:getBoolean(default_creds_provider_prop_name) == 'true'}">
-    <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}"/>
-  </c:if>
+  <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}">
+    <jsp:include page="credentialTypeComponents/defaultCredsProvider/defaultCredsProviderComponent.jsp"/>
+  </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
 
 <script>

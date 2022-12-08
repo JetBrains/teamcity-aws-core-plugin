@@ -24,12 +24,8 @@
 <tr>
   <th></th>
   <td>
-    <c:choose>
-      <c:when test="${intprop:getProperty(default_creds_provider_prop_name, 'false') == 'false'}">
-        <span class="error" style="white-space:pre-wrap; word-break:break-word;">The <b>Default Credentials Provider Chain</b> type is disabled on this server. For instructions on how to enable it and for more information see the <bs:helpLink file="configuring-connections#AmazonWebServices">documentation</bs:helpLink></span>
-      </c:when>
-
-      <c:otherwise/>
-    </c:choose>
+    <c:if test="${intprop:getBoolean(default_creds_provider_prop_name) == 'false'}">
+      <span class="error" style="white-space:pre-wrap; word-break:break-word;">The <b>Default Credentials Provider Chain</b> type is disabled on this server. For instructions on how to enable it and for more information see the <bs:helpLink file="configuring-connections#AmazonWebServices">documentation</bs:helpLink></span>
+    </c:if>
   </td>
 </tr>

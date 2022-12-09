@@ -15,6 +15,7 @@ import jetbrains.buildServer.serverSide.TeamCityProperties;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG;
 
 public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
@@ -26,7 +27,7 @@ public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder
   @Override
   protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     if (! TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
-      throw new AwsConnectorException("Default Credentials Provider is disabled on this server, please, contact the server Administrator");
+      throw new AwsConnectorException(DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG);
     }
     return new DefaultProviderCredentialsHolder();
   }

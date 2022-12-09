@@ -36,6 +36,8 @@ public final class AwsCloudConnectorConstants {
   //UI
   public static final String AWS_CONNECTION_ID_GENERATOR_TYPE = "awsConnection";
 
+  public static final String DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG = "AWS Connection <Default Credentials Provider Chain> type is disabled on this server";
+
   //Test connection
   public static final String TEST_CONNECTION_CONTROLLER_URL = "/repo/aws-test-connection.html";
 

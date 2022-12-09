@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.openapi.util.text.StringUtil.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
@@ -99,5 +101,13 @@ public class ParamUtil {
     }
     String providerType = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
     return providerType != null && providerType.equals(AwsCloudConnectorConstants.CLOUD_TYPE);
+  }
+
+  public static boolean isDefaultCredsProviderType(@NotNull final Map<String, String> connectionProperties) {
+    return AwsCloudConnectorConstants.DEFAULT_PROVIDER_CREDENTIALS_TYPE.equals(connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM));
+  }
+
+  public static boolean isDefaultCredsProvidertypeDisabled() {
+    return !TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME);
   }
 }

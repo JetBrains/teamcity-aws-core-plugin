@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG;
 
 public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
@@ -78,7 +79,7 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     } else if (isDefaultCredsProviderChainType(awsConnectionDescriptor) &&
                ! TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
       removeAwsConnection(awsConnectionId);
-      throw new AwsConnectorException("Default Credentials Provider is disabled on this server, please, contact the server Administrator");
+      throw new AwsConnectorException(DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG);
     }
 
     return awsConnectionDescriptor;

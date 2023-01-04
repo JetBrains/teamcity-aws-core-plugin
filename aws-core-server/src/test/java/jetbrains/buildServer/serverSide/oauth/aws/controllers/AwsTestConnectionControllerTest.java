@@ -17,6 +17,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
+import jetbrains.buildServer.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -53,7 +54,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   public void setUp() throws IOException {
     super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
-    AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsCredentialsFactory.class));
 
     xmlResponse = new Element("root");
 

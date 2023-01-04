@@ -18,8 +18,10 @@ package jetbrains.buildServer.util.amazon;
 
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.PredefinedClientConfigurations;
 import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.services.cloudfront.AmazonCloudFront;
 import com.amazonaws.services.cloudfront.AmazonCloudFrontClientBuilder;
 import com.amazonaws.services.codebuild.AWSCodeBuildClient;
@@ -27,7 +29,9 @@ import com.amazonaws.services.codedeploy.AmazonCodeDeployClient;
 import com.amazonaws.services.codepipeline.AWSCodePipelineClient;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import jetbrains.buildServer.util.StringUtil;
@@ -169,8 +173,14 @@ public class AWSClients {
   }
 
   @NotNull
-  private AWSSecurityTokenServiceClient createSecurityTokenServiceClient() {
-    return myCredentials == null ? new AWSSecurityTokenServiceClient(myClientConfiguration) : new AWSSecurityTokenServiceClient(myCredentials, myClientConfiguration);
+  private AWSSecurityTokenService createSecurityTokenService() {
+    AWSSecurityTokenServiceClientBuilder builder = AWSSecurityTokenServiceClientBuilder
+      .standard()
+      .withClientConfiguration(myClientConfiguration);
+    if (myCredentials != null){
+      builder.withCredentials(new StaticCredentialsProvider(myCredentials));
+    }
+    return builder.build();
   }
 
   @NotNull
@@ -202,11 +212,17 @@ public class AWSClients {
   @NotNull
   private AWSSessionCredentials createSessionCredentials(@NotNull String iamRoleARN, @Nullable String externalID, @NotNull String sessionName, int sessionDuration)
     throws AWSException {
-    final AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest().withRoleArn(iamRoleARN).withRoleSessionName(AWSCommonParams.patchSessionName(sessionName))
-                                                                       .withDurationSeconds(AWSCommonParams.patchSessionDuration(sessionDuration));
-    if (StringUtil.isNotEmpty(externalID)) assumeRoleRequest.setExternalId(externalID);
+    final AssumeRoleRequest assumeRoleRequest =
+      new AssumeRoleRequest()
+        .withRoleArn(iamRoleARN)
+        .withRoleSessionName(AWSCommonParams.patchSessionName(sessionName))
+        .withDurationSeconds(AWSCommonParams.patchSessionDuration(sessionDuration));
+
+    if (StringUtil.isNotEmpty(externalID))
+      assumeRoleRequest.setExternalId(externalID);
+
     try {
-      final Credentials credentials = createSecurityTokenServiceClient().assumeRole(assumeRoleRequest).getCredentials();
+      final Credentials credentials = createSecurityTokenService().assumeRole(assumeRoleRequest).getCredentials();
       return new BasicSessionCredentials(credentials.getAccessKeyId(), credentials.getSecretAccessKey(), credentials.getSessionToken());
     } catch (Exception e) {
       throw new AWSException(e);

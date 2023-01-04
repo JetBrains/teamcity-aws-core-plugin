@@ -28,6 +28,7 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAw
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -85,7 +86,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         new InvalidProperty(IAM_ROLE_SESSION_NAME_PARAM, "The Session Name is not valid, must satisfy regular expression pattern: " + VALID_ROLE_SESSION_NAME_REGEX));
     }
 
-    if (!isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
+    if (!StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
       invalidProperties.add(
         new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
     }
@@ -113,7 +114,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   public Map<String, String> getDefaultProperties() {
     Map<String, String> defaultProperties = new HashMap<>();
     defaultProperties.put(IAM_ROLE_SESSION_NAME_PARAM, IAM_ROLE_SESSION_NAME_DEFAULT);
-    defaultProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, AwsCloudConnectorConstants.UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE);
+    defaultProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, AwsCloudConnectorConstants.UNSELECTED_AWS_CONNECTION_ID_VALUE);
     return defaultProperties;
   }
 }

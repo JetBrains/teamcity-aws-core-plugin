@@ -12,15 +12,15 @@ import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionsHolder
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectionNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.DuplicatedAwsConnectionIdException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
-import jetbrains.buildServer.serverSide.CustomDataStorage;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG;
 
 public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
 
@@ -76,7 +76,12 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
     if (awsConnectionDescriptor == null) {
       awsConnectionDescriptor = buildConnectionFromOwnerProject(awsConnectionId);
       initAwsConnection(awsConnectionDescriptor);
+    } else if (isDefaultCredsProviderChainType(awsConnectionDescriptor) &&
+               ! TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
+      removeAwsConnection(awsConnectionId);
+      throw new AwsConnectorException(DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG);
     }
+
     return awsConnectionDescriptor;
   }
 
@@ -104,14 +109,8 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
         updateAwsConnection(
           buildAwsConnectionDescriptor(connectionFeature.getId(), projectId)
         );
-      } catch (AwsConnectorException e) {
-        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
       } catch (Exception e) {
-        if (AwsExceptionUtils.isAmazonServiceException(e)) {
-          awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
-        } else {
-          throw e;
-        }
+        awsConnectionsLogger.failedToBuild(connectionFeature.getId(), e);
       }
     }
   }
@@ -212,5 +211,14 @@ public class AwsConnectionsHolderImpl implements AwsConnectionsHolder {
         removeAwsConnectionFromDataStorage(removedAwsConnectionId);
       }
     }
+  }
+
+  private boolean isDefaultCredsProviderChainType(@NotNull final AwsConnectionDescriptor awsConnectionDescriptor) {
+    return AwsCloudConnectorConstants.DEFAULT_PROVIDER_CREDENTIALS_TYPE
+      .equals(
+        awsConnectionDescriptor
+          .getParameters()
+          .get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM)
+      );
   }
 }

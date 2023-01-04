@@ -3,27 +3,22 @@ package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 import com.amazonaws.arn.Arn;
 import java.util.Map;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.openapi.util.text.StringUtil.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
 
   private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
-  private static final String URL_REGEX =
-    "^((((https?|ftps?|gopher|telnet|nntp)://)|(mailto:|news:))" +
-    "(%[0-9A-Fa-f]{2}|[-()_.!~*';/?:@&=+$,A-Za-z0-9])+)" +
-    "([).!';/?:,][[:blank:]])?$";
-
-  private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEX);
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
     String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
@@ -69,14 +64,6 @@ public class ParamUtil {
     }
   }
 
-  public static boolean isValidStsEndpoint(@Nullable final String url) {
-    if (url == null) {
-      return false;
-    }
-    Matcher matcher = URL_PATTERN.matcher(url);
-    return matcher.matches();
-  }
-
   @Nullable
   public static String getInvalidArnReason(@Nullable final String resourceArnString) {
     if(isEmptyOrSpaces(resourceArnString)){
@@ -114,5 +101,13 @@ public class ParamUtil {
     }
     String providerType = projectFeature.getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM);
     return providerType != null && providerType.equals(AwsCloudConnectorConstants.CLOUD_TYPE);
+  }
+
+  public static boolean isDefaultCredsProviderType(@NotNull final Map<String, String> connectionProperties) {
+    return AwsCloudConnectorConstants.DEFAULT_PROVIDER_CREDENTIALS_TYPE.equals(connectionProperties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM));
+  }
+
+  public static boolean isDefaultCredsProvidertypeDisabled() {
+    return !TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME);
   }
 }

@@ -27,7 +27,7 @@
 
 <tr>
   <td colspan="2">
-    <em>Select the AWS connection, which will be provided to a build agent</em>
+    <em>Select the AWS connection, which will be provided to a build agent. <bs:helpLink file="aws-credentials"><bs:helpIcon/></bs:helpLink></em>
   </td>
 </tr>
 

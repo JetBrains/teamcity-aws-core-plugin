@@ -50,7 +50,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         if (awsConnectionBuildFeature == null) {
           String message = String.format("Feature \"%s\" enabled for the build, but there is no suitable AWS connection configured", AwsConnToAgentBuildFeature.DISPLAY_NAME);
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -66,7 +66,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
           String message = String.format("Add AWS Connection BuildFeature problem detected: %s property is not valid, reason: %s", invalidProperty.getPropertyName(),
                                          invalidProperty.getInvalidReason());
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -78,7 +78,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         if (awsConnectionId == null) {
           String message = String.format("Chosen AWS Connection ID is null in the BuildFeature, will not add AWS Connection to the Build");
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -98,7 +98,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
           String message =
             String.format("There is no %s param in the BuildFeature, will use Default SessionDuration for the AWS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -124,7 +124,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         String warningMessage = "Failed to expose AWS Connection to a build: " + e.getMessage();
         Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
         context.getBuild().getBuildLog()
-               .message(
+               .messageAsync(
                  warningMessage,
                  Status.WARNING,
                  MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(warningMessage))

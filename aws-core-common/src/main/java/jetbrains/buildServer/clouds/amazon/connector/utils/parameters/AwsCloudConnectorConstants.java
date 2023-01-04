@@ -36,6 +36,8 @@ public final class AwsCloudConnectorConstants {
   //UI
   public static final String AWS_CONNECTION_ID_GENERATOR_TYPE = "awsConnection";
 
+  public static final String DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG = "AWS Connection <Default Credentials Provider Chain> type is disabled on this server";
+
   //Test connection
   public static final String TEST_CONNECTION_CONTROLLER_URL = "/repo/aws-test-connection.html";
 
@@ -53,7 +55,7 @@ public final class AwsCloudConnectorConstants {
   public static final String SESSION_CREDS_CONFIG_JSP_FILE_NAME = "sessionCredentialsConfig.jsp";
 
   public static final String PRINCIPAL_AWS_CONNECTION_ID = "principalAwsConnId";
-  public static final String UNSELECTED_PRINCIPAL_AWS_CONNECTION_VALUE = "unselected";
+  public static final String UNSELECTED_AWS_CONNECTION_ID_VALUE = "";
   public static final String AWS_CONN_ID_REST_PARAM = "awsConnectionId";
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "awsConnectionId";

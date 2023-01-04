@@ -44,6 +44,14 @@
   }
 </style>
 
+<tr class="awsConnectionNote">
+  <td></td>
+  <td>
+    Adds a new Connection that allows TeamCity to store and manage AWS Credentials.
+    <bs:helpLink file="configuring-connections#AmazonWebServices"><bs:helpIcon/></bs:helpLink>
+  </td>
+</tr>
+
 <tr>
   <td><label for="displayName">Display name:</label><l:star/></td>
   <td>
@@ -86,35 +94,21 @@
   </td>
 </tr>
 
+<props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
+  <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
+    <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
+      <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
+    </jsp:include>
+  </props:selectSectionPropertyContent>
 
-<c:choose>
-  <c:when test="${intprop:getProperty(default_creds_provider_prop_name, 'false') == 'true'}">
-    <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
-      <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
-        <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
-          <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-        </jsp:include>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
-        <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}"/>
-    </props:selectSectionProperty>
-  </c:when>
+  <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
+    <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
+  </props:selectSectionPropertyContent>
 
-  <c:otherwise>
-    <props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
-      <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
-        <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
-          <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-        </jsp:include>
-      </props:selectSectionPropertyContent>
-      <props:selectSectionPropertyContent value="${credentials_type_iam_role_option}" caption="${credentials_type_iam_role_label}">
-        <jsp:include page="credentialTypeComponents/iamRole/awsIamRoleCredsComponent.jsp"/>
-      </props:selectSectionPropertyContent>
-    </props:selectSectionProperty>
-  </c:otherwise>
-</c:choose>
+  <props:selectSectionPropertyContent value="${credentials_type_default_provider_option}" caption="${credentials_type_default_provider_label}">
+    <jsp:include page="credentialTypeComponents/defaultCredsProvider/defaultCredsProviderComponent.jsp"/>
+  </props:selectSectionPropertyContent>
+</props:selectSectionProperty>
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {
@@ -125,6 +119,7 @@
         if (elem.firstChild) {
           text = elem.firstChild.nodeValue;
         }
+        text += "Running STS get-caller-identity...";
         BS.TestConnectionDialog.show(false, text, $('testConnectionButton'));
       },
       onCompleteSave: function (form, responseXML) {
@@ -138,15 +133,15 @@
         enableForm();
         const testConnectionResultNodes = responseXML.documentElement.getElementsByTagName('${aws_caller_identity_element}');
 
-        let additionalInfo;
+        let additionalInfo = "Running STS get-caller-identity...\n";;
         if (testConnectionResultNodes.length > 0) {
-          additionalInfo = "Caller Identity:";
+          additionalInfo += "Caller Identity:";
           const testConnectionResult = testConnectionResultNodes.item(0);
           additionalInfo += "\n Account ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_account_id}');
           additionalInfo += "\n User ID: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_id}');
           additionalInfo += "\n ARN: " + testConnectionResult.getAttribute('${aws_caller_identity_attr_user_arn}');
         } else {
-          additionalInfo = "Could not get the Caller Identity information from the response.";
+          additionalInfo += "Could not get the Caller Identity information from the response.";
         }
 
         BS.TestConnectionDialog.show(true, additionalInfo, $('testConnectionButton'));

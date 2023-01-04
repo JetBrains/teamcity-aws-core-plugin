@@ -11,10 +11,8 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
-import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
@@ -47,7 +45,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         if (awsConnectionBuildFeature == null) {
           String message = String.format("Feature \"%s\" enabled for the build, but there is no suitable AWS connection configured", AwsConnToAgentBuildFeature.DISPLAY_NAME);
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -62,7 +60,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
           InvalidProperty invalidProperty = invalidProps.iterator().next();
           String message = String.format("Add AWS Connection BuildFeature problem detected: %s property is not valid, reason: %s", invalidProperty.getPropertyName(), invalidProperty.getInvalidReason());
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -74,7 +72,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         if (awsConnectionId == null) {
           String message = String.format("Chosen AWS Connection ID is null in the BuildFeature, will not add AWS Connection to the Build");
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -90,7 +88,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
           awsConnection = myAwsConnectionsManager.getAwsConnection(awsConnectionId);
           String message = String.format("There is no %s param in the BuildFeature, will use Default SessionDuration for the AWS Connection %s", SESSION_DURATION_PARAM, awsConnectionId);
           context.getBuild().getBuildLog()
-                 .message(
+                 .messageAsync(
                    message,
                    Status.WARNING,
                    MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
@@ -107,7 +105,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         String warningMessage = "Failed to expose AWS Connection to a build: " + e.getMessage();
         Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
         context.getBuild().getBuildLog()
-               .message(
+               .messageAsync(
                  warningMessage,
                  Status.WARNING,
                  MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(warningMessage))

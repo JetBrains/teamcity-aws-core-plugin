@@ -10,9 +10,12 @@ import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions.AWSRegions.isChinaRegion;
+
 public class StsEndpointParamValidator {
   public static final String WHITELISTED_STS_ENDPOINTS_PROPERTY_NAME = "teamcity.aws.connection.whitelistedStsEndpoints";
   public static final String REGION_TO_STS_ENDPOINT_FORMAT = "https://sts.%s.amazonaws.com";
+  public static final String CHINA_REGION_TO_STS_ENDPOINT_FORMAT = "https://sts.%s.amazonaws.com.cn";
   public static final String GLOBAL_AWS_STS_ENDPOINT = "https://sts.amazonaws.com";
   public static final String WHITELISTED_STS_ENDPOINTS_SEPARATOR = ",";
 
@@ -32,7 +35,11 @@ public class StsEndpointParamValidator {
       res = parseWhitelistedStsEndpoints(whiteListedStsEndpointsProperty);
     } else {
       for (String regionName : AWSRegions.getAllRegions().keySet()) {
-        res.add(String.format(REGION_TO_STS_ENDPOINT_FORMAT, regionName));
+        if (isChinaRegion(regionName)) {
+          res.add(String.format(CHINA_REGION_TO_STS_ENDPOINT_FORMAT, regionName));
+        } else {
+          res.add(String.format(REGION_TO_STS_ENDPOINT_FORMAT, regionName));
+        }
       }
       res.add(GLOBAL_AWS_STS_ENDPOINT);
     }

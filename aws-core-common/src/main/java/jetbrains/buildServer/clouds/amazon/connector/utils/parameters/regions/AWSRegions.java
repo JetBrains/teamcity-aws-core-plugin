@@ -21,15 +21,19 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author vbedrosova
  */
 public final class AWSRegions {
   private static final Map<String, String> REGION_NAMES_FOR_WEB;
+  private static final Map<String, String> CHINA_REGION_NAMES_FOR_WEB;
 
   static {
     REGION_NAMES_FOR_WEB = new LinkedHashMap<String, String>();
+    CHINA_REGION_NAMES_FOR_WEB = new LinkedHashMap<String, String>();
+
     REGION_NAMES_FOR_WEB.put("us-east-1", "US East (N. Virginia)");
     REGION_NAMES_FOR_WEB.put("us-east-2", "US East (Ohio)");
     REGION_NAMES_FOR_WEB.put("us-west-1", "US West (N. California)");
@@ -52,8 +56,12 @@ public final class AWSRegions {
     REGION_NAMES_FOR_WEB.put("us-gov-east-1", "AWS GovCloud (US-East)");
     REGION_NAMES_FOR_WEB.put("us-iso-east-1", "US ISO East");
     REGION_NAMES_FOR_WEB.put("us-isob-east-1", "US ISOB East (Ohio)");
+
     REGION_NAMES_FOR_WEB.put("cn-north-1", "China (Beijing)");
     REGION_NAMES_FOR_WEB.put("cn-northwest-1", "China (Ningxia)");
+
+    CHINA_REGION_NAMES_FOR_WEB.put("cn-north-1", "China (Beijing)");
+    CHINA_REGION_NAMES_FOR_WEB.put("cn-northwest-1", "China (Ningxia)");
 
     for (Regions region : Regions.values()) {
       if (REGION_NAMES_FOR_WEB.containsKey(region.getName())) continue;
@@ -64,5 +72,12 @@ public final class AWSRegions {
   @NotNull
   public static Map<String, String> getAllRegions() {
     return Collections.unmodifiableMap(REGION_NAMES_FOR_WEB);
+  }
+
+  public static boolean isChinaRegion(@Nullable final String regionName) {
+    if (regionName == null)
+      return false;
+
+    return CHINA_REGION_NAMES_FOR_WEB.keySet().contains(regionName);
   }
 }

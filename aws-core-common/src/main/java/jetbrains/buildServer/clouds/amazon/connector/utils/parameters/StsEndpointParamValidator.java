@@ -13,11 +13,13 @@ import org.jetbrains.annotations.Nullable;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions.AWSRegions.isChinaRegion;
 
 public class StsEndpointParamValidator {
-  public static final String WHITELISTED_STS_ENDPOINTS_PROPERTY_NAME = "teamcity.aws.connection.whitelistedStsEndpoints";
+  public static final String STS_ENDPOINTS_ALLOWLIST_PROPERTY_NAME = "teamcity.aws.connection.stsEndpointsAllowlist";
   public static final String REGION_TO_STS_ENDPOINT_FORMAT = "https://sts.%s.amazonaws.com";
   public static final String CHINA_REGION_TO_STS_ENDPOINT_FORMAT = "https://sts.%s.amazonaws.com.cn";
   public static final String GLOBAL_AWS_STS_ENDPOINT = "https://sts.amazonaws.com";
-  public static final String WHITELISTED_STS_ENDPOINTS_SEPARATOR = ",";
+  public static final String STS_ENDPOINTS_ALLOWLIST_SEPARATOR = ",";
+
+  public static final String STS_ENDPOINTS_ALLOWLIST_ALL_AWS_ENDPOINTS_EXPRESSION = "[aws]";
 
   public static boolean isValidStsEndpoint(@Nullable final String url) {
     if (url == null) {
@@ -29,27 +31,38 @@ public class StsEndpointParamValidator {
 
   public static List<String> getStsEndpoints() {
     List<String> res = new ArrayList<>();
-    String whiteListedStsEndpointsProperty = TeamCityProperties.getPropertyOrNull(WHITELISTED_STS_ENDPOINTS_PROPERTY_NAME);
+    String allowedStsEndpointsProperty = TeamCityProperties.getPropertyOrNull(STS_ENDPOINTS_ALLOWLIST_PROPERTY_NAME);
 
-    if (StringUtil.nullIfEmpty(whiteListedStsEndpointsProperty) != null) {
-      res = parseWhitelistedStsEndpoints(whiteListedStsEndpointsProperty);
-    } else {
-      for (String regionName : AWSRegions.getAllRegions().keySet()) {
-        if (isChinaRegion(regionName)) {
-          res.add(String.format(CHINA_REGION_TO_STS_ENDPOINT_FORMAT, regionName));
-        } else {
-          res.add(String.format(REGION_TO_STS_ENDPOINT_FORMAT, regionName));
-        }
-      }
-      res.add(GLOBAL_AWS_STS_ENDPOINT);
+    if (StringUtil.nullIfEmpty(allowedStsEndpointsProperty) == null) {
+      addAllDefaultAwsStsEndpoints(res);
+      return res;
     }
+
+    res = parseAllowedStsEndpoints(allowedStsEndpointsProperty);
+
+    if (res.contains(STS_ENDPOINTS_ALLOWLIST_ALL_AWS_ENDPOINTS_EXPRESSION)) {
+      addAllDefaultAwsStsEndpoints(res);
+      res.remove(STS_ENDPOINTS_ALLOWLIST_ALL_AWS_ENDPOINTS_EXPRESSION);
+    }
+
     return res;
   }
 
-  private static List<String> parseWhitelistedStsEndpoints(@NotNull final String whiteListedStsEndpointsString) {
+  private static void addAllDefaultAwsStsEndpoints(@NotNull List<String> res) {
+    for (String regionName : AWSRegions.getAllRegions().keySet()) {
+      if (isChinaRegion(regionName)) {
+        res.add(String.format(CHINA_REGION_TO_STS_ENDPOINT_FORMAT, regionName));
+      } else {
+        res.add(String.format(REGION_TO_STS_ENDPOINT_FORMAT, regionName));
+      }
+    }
+    res.add(GLOBAL_AWS_STS_ENDPOINT);
+  }
+
+  private static List<String> parseAllowedStsEndpoints(@NotNull final String allowedStsEndpointsString) {
     return Arrays.stream(
-      whiteListedStsEndpointsString
-        .split(WHITELISTED_STS_ENDPOINTS_SEPARATOR)
+      allowedStsEndpointsString
+        .split(STS_ENDPOINTS_ALLOWLIST_SEPARATOR)
     ).collect(Collectors.toList());
   }
 }

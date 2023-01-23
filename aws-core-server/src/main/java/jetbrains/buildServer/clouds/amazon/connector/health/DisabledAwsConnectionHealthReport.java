@@ -49,7 +49,7 @@ public class DisabledAwsConnectionHealthReport extends HealthStatusReport {
 
   @Override
   public boolean canReportItemsFor(@NotNull final HealthStatusScope scope) {
-    return true;
+    return scope.isItemWithSeverityAccepted(ItemSeverity.WARN);
   }
 
   @Override

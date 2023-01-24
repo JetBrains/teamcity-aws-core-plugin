@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
@@ -11,11 +12,12 @@ import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDe
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.connections.common.ConnectionCredentialsFactory;
-import jetbrains.buildServer.connections.common.ConnectionCredentialsService;
-import jetbrains.buildServer.connections.common.errors.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsService;
+import jetbrains.buildServer.serverSide.connections.credentials.errors.ConnectionCredentialsException;
+import jetbrains.buildServer.serverSide.connections.utils.ConnectionUtils;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,8 +25,11 @@ import org.jetbrains.annotations.Nullable;
 public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredentialsFactory<AwsConnectionDescriptor>, AwsCredentialsFactory {
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
+  private final ExtensionHolder myExtensionHolder;
 
-  public AwsConnectionCredentialsFactoryImpl(@NotNull final ConnectionCredentialsService connectionCredentialsService) {
+  public AwsConnectionCredentialsFactoryImpl(@NotNull final ConnectionCredentialsService connectionCredentialsService,
+                                             @NotNull final ExtensionHolder extensionHolder) {
+    myExtensionHolder = extensionHolder;
     connectionCredentialsService.registerCredentialsFactory(this);
   }
 
@@ -38,6 +43,7 @@ public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredential
       return new AwsConnectionDescriptorImpl(
         connectionDescriptor,
         credentialsHolder,
+        ConnectionUtils.getConectionProviderOfType(myExtensionHolder, AwsConnectionProvider.TYPE),
         describeConnection(connectionDescriptor.getParameters())
       );
 

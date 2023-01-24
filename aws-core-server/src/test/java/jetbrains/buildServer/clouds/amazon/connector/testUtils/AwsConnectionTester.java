@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import jetbrains.buildServer.BaseTestCase;
+import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorBuilderImpl;
@@ -134,6 +135,7 @@ public abstract class AwsConnectionTester extends BaseTestCase {
   public AwsConnectionDescriptorBuilder getAwsConnectionDescriptorBuilder() {
     if (myAwsConnectionDescriptorBuilder == null) {
       myAwsConnectionDescriptorBuilder = new AwsConnectionDescriptorBuilderImpl(
+        Mockito.mock(ExtensionHolder.class),
         myOAuthConnectionsManager,
         getAwsConnectorFactory()
       );

@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
 import java.util.Map;
+import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
@@ -14,18 +15,22 @@ import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
+import static jetbrains.buildServer.serverSide.connections.utils.ConnectionUtils.getConectionProviderOfType;
 
 public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescriptorBuilder {
 
-
+  private final ExtensionHolder myExtensionHolder;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final AwsConnectorFactory myAwsConnectorFactory;
 
-  public AwsConnectionDescriptorBuilderImpl(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
+  public AwsConnectionDescriptorBuilderImpl(@NotNull final ExtensionHolder extensionHolder,
+                                            @NotNull final OAuthConnectionsManager oAuthConnectionsManager,
                                             @NotNull final AwsConnectorFactory awsConnectorFactory) {
+    myExtensionHolder = extensionHolder;
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myAwsConnectorFactory = awsConnectorFactory;
   }
@@ -47,6 +52,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
     return new AwsConnectionDescriptorImpl(
       featureDescriptor,
       awsCredentialsHolder,
+      getConectionProviderOfType(myExtensionHolder, AwsConnectionProvider.TYPE),
       myAwsConnectorFactory.describeAwsConnection(featureDescriptor.getParameters())
     );
   }
@@ -57,6 +63,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
     return new AwsConnectionDescriptorImpl(
       featureDescriptor,
       myAwsConnectorFactory.requestNewSessionWithDuration(featureDescriptor, sessionDuration),
+      getConectionProviderOfType(myExtensionHolder, AwsConnectionProvider.TYPE),
       myAwsConnectorFactory.describeAwsConnection(featureDescriptor.getParameters())
     );
   }
@@ -91,7 +98,7 @@ public class AwsConnectionDescriptorBuilderImpl implements AwsConnectionDescript
   private SProjectFeatureDescriptor projectFeatureDescriptorFromOauthConn(@NotNull final OAuthConnectionDescriptor awsConnectionFeature) {
     return new ProjectFeatureDescriptorImpl(
       awsConnectionFeature.getId(),
-      awsConnectionFeature.getOauthProvider().getType(),
+      awsConnectionFeature.getConnectionProvider().getType(),
       awsConnectionFeature.getParameters(),
       awsConnectionFeature.getProject().getProjectId()
     );

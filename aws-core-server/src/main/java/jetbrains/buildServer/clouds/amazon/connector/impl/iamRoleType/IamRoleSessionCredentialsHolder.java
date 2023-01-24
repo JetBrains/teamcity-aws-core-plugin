@@ -110,7 +110,7 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
   private AWSSecurityTokenServiceClientBuilder initStsClientBuilder(@NotNull final AwsConnectionDescriptor principalAwsConnection) {
     AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
       .standard()
-      .withCredentials(AwsConnectionUtils.awsCredsProviderFromHolder(principalAwsConnection.getAwsCredentialsHolder()));
+      .withCredentials(AwsConnectionUtils.awsCredsProviderFromData(principalAwsConnection.getConnectionCredentials()));
     StsClientBuilder.addConfiguration(stsBuilder, principalAwsConnection.getParameters());
     return stsBuilder;
   }

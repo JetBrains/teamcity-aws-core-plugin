@@ -8,7 +8,6 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConne
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.AwsConnToAgentBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.InjectAwsCredentialsToTheBuildContext;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.connections.common.ConnectionCredentialsService;
 import jetbrains.buildServer.controllers.admin.projects.GenerateExternalIdExtension;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildFeature;
@@ -16,6 +15,7 @@ import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsService;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;

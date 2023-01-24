@@ -6,6 +6,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
@@ -14,15 +15,18 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
 
   private final AwsCredentialsHolder myAwsCredentialsHolder;
   private final SProjectFeatureDescriptor myProjectFeatureDescriptor;
+  private final ConnectionProvider myAwsConnectionProvider;
 
   private final String myDescription;
   private final boolean myIsUsingSessionCredentials;
 
   public AwsConnectionDescriptorImpl(@NotNull final SProjectFeatureDescriptor projectFeatureDescriptor,
                                      @NotNull final AwsCredentialsHolder awsCredentialsHolder,
+                                     @NotNull final ConnectionProvider awsConnectionProvider,
                                      @NotNull final String description) {
     myAwsCredentialsHolder = awsCredentialsHolder;
     myProjectFeatureDescriptor = projectFeatureDescriptor;
+    myAwsConnectionProvider = awsConnectionProvider;
     myDescription = description;
     myIsUsingSessionCredentials = awsCredentialsHolder.getAwsCredentials().getSessionToken() != null;
   }
@@ -60,6 +64,12 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
   @Override
   public String getConnectionDisplayName() {
     return StringUtil.emptyIfNull(myProjectFeatureDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
+  }
+
+  @NotNull
+  @Override
+  public ConnectionProvider getConnectionProvider() {
+    return myAwsConnectionProvider;
   }
 
   @NotNull

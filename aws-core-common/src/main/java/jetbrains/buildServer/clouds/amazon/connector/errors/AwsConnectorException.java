@@ -1,6 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.errors;
 
-import jetbrains.buildServer.connections.common.errors.ConnectionCredentialsException;
+import jetbrains.buildServer.serverSide.connections.credentials.errors.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 
 public class AwsConnectorException extends ConnectionCredentialsException {

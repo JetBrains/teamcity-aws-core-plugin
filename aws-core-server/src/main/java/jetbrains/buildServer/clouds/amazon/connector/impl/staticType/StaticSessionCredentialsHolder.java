@@ -27,7 +27,7 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
                                         @NotNull final Map<String, String> connectionProperties) {
     AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
       .standard()
-      .withCredentials(AwsConnectionUtils.awsCredsProviderFromHolder(credentialsHolder));
+      .withCredentials(AwsConnectionUtils.awsCredsProviderFromData(credentialsHolder.getAwsCredentials()));
     StsClientBuilder.addConfiguration(stsBuilder, connectionProperties);
     mySts = stsBuilder.build();
 

@@ -94,6 +94,10 @@ configure(subprojects) {
 
     configurations.compileOnly.extendsFrom(configurations.teamcityRuntimeServer)
   }
+
+  configurations.implementation {
+    exclude group : "org.apache.httpcomponents"
+  }
 }
 
 task uploadMavenArtifacts {

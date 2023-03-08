@@ -94,10 +94,9 @@ public class AwsConnectionsLogger {
 
   public void failedToBuild(@NotNull final String awsConnectionId, @NotNull final Exception cause) {
     Loggers.CLOUD.warnAndDebugDetails(String.format(
-      "Failed to reload AWS Connection with ID '%s' in Project with ID: '%s', reason: <%s>",
+      "Failed to reload AWS Connection with ID '%s' in Project with ID: '%s'",
       awsConnectionId,
-      myProject.getExternalId(),
-      cause.getMessage()
+      myProject.getExternalId()
     ), cause);
   }
 

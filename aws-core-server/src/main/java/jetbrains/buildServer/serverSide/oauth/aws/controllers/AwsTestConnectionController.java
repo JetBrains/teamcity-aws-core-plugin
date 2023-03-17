@@ -105,7 +105,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     } else {
       String unrelatedToAwsExcaptionMessage = " Got exception which is unrelated to AWS STS, please, make sure that your call hits correct endpoint";
       errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + unrelatedToAwsExcaptionMessage));
-      Loggers.CLOUD.debug(unrelatedToAwsExcaptionMessage);
+      Loggers.CLOUD.debug(actionDescription + unrelatedToAwsExcaptionMessage, exception);
     }
   }
 

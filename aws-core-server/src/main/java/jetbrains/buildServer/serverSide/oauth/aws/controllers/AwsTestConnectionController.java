@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
@@ -100,8 +101,11 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     String actionDescription = "Unable to run AmazonSts.getCallerIdentity: ";
 
     if(AwsExceptionUtils.isAmazonServiceException(exception) || AwsExceptionUtils.isAmazonServiceException(exception.getCause())) {
-      Loggers.CLOUD.warnAndDebugDetails(actionDescription, exception);
       errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AwsExceptionUtils.getAwsErrorMessage(exception)));
+      Loggers.CLOUD.debug(actionDescription, exception);
+    } else if(exception instanceof AwsConnectorException) {
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + exception.getMessage()));
+      Loggers.CLOUD.debug(actionDescription, exception);
     } else {
       String unrelatedToAwsExcaptionMessage = " Got exception which is unrelated to AWS STS, please, make sure that your call hits correct endpoint";
       errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + unrelatedToAwsExcaptionMessage));

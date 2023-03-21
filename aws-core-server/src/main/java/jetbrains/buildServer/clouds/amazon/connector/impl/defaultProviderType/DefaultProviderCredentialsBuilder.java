@@ -29,7 +29,7 @@ public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder
     if (! TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME)) {
       throw new AwsConnectorException(DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG);
     }
-    return new DefaultProviderCredentialsHolder();
+    return new DefaultProviderCredentialsHolder(featureDescriptor);
   }
 
   @Override

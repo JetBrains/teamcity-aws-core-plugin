@@ -8,13 +8,14 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.util.amazon.AWSCommonParams;
 import org.jetbrains.annotations.NotNull;
 
 public class EC2ClientCreator {
 
   @NotNull
-  public AmazonEC2 createClient(@NotNull AwsConnectionBean connection) {
+  public AmazonEC2 createClient(@NotNull AwsConnectionBean connection) throws ConnectionCredentialsException {
     final AwsCredentialsData credentialsData = connection.getAwsCredentialsHolder().getAwsCredentials();
     final AmazonEC2ClientBuilder builder = AmazonEC2ClientBuilder.standard()
                                                                  .withClientConfiguration(AWSCommonParams.createClientConfigurationEx("ec2Client_" + connection.getConnectionId()));

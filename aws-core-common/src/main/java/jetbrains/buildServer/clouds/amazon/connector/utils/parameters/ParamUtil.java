@@ -110,4 +110,9 @@ public class ParamUtil {
   public static boolean isDefaultCredsProvidertypeDisabled() {
     return !TeamCityProperties.getBoolean(DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME);
   }
+
+  @Nullable
+  public static String getLinkedAwsConnectionId(@NotNull final Map<String, String> otherFeatureProperties) {
+    return otherFeatureProperties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
+  }
 }

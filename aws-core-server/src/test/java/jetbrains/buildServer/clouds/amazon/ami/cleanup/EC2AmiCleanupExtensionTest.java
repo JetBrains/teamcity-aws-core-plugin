@@ -11,6 +11,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.clients.EC2ClientCrea
 import jetbrains.buildServer.serverSide.RunningBuildEx;
 import jetbrains.buildServer.serverSide.SFinishedBuild;
 import jetbrains.buildServer.serverSide.cleanup.BuildCleanupContext;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import org.mockito.Answers;
 import org.mockito.Mockito;
@@ -30,7 +31,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
   }
 
   @Test
-  public void deregistersImages() {
+  public void deregistersImages() throws ConnectionCredentialsException {
     final RunningBuildEx runningBuild = startBuild();
     final HashMap<String, String> attributes = new HashMap<>();
     final String amiId = "testAmi";
@@ -95,7 +96,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
   }
 
   @Test
-  public void logsWarningWhenFailsToFetchImageList() {
+  public void logsWarningWhenFailsToFetchImageList() throws ConnectionCredentialsException {
     final RunningBuildEx runningBuild = startBuild();
     final HashMap<String, String> attributes = new HashMap<>();
     final String amiId = "testAmi";
@@ -127,7 +128,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
   }
 
   @Test
-  public void logsWarningWhenFailsToRemoveImage() {
+  public void logsWarningWhenFailsToRemoveImage() throws ConnectionCredentialsException {
     final RunningBuildEx runningBuild = startBuild();
     final HashMap<String, String> attributes = new HashMap<>();
     final String amiId = "testAmi";
@@ -165,7 +166,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
   }
 
   @Test
-  public void logsWarningWhenFailsToRemoveSnapshot() {
+  public void logsWarningWhenFailsToRemoveSnapshot() throws ConnectionCredentialsException {
     final RunningBuildEx runningBuild = startBuild();
     final HashMap<String, String> attributes = new HashMap<>();
     final String amiId = "testAmi";

@@ -13,7 +13,6 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
   private final SProjectFeatureDescriptor myProjectFeatureDescriptor;
 
   private final String myDescription;
-  private final boolean myIsUsingSessionCredentials;
 
   public AwsConnectionDescriptorImpl(@NotNull final SProjectFeatureDescriptor projectFeatureDescriptor,
                                      @NotNull final AwsCredentialsHolder awsCredentialsHolder,
@@ -21,7 +20,6 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
     myAwsCredentialsHolder = awsCredentialsHolder;
     myProjectFeatureDescriptor = projectFeatureDescriptor;
     myDescription = description;
-    myIsUsingSessionCredentials = awsCredentialsHolder.getAwsCredentials().getSessionToken() != null;
   }
 
   @NotNull
@@ -40,11 +38,6 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
   @Override
   public String getRegion() {
     return getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
-  }
-
-  @Override
-  public boolean isUsingSessionCredentials() {
-    return myIsUsingSessionCredentials;
   }
 
   @NotNull

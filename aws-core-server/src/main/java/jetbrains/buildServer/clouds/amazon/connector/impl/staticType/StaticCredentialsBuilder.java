@@ -7,17 +7,26 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
-  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory) {
+  private final StsClientProvider myStsClientProvider;
+
+  public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
+                                  @NotNull final AwsCredentialsFactory awsCredentialsFactory,
+                                  @NotNull final StsClientProvider stsClientProvider) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    awsCredentialsFactory.registerAwsCredentialsBuilder(this);
+
+    myStsClientProvider = stsClientProvider;
   }
 
   @NotNull
@@ -26,9 +35,9 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
     Map<String, String> cloudConnectorProperties = featureDescriptor.getParameters();
     if (ParamUtil.useSessionCredentials(cloudConnectorProperties)) {
       Loggers.CLOUD.debug("Using Session credentials for the AWS key: " + ParamUtil.maskKey(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM)));
-      return createSessionCredentialsHolder(cloudConnectorProperties);
+      return createSessionCredentialsHolder(featureDescriptor);
     } else {
-      return getBasicCredentialsProvider(cloudConnectorProperties);
+      return getBasicCredentialsProvider(featureDescriptor);
     }
   }
 
@@ -79,16 +88,20 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   }
 
   @NotNull
-  protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
+  protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
     return new StaticSessionCredentialsHolder(
-      getBasicCredentialsProvider(cloudConnectorProperties),
-      cloudConnectorProperties
+      featureDescriptor,
+      getBasicCredentialsProvider(featureDescriptor),
+      myStsClientProvider
     );
   }
 
   @NotNull
-  private AwsCredentialsHolder getBasicCredentialsProvider(@NotNull final Map<String, String> cloudConnectorProperties) {
-    return new StaticCredentialsHolder(cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
-                                       cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM));
+  private AwsCredentialsHolder getBasicCredentialsProvider(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
+    Map<String, String> cloudConnectorProperties = featureDescriptor.getParameters();
+    return new StaticCredentialsHolder(
+      cloudConnectorProperties.get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
+      cloudConnectorProperties.get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
+    );
   }
 }

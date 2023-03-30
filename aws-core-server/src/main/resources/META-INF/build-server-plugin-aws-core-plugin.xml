@@ -22,9 +22,14 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsCredentialsRefresheringManager"/>
 <!--    ^-->
 
+    <bean class="jetbrains.buildServer.serverSide.connections.aws.impl.AwsConnectionCredentialsFactoryImpl"/>
+
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.IamRoleCredentialsBuilder"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType.DefaultProviderCredentialsBuilder"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.impl.BasicStsClientProviderImpl"/>
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.externalId.AwsExternalIdsManagerImpl"/>
     <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsExternalIdsController"/>

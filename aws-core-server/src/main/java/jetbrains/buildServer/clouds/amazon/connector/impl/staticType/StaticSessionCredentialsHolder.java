@@ -1,66 +1,70 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
-import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
-import jetbrains.buildServer.log.Loggers;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Date;
 import java.util.Map;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
+import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
+  private final SProjectFeatureDescriptor myAwsConnectionFeature;
+  private final AwsCredentialsHolder myBasicCredentialsHolder;
+  private final StsClientProvider myStsClientProvider;
 
-  private final AWSSecurityTokenService mySts;
-  private final GetSessionTokenRequest mySessionConfiguration;
-  private volatile GetSessionTokenResult currentSession;
-
-  public StaticSessionCredentialsHolder(@NotNull final AwsCredentialsHolder credentialsHolder,
-                                        @NotNull final Map<String, String> connectionProperties) {
-    AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
-      .standard()
-      .withCredentials(AwsConnectionUtils.awsCredsProviderFromHolder(credentialsHolder));
-    StsClientBuilder.addConfiguration(stsBuilder, connectionProperties);
-    mySts = stsBuilder.build();
-
-    mySessionConfiguration = new GetSessionTokenRequest();
-    String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
-    if (sessionDurationParam != null) {
-      int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
-      mySessionConfiguration.withDurationSeconds(sessionDurationMinutes * 60);
-    }
-
-    currentSession = mySts.getSessionToken(mySessionConfiguration);
+  public StaticSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor awsConnectionFeature,
+                                        @NotNull final AwsCredentialsHolder basicCredentialsHolder,
+                                        @NotNull final StsClientProvider stsClientProvider) {
+    myAwsConnectionFeature = awsConnectionFeature;
+    myBasicCredentialsHolder = basicCredentialsHolder;
+    myStsClientProvider = stsClientProvider;
   }
 
   @NotNull
   @Override
-  public AwsCredentialsData getAwsCredentials() {
-    Credentials credentials = currentSession.getCredentials();
+  public AwsCredentialsData getAwsCredentials() throws ConnectionCredentialsException {
+    Credentials credentials = requestSession().getCredentials();
     return AwsConnectionUtils.getDataFromCredentials(credentials);
   }
 
   @Override
   public void refreshCredentials() {
-    Loggers.CLOUD.debug("Refreshing AWS Credentials...");
-    try {
-      currentSession = mySts.getSessionToken(mySessionConfiguration);
-    } catch (Exception e) {
-      Loggers.CLOUD.warnAndDebugDetails("Failed to refresh AWS Credentials: ", e);
-    }
+    //TODO: TW-78235 refactor other parts of AWS Core plugin not to use refreshing logic
   }
 
   @Override
-  @NotNull
+  @Nullable
   public Date getSessionExpirationDate() {
-    return currentSession.getCredentials().getExpiration();
+    //TODO: TW-78235 refactor other parts of AWS Core plugin not to use refreshing logic
+    return null;
+  }
+
+  private GetSessionTokenResult requestSession() throws ConnectionCredentialsException {
+    GetSessionTokenRequest getSessionTokenRequest = new GetSessionTokenRequest();
+    Map<String, String> connectionProperties = myAwsConnectionFeature.getParameters();
+
+    AWSSecurityTokenService sts = myStsClientProvider
+      .getClientWithCredentials(
+        new AwsConnectionCredentials(
+          myBasicCredentialsHolder.getAwsCredentials(),
+          connectionProperties
+        ),
+        connectionProperties
+      );
+
+    int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
+    getSessionTokenRequest.withDurationSeconds(sessionDurationMinutes * 60);
+
+    return sts.getSessionToken(getSessionTokenRequest);
   }
 }

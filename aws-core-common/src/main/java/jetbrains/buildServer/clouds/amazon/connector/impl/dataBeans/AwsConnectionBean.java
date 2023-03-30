@@ -1,6 +1,8 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans;
 
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 
 @Deprecated
@@ -14,12 +16,16 @@ public class AwsConnectionBean {
   public AwsConnectionBean(@NotNull final String connectionId,
                            @NotNull final String description,
                            @NotNull final AwsCredentialsHolder credentialsHolder,
-                           @NotNull final String region) {
+                           @NotNull final String region) throws AwsConnectorException {
     myConnectionId = connectionId;
     myDescription = description;
     myAwsCredentialsHolder = credentialsHolder;
     myRegion = region;
-    myUsingSessionCredentials = credentialsHolder.getAwsCredentials().getSessionToken() != null;
+    try {
+      myUsingSessionCredentials = credentialsHolder.getAwsCredentials().getSessionToken() != null;
+    } catch (ConnectionCredentialsException e) {
+      throw new AwsConnectorException(e);
+    }
   }
 
   @NotNull

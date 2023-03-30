@@ -16,6 +16,7 @@ import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.cleanup.BuildCleanupContext;
 import jetbrains.buildServer.serverSide.cleanup.BuildsCleanupExtension;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +30,7 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
   public static final String AMI_ERROR = "Cannot not delete AMI '%s'";
   public static final String SNAPSHOT_ERROR = "Cannot not delete snapshot '%s' for AMI '%s'";
   public static final String CONNECTION_ERROR = "Cannot find connection with id '%s'";
+  public static final String EC2_CLIENT_ERROR = "Cannot use AWS EC2: %s";
 
   private final EC2ClientCreator myClientCreator;
   private volatile Map<Long, List<AmiArtifact>> myBuildAmiInfo;
@@ -112,7 +114,14 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
       final AwsConnectionBean awsConnection = myConnectionsManager.getAwsConnection(project, cid, connectionAttributes);
 
       if (awsConnection != null) {
-        return myClientCreator.createClient(awsConnection);
+        try {
+          return myClientCreator.createClient(awsConnection);
+        } catch (ConnectionCredentialsException e) {
+          final String message = String.format(EC2_CLIENT_ERROR, e.getMessage());
+          CLEANUP.warn(message);
+          cleanupContext.onBuildCleanupError(this, build, message);
+          return null;
+        }
       } else {
         final String message = String.format(CONNECTION_ERROR, cid);
         CLEANUP.warn(message);

@@ -17,7 +17,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
@@ -25,15 +24,17 @@ import java.util.Date;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
-import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,76 +43,86 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
 
-  private final AWSSecurityTokenService mySts;
-  private final AssumeRoleRequest myAssumeRoleRequest;
-  private volatile AssumeRoleResult currentSession;
+  private final SProjectFeatureDescriptor myIamRoleConnectionFeature;
+  private final LinkedAwsConnectionProvider myLinkedConnectionProvider;
+  private final StsClientProvider myStsClientProvider;
+  private final AwsExternalIdsManager myAwsExternalIdsManager;
 
   public IamRoleSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor iamRoleConnectionFeature,
-                                         @NotNull final AwsConnectionDescriptor principalAwsConnection,
+                                         @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
+                                         @NotNull final StsClientProvider stsClientProvider,
                                          @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
-    mySts = initStsClientBuilder(principalAwsConnection).build();
-
-    Map<String, String> connectionProperties = iamRoleConnectionFeature.getParameters();
-    myAssumeRoleRequest = new AssumeRoleRequest()
-      .withRoleArn(connectionProperties.get(IAM_ROLE_ARN_PARAM))
-      .withRoleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM));
-
-    String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
-    if (sessionDurationParam != null) {
-      int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
-      myAssumeRoleRequest.withDurationSeconds(sessionDurationMinutes * 60);
-    }
-
-    String externalId = getAwsConnectionExternalId(awsExternalIdsManager, iamRoleConnectionFeature);
-    if (externalId != null) {
-      myAssumeRoleRequest.setExternalId(externalId);
-    }
-
-    currentSession = mySts.assumeRole(myAssumeRoleRequest);
+    myIamRoleConnectionFeature = iamRoleConnectionFeature;
+    myLinkedConnectionProvider = linkedConnectionProvider;
+    myStsClientProvider = stsClientProvider;
+    myAwsExternalIdsManager = awsExternalIdsManager;
   }
 
   @Nullable
-  private String getAwsConnectionExternalId(@NotNull final AwsExternalIdsManager awsExternalIdsManager, @NotNull final SProjectFeatureDescriptor iamRoleConnectionFeature) {
+  private String getAwsConnectionExternalId() {
     String externalId = null;
     try {
-      externalId = awsExternalIdsManager.getAwsConnectionExternalId(iamRoleConnectionFeature.getId(), iamRoleConnectionFeature.getProjectId());
+      externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
+        myIamRoleConnectionFeature.getId(),
+        myIamRoleConnectionFeature.getProjectId()
+      );
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.warnAndDebugDetails(
-        String.format("Failed to get the External ID to assume the IAM Role with ARN <%s>, reason: %s", iamRoleConnectionFeature.getParameters().get(IAM_ROLE_ARN_PARAM),
-                      e.getMessage()), e
-      );
+        String.format(
+          "Failed to get the External ID to assume the IAM Role with ARN <%s>, Connection: %s in Project: %s, reason: %s",
+          myIamRoleConnectionFeature.getParameters().get(IAM_ROLE_ARN_PARAM),
+          myIamRoleConnectionFeature.getId(),
+          myIamRoleConnectionFeature.getProjectId(),
+          e.getMessage()
+        ), e);
     }
     return externalId;
   }
 
   @NotNull
   @Override
-  public AwsCredentialsData getAwsCredentials() {
-    Credentials credentials = currentSession.getCredentials();
+  public AwsCredentialsData getAwsCredentials() throws ConnectionCredentialsException {
+    Credentials credentials = assumeIamRole().getCredentials();
     return AwsConnectionUtils.getDataFromCredentials(credentials);
   }
 
   @Override
   public void refreshCredentials() {
-    Loggers.CLOUD.debug("Refreshing AWS Credentials with assume role request...");
-    try {
-      currentSession = mySts.assumeRole(myAssumeRoleRequest);
-    } catch (Exception e) {
-      Loggers.CLOUD.warnAndDebugDetails("Failed to refresh AWS Credentials with assume role request: ", e);
-    }
+    //TODO: TW-78235 refactor other parts of AWS Core plugin not to use refreshing logic
   }
 
   @Override
-  @NotNull
+  @Nullable
   public Date getSessionExpirationDate() {
-    return currentSession.getCredentials().getExpiration();
+    //TODO: TW-78235 refactor other parts of AWS Core plugin not to use refreshing logic
+    return null;
   }
 
-  private AWSSecurityTokenServiceClientBuilder initStsClientBuilder(@NotNull final AwsConnectionDescriptor principalAwsConnection) {
-    AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
-      .standard()
-      .withCredentials(AwsConnectionUtils.awsCredsProviderFromHolder(principalAwsConnection.getAwsCredentialsHolder()));
-    StsClientBuilder.addConfiguration(stsBuilder, principalAwsConnection.getParameters());
-    return stsBuilder;
+  private AssumeRoleResult assumeIamRole() throws ConnectionCredentialsException {
+    AWSSecurityTokenService sts = myStsClientProvider
+      .getClientWithCredentials(
+        new AwsConnectionCredentials(
+          myLinkedConnectionProvider.getLinkedConnectionCredentials(myIamRoleConnectionFeature)
+        ),
+        myIamRoleConnectionFeature.getParameters()
+      );
+
+    Map<String, String> connectionProperties = myIamRoleConnectionFeature.getParameters();
+    AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
+      .withRoleArn(connectionProperties.get(IAM_ROLE_ARN_PARAM))
+      .withRoleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM));
+
+    String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
+    if (sessionDurationParam != null) {
+      int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
+      assumeRoleRequest.withDurationSeconds(sessionDurationMinutes * 60);
+    }
+
+    String externalId = getAwsConnectionExternalId();
+    if (externalId != null) {
+      assumeRoleRequest.setExternalId(externalId);
+    }
+
+    return sts.assumeRole(assumeRoleRequest);
   }
 }

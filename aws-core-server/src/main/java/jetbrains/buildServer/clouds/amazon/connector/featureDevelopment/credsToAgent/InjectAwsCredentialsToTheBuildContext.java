@@ -10,7 +10,6 @@ import jetbrains.buildServer.agent.Constants;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
@@ -22,6 +21,7 @@ import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.buildLog.MessageAttrs;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM;
@@ -101,7 +101,7 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         context.addSharedParameter(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT, parameters.get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT));
         context.addSharedParameter(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT, encodedCredentials);
         context.addSharedParameter(Constants.ENV_PREFIX + AwsConnBuildFeatureParams.AWS_REGION_ENV_PARAM_DEFAULT, awsConnection.getRegion());
-      } catch (AwsConnectorException e) {
+      } catch (ConnectionCredentialsException e) {
         String warningMessage = "Failed to expose AWS Connection to a build: " + e.getMessage();
         Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
         context.getBuild().getBuildLog()
@@ -125,27 +125,21 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
   }
 
   @NotNull
-  private Map<String, String> getConnectionParametersToExpose(@NotNull final AwsConnectionDescriptor awsConnection) {
+  private Map<String, String> getConnectionParametersToExpose(@NotNull final AwsConnectionDescriptor awsConnection) throws ConnectionCredentialsException {
     Map<String, String> parameters = new HashMap<>();
-
     AwsCredentialsHolder credentialsHolder = awsConnection.getAwsCredentialsHolder();
     AwsCredentialsData credentials = credentialsHolder.getAwsCredentials();
+
     parameters.put(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT, credentials.getAccessKeyId());
 
-    addSecureParameters(parameters, awsConnection);
+    addSecureParameters(parameters, credentials);
     return parameters;
   }
 
-  private void addSecureParameters(@NotNull final Map<String, String> parameters, @NotNull final AwsConnectionDescriptor awsConnection) {
-    AwsCredentialsHolder credentialsHolder = awsConnection.getAwsCredentialsHolder();
-    AwsCredentialsData credentials = credentialsHolder.getAwsCredentials();
-
+  private void addSecureParameters(@NotNull final Map<String, String> parameters, @NotNull final AwsCredentialsData credentials) {
     parameters.put(AwsConnBuildFeatureParams.AWS_SECRET_KEY_ENV_PARAM_DEFAULT, credentials.getSecretAccessKey());
 
-    if (awsConnection.isUsingSessionCredentials()) {
-      if (credentials.getSessionToken() == null) {
-        Loggers.CLOUD.warn("Something is wrong with the session credentials, the session token is null when session credentials were used.");
-      }
+    if (credentials.getSessionToken() != null) {
       parameters.put(AwsConnBuildFeatureParams.AWS_SESSION_TOKEN_ENV_PARAM_DEFAULT, credentials.getSessionToken());
     }
   }

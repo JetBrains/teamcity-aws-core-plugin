@@ -16,35 +16,15 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.utils;
 
-import com.amazonaws.auth.*;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AwsConnectionUtils {
-  @NotNull
-  public static AWSCredentialsProvider awsCredsProviderFromHolder(@NotNull final AwsCredentialsHolder credentialsHolder) {
-    AWSCredentials credentials;
-    if (credentialsHolder.getAwsCredentials().getSessionToken() == null) {
-      credentials = new BasicAWSCredentials(
-        credentialsHolder.getAwsCredentials().getAccessKeyId(),
-        credentialsHolder.getAwsCredentials().getSecretAccessKey()
-      );
-    } else {
-      credentials = new BasicSessionCredentials(
-        credentialsHolder.getAwsCredentials().getAccessKeyId(),
-        credentialsHolder.getAwsCredentials().getSecretAccessKey(),
-        credentialsHolder.getAwsCredentials().getSessionToken()
-      );
-    }
-
-    return new AWSStaticCredentialsProvider(credentials);
-  }
 
   @NotNull
-  public static AwsCredentialsData getDataFromCredentials(@NotNull final Credentials credentials){
+  public static AwsCredentialsData getDataFromCredentials(@NotNull final Credentials credentials) {
     return new AwsCredentialsData() {
       @NotNull
       @Override

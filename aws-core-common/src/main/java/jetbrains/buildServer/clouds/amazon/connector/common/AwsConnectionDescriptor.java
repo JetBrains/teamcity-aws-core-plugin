@@ -13,6 +13,4 @@ public interface AwsConnectionDescriptor extends SProjectFeatureDescriptor {
 
   @NotNull
   String getRegion();
-
-  boolean isUsingSessionCredentials();
 }

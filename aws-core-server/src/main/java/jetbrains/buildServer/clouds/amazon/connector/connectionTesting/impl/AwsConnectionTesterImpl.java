@@ -8,11 +8,11 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
 
   @Override
   @NotNull
-  public AwsTestConnectionResult testConnection(@NotNull final ProjectFeatureDescriptorImpl connectionFeature) throws AwsConnectorException {
+  public AwsTestConnectionResult testConnection(@NotNull final ProjectFeatureDescriptorImpl connectionFeature) throws ConnectionCredentialsException {
     AwsCredentialsHolder testCredentialsHolder = myAwsConnectorFactory.buildAwsCredentialsProvider(connectionFeature);
 
     AWSSecurityTokenServiceClientBuilder stsClientBuilder = AWSSecurityTokenServiceClientBuilder.standard();
@@ -33,9 +33,9 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
     AWSSecurityTokenService sts = stsClientBuilder.build();
 
     return IOGuard.allowNetworkCall(() ->
-      new AwsTestConnectionResult(
-        sts.getCallerIdentity(createGetCallerIdentityRequest(testCredentialsHolder))
-      )
+                                      new AwsTestConnectionResult(
+                                        sts.getCallerIdentity(createGetCallerIdentityRequest(testCredentialsHolder, connectionFeature))
+                                      )
     );
   }
 
@@ -46,10 +46,17 @@ public class AwsConnectionTesterImpl implements AwsConnectionTester {
   }
 
   @NotNull
-  private GetCallerIdentityRequest createGetCallerIdentityRequest(@NotNull final AwsCredentialsHolder awsCredentialsHolder) {
+  private GetCallerIdentityRequest createGetCallerIdentityRequest(@NotNull final AwsCredentialsHolder awsCredentialsHolder,
+                                                                  @NotNull final ProjectFeatureDescriptorImpl connectionFeature)
+    throws ConnectionCredentialsException {
+    AwsConnectionCredentials awsConnectionCredentials = new AwsConnectionCredentials(
+      awsCredentialsHolder.getAwsCredentials(),
+      connectionFeature.getParameters()
+    );
+
     GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest();
     getCallerIdentityRequest.withRequestCredentialsProvider(
-      AwsConnectionUtils.awsCredsProviderFromHolder(awsCredentialsHolder)
+      awsConnectionCredentials.toAWSCredentialsProvider()
     );
     return getCallerIdentityRequest;
   }

@@ -17,20 +17,24 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
 import com.amazonaws.AmazonClientException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
@@ -38,15 +42,20 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.*;
 
 public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
-  private final AwsConnectionsManager myAwsConnectionsManager;
+  private final LinkedAwsConnectionProvider myLinkedConnectionProvider;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
+  private final StsClientProvider myStsClientProvider;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
-                                   @NotNull final AwsConnectionsManager awsConnectionsManager,
-                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
+                                   @NotNull final AwsCredentialsFactory awsCredentialsFactory,
+                                   @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
+                                   @NotNull final AwsExternalIdsManager awsExternalIdsManager,
+                                   @NotNull final StsClientProvider stsClientProvider) {
+    myLinkedConnectionProvider = linkedConnectionProvider;
+    myStsClientProvider = stsClientProvider;
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
+    awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
-    myAwsConnectionsManager = awsConnectionsManager;
     myAwsExternalIdsManager = awsExternalIdsManager;
   }
 
@@ -54,10 +63,10 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   @Override
   protected AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException {
     try {
-      AwsConnectionDescriptor principalAwsConnection = myAwsConnectionsManager.getLinkedAwsConnection(featureDescriptor.getParameters());
       return new IamRoleSessionCredentialsHolder(
         featureDescriptor,
-        principalAwsConnection,
+        myLinkedConnectionProvider,
+        myStsClientProvider,
         myAwsExternalIdsManager
       );
     } catch (AmazonClientException ace) {

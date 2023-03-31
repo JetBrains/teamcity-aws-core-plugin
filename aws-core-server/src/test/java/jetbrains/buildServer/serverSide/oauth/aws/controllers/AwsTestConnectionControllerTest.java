@@ -11,6 +11,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
+import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -20,6 +21,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpoin
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
@@ -31,6 +33,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 import static org.mockito.Mockito.when;
 
 public class AwsTestConnectionControllerTest extends AbstractControllerTest {
@@ -53,7 +56,15 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   public void setUp() throws IOException {
     super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
-    AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(myAwsConnectorFactory);
+    try {
+      AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(
+        myAwsConnectorFactory,
+        Mockito.mock(AwsCredentialsFactory.class),
+        getStsClientProvider(testAccessKeyId, testSecretAccessKey, null)
+      );
+    } catch (AwsConnectorException e) {
+      fail("Test failed: " + e.getMessage());
+    }
 
     xmlResponse = new Element("root");
 

@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.testUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,6 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImp
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.identifiers.OAuthConnectionsIdGenerator;
@@ -25,14 +25,12 @@ import jetbrains.buildServer.util.EventDispatcher;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-public abstract class AwsConnectionTester extends BaseTestCase {
+public abstract class AbstractAwsConnectionTest extends BaseTestCase {
 
   protected final String testProjectId = "PROJECT_ID";
   protected final String testConnectionId = "PROJECT_FEATURE_ID";
@@ -54,7 +52,7 @@ public abstract class AwsConnectionTester extends BaseTestCase {
   private AwsConnectionsEventsListener myAwsConnectionsEventsListener = null;
 
   @Override
-  @BeforeMethod (alwaysRun = true)
+  @BeforeMethod(alwaysRun = true)
   protected void setUp() throws Exception {
     super.setUp();
     initAwsConnectionTester();
@@ -71,18 +69,11 @@ public abstract class AwsConnectionTester extends BaseTestCase {
     initMainComponents();
   }
 
-  protected Map<String, String> createConnectionDefaultProperties() {
-    Map<String, String> res = new HashMap<>();
-    res.put(OAuthConstants.OAUTH_TYPE_PARAM, AwsConnectionProvider.TYPE);
-    res.put(ACCESS_KEY_ID_PARAM, testConnectionParam);
-    res.put(SECURE_SECRET_ACCESS_KEY_PARAM, testConnectionParam);
-    res.put(STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
-    res.put(REGION_NAME_PARAM, REGION_NAME_DEFAULT);
-    res.put(CREDENTIALS_TYPE_PARAM, STATIC_CREDENTIALS_TYPE);
-    return res;
-  }
+  public abstract Map<String, String> createConnectionDefaultProperties();
 
-  protected abstract Map<String, String> createDefaultStorageValues();
+  protected Map<String, String> createDefaultStorageValues() {
+    return Collections.emptyMap();
+  }
 
 
   public void addTeamCityAwsConnection(SProject featureOwner, SProjectFeatureDescriptor feature) {
@@ -97,6 +88,10 @@ public abstract class AwsConnectionTester extends BaseTestCase {
       .thenReturn(testConnectionDescription);
     when(awsConnDescriptor.getOauthProvider())
       .thenReturn(myAwsOauthProvider);
+
+    when(featureOwner.findFeatureById(feature.getId()))
+      .thenReturn(feature);
+
     mockedAwsConnectionsCollection.put(awsConnDescriptor.getId(), awsConnDescriptor);
   }
 

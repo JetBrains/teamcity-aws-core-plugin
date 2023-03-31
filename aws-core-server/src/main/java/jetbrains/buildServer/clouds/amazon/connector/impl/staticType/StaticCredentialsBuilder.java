@@ -88,7 +88,7 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   }
 
   @NotNull
-  protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
+  private AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor featureDescriptor) {
     return new StaticSessionCredentialsHolder(
       featureDescriptor,
       getBasicCredentialsProvider(featureDescriptor),

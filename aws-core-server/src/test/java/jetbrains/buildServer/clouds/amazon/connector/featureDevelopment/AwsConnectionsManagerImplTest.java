@@ -16,33 +16,32 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsConnNotFoundException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsHolder;
-import jetbrains.buildServer.clouds.amazon.connector.testUtils.AwsConnectionTester;
+import jetbrains.buildServer.clouds.amazon.connector.testUtils.AbstractAwsConnectionTest;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
+import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
+import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 
-public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
+public class AwsConnectionsManagerImplTest extends AbstractAwsConnectionTest {
 
   private final String testAccessKeyId = "TEST_ACCESS";
   private final String testSecretAccessKey = "TEST_SECRET";
@@ -68,14 +67,15 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
       myProject.getProjectId()
     ));
 
-    StaticCredentialsBuilder staticCredentialsFactory = new StaticCredentialsBuilder(getAwsConnectorFactory()) {
-      @Override
-      @NotNull
-      protected AwsCredentialsHolder createSessionCredentialsHolder(@NotNull final Map<String, String> cloudConnectorProperties) {
-
-        return createTestCredentialsHolder();
-      }
-    };
+    StaticCredentialsBuilder registeredStaticCredentialsFactory = new StaticCredentialsBuilder(
+      getAwsConnectorFactory(),
+      Mockito.mock(AwsCredentialsFactory.class),
+      getStsClientProvider(
+        testSessionAccessKeyId,
+        testSessionSecretAccessKey,
+        testSessionToken
+      )
+    );
   }
 
   @Test
@@ -87,8 +87,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
       assertEquals(testSessionSecretAccessKey, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
       assertEquals(testSessionToken, awsConnectionDescriptor.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
 
-      assertTrue(awsConnectionDescriptor.isUsingSessionCredentials());
-    } catch (AwsConnectorException e) {
+    } catch (ConnectionCredentialsException e) {
       fail(e.getMessage());
     }
   }
@@ -114,9 +113,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
       assertEquals(testAccessKeyId, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getAccessKeyId());
       assertEquals(testSecretAccessKey, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
 
-      assertFalse(awsConnection.isUsingSessionCredentials());
-
-    } catch (LinkedAwsConnNotFoundException e) {
+    } catch (ConnectionCredentialsException e) {
       fail("Could not find linked aws connection: " + e.getMessage());
     }
   }
@@ -134,20 +131,10 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
       assertEquals(testSessionSecretAccessKey, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSecretAccessKey());
       assertEquals(testSessionToken, awsConnection.getAwsCredentialsHolder().getAwsCredentials().getSessionToken());
 
-      assertTrue(awsConnection.isUsingSessionCredentials());
-
-    } catch (LinkedAwsConnNotFoundException e) {
+    } catch (ConnectionCredentialsException e) {
       fail("Could not find linked aws connection: " + e.getMessage());
     }
   }
-
-
-
-
-
-
-
-
 
 
   //Deprecated methods
@@ -174,7 +161,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
 
       assertFalse(awsConnectionBean.isUsingSessionCredentials());
 
-    } catch (LinkedAwsConnNotFoundException e) {
+    } catch (ConnectionCredentialsException e) {
       fail("Could not find linked aws connection: " + e.getMessage());
     }
   }
@@ -194,7 +181,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
 
       assertTrue(awsConnectionBean.isUsingSessionCredentials());
 
-    } catch (LinkedAwsConnNotFoundException e) {
+    } catch (ConnectionCredentialsException e) {
       fail("Could not find linked aws connection: " + e.getMessage());
     }
   }
@@ -217,11 +204,6 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
       @Override
       public String getRegion() {
         return REGION_NAME_DEFAULT;
-      }
-
-      @Override
-      public boolean isUsingSessionCredentials() {
-        return credentialsHolder.getAwsCredentials().getSessionToken() != null;
       }
 
       @NotNull
@@ -268,7 +250,7 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
   }
 
   @Override
-  protected Map<String, String> createConnectionDefaultProperties() {
+  public Map<String, String> createConnectionDefaultProperties() {
     Map<String, String> res = new HashMap<>();
     res.put(OAuthConstants.OAUTH_TYPE_PARAM, AwsConnectionProvider.TYPE);
     res.put(ACCESS_KEY_ID_PARAM, testAccessKeyId);
@@ -277,43 +259,5 @@ public class AwsConnectionsManagerImplTest extends AwsConnectionTester {
     res.put(REGION_NAME_PARAM, REGION_NAME_DEFAULT);
     res.put(STS_ENDPOINT_PARAM, STS_ENDPOINT_DEFAULT);
     return res;
-  }
-
-  private AwsCredentialsHolder createTestCredentialsHolder() {
-    return new AwsCredentialsHolder() {
-      @NotNull
-      @Override
-      public Date getSessionExpirationDate() {
-        return new Date();
-      }
-
-      @NotNull
-      @Override
-      public AwsCredentialsData getAwsCredentials() {
-        return new AwsCredentialsData() {
-          @NotNull
-          @Override
-          public String getAccessKeyId() {
-            return testSessionAccessKeyId;
-          }
-
-          @NotNull
-          @Override
-          public String getSecretAccessKey() {
-            return testSessionSecretAccessKey;
-          }
-
-          @Override
-          public String getSessionToken() {
-            return testSessionToken;
-          }
-        };
-      }
-
-      @Override
-      public void refreshCredentials() {
-        //...
-      }
-    };
   }
 }

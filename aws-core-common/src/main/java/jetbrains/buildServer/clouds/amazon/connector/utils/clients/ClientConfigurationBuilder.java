@@ -6,6 +6,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.version.ServerVersionHolder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,8 @@ import static jetbrains.buildServer.serverSide.TeamCityProperties.getInteger;
 import static jetbrains.buildServer.serverSide.TeamCityProperties.getPropertyOrNull;
 
 public class ClientConfigurationBuilder {
-  public static ClientConfiguration createClientConfigurationEx(@Nullable String suffix){
+
+  public static ClientConfiguration createClientConfigurationEx(@Nullable String suffix, @Nullable ConnectionSocketFactory socketFactory){
     if (StringUtil.isEmpty(suffix)){
       suffix = AwsCloudConnectorConstants.DEFAULT_SUFFIX;
     }
@@ -34,7 +36,16 @@ public class ClientConfigurationBuilder {
     config.setProxyUsername(getPropertyEx(PREFIX + "user", suffix, config.getProxyUsername()));
     config.setProxyPassword(getPropertyEx(PREFIX + "password", suffix, config.getProxyPassword()));
     config.setProxyWorkstation(getPropertyEx(PREFIX + "workstation", suffix, config.getProxyWorkstation()));
+
+    if (socketFactory != null) {
+      config.getApacheHttpClientConfig().withSslSocketFactory(socketFactory);
+    }
+
     return config;
+  }
+
+  public static ClientConfiguration createClientConfigurationEx(@Nullable String suffix){
+    return createClientConfigurationEx(suffix, null);
   }
 
   private static String getPropertyEx(@NotNull String baseName, @NotNull String suffix, @Nullable String defaultValue){

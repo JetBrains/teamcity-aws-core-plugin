@@ -5,15 +5,15 @@ import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
 import com.amazonaws.services.securitytoken.model.Credentials;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 import java.util.Date;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class TestUtils {
-  public static StsClientProvider getStsClientProvider(String testAccessKeyId, String testSecretAccessKey, String testSessionToken) throws AwsConnectorException {
+  public static StsClientProvider getStsClientProvider(String testAccessKeyId, String testSecretAccessKey, String testSessionToken) throws ConnectionCredentialsException {
     AWSSecurityTokenService securityTokenService = Mockito.mock(AWSSecurityTokenService.class);
     when(securityTokenService.getSessionToken(any()))
       .thenReturn(new GetSessionTokenResult().withCredentials(
@@ -31,7 +31,7 @@ public class TestUtils {
     return stsClientProvider;
   }
 
-  public static StsClientProvider getStsClientProviderWithNoKeys() throws AwsConnectorException {
+  public static StsClientProvider getStsClientProviderWithNoKeys() throws ConnectionCredentialsException {
     AWSSecurityTokenService securityTokenService = Mockito.mock(AWSSecurityTokenService.class);
     when(securityTokenService.getSessionToken(any()))
       .thenReturn(new GetSessionTokenResult().withCredentials(

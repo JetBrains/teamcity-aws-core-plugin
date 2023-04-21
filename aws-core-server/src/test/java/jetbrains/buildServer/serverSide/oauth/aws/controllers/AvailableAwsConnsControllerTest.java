@@ -230,7 +230,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     List<OAuthConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
 
     when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
-      .thenReturn(availableAsConnections);
+      .thenReturn(availableAwsConnections);
 
     try {
       availableAwsConnsController.doHandle(request, response);
@@ -241,7 +241,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     String result = responseOutputStream.toString();
 
-    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(availableAsConnections));
+    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(availableAwsConnections));
 
     assertEquals(expectedResponseJson, result);
   }

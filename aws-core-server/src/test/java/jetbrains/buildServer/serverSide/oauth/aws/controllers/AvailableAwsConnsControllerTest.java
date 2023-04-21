@@ -18,6 +18,7 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.controllers.ActionErrors;
@@ -25,6 +26,7 @@ import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.ConnectionCapability;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
@@ -37,13 +39,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNECTIONS_SELECT_ID;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static org.mockito.Mockito.when;
 
 public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
@@ -176,6 +173,64 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     when(mockedAwsConnection.getConnectionDisplayName())
       .thenReturn(AWS_CONNECTION_DISPLAY_NAME);
 
+
+    try {
+      availableAwsConnsController.doHandle(request, response);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
+
+    String result = responseOutputStream.toString();
+
+    String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(availableAsConnections));
+
+    assertEquals(expectedResponseJson, result);
+  }
+
+  @Test
+  public void givenIsForBuild_withSeveralAwsConnection_thenReturnOnlyAllowedForBuilds() throws JsonProcessingException {
+    when(request.getParameter("resource"))
+      .thenReturn(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME);
+    when(request.getParameter("forBuildStep"))
+      .thenReturn("true");
+
+
+    final Map<String, String> params = new HashMap<>();
+    params.put(ALLOWED_IN_BUILDS_PARAM, "false");
+
+    when(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG)).thenReturn("true");
+
+    OAuthConnectionDescriptor mockedAwsConnection1 = new OAuthConnectionDescriptor(
+      project,
+      new ProjectFeatureDescriptorImpl(
+        AWS_CONNECTION_ID + 1,
+        OAuthConstants.FEATURE_TYPE,
+        params,
+        PROJECT_ID
+      ),
+      Mockito.mock(ExtensionHolder.class)
+    );
+
+    final Map<String, String> params2 = new HashMap<>();
+    params2.put(ALLOWED_IN_BUILDS_PARAM, "true");
+
+    OAuthConnectionDescriptor mockedAwsConnection2 = new OAuthConnectionDescriptor(
+      project,
+      new ProjectFeatureDescriptorImpl(
+        AWS_CONNECTION_ID + 2,
+        OAuthConstants.FEATURE_TYPE,
+        params2,
+        PROJECT_ID
+      ),
+      Mockito.mock(ExtensionHolder.class)
+    );
+
+
+    List<OAuthConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
+
+    when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
+      .thenReturn(availableAsConnections);
 
     try {
       availableAwsConnsController.doHandle(request, response);

@@ -72,7 +72,7 @@
     }
 
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${principal_aws_conn_id}=${param.principalAwsConnId}',
+      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${allowed_in_builds_request_param}=${param.forBuildStep}&${principal_aws_conn_id}=${param.principalAwsConnId}',
 
       onComplete: function(response) {
 

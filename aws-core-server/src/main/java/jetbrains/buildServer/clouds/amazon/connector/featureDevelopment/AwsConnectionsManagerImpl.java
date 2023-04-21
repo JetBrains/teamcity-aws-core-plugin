@@ -78,7 +78,21 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     if (awsConnectionsToExpose.isEmpty()) {
       return null;
     }
-    return awsConnectionsToExpose.iterator().next();
+
+    final boolean buildStepsFeatureEnabled = Boolean.parseBoolean(buildType.getProject().getParameterValue(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG));
+
+    if (!buildStepsFeatureEnabled) {
+      return awsConnectionsToExpose.iterator().next();
+    }
+
+    for (SBuildFeatureDescriptor nextDescriptor : awsConnectionsToExpose) {
+      final String isAllowedInBuildSteps = nextDescriptor.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
+      if (isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps)) {
+        return nextDescriptor;
+      }
+    }
+
+    throw new AwsBuildFeatureException("There are no AWS Connections that can be exposed");
   }
 
 
@@ -117,20 +131,12 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   @Override
   @Deprecated
   public AwsConnectionBean getEnvVarAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException {
-    if (build.getBuildId() < 0) {
-      throw new AwsBuildFeatureException("Dummy build with negative id " + build.getBuildId() + " does not have AWS Connections to expose");
-    }
-
+    final SBuildFeatureDescriptor feature = getAwsConnectionFeatureFromBuild(build);
     SBuildType buildType = build.getBuildType();
-    if (buildType == null) {
-      throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
-    }
-
-    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(build);
-    if (awsConnectionsToExpose.isEmpty()) {
+    if (feature == null || buildType == null) {
       return null;
     }
-    SBuildFeatureDescriptor configuredAwsConnBuildFeature = awsConnectionsToExpose.iterator().next();
-    return getLinkedAwsConnection(configuredAwsConnBuildFeature.getParameters(), buildType.getProject());
+
+    return getLinkedAwsConnection(feature.getParameters(), buildType.getProject());
   }
 }

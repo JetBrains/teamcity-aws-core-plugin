@@ -1,11 +1,14 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
@@ -13,6 +16,7 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.oauth.ConnectionCapability;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -75,6 +79,16 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       }
 
       List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+
+      final boolean forBuildStepFeatureEnabled = Boolean.parseBoolean(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG));
+      final boolean isForBuildStep = Boolean.parseBoolean(request.getParameter(ALLOWED_IN_BUILDS_REQUEST_PARAM));
+      if (forBuildStepFeatureEnabled && isForBuildStep) {
+        awsConnections = awsConnections.stream().filter(conn -> {
+          final String isAllowedInBuildSteps = conn.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
+          return isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps);
+        }).collect(Collectors.toList());
+      }
+
       List<List<String>> readyAvailAwsConnProps = getAvailableAwsConnectionsParams(processAvailableAwsConnections(awsConnections, request));
 
       String resourceName = request.getParameter("resource");

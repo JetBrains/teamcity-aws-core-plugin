@@ -110,6 +110,28 @@
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
 
+<c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, false)}"/>
+
+<c:if test="${buildStepsFeatureEnabled}">
+<l:settingsGroup title="Security">
+
+  <c:if test="${buildStepsFeatureEnabled}">
+
+    <c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}"/>
+    <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}"/>
+    <tr>
+      <th><label for="${allowed_in_builds_param}">${allowed_in_builds_label}: </label></th>
+      <td>
+        <props:checkboxProperty name="${allowed_in_builds_param}" checked="${allowedInBuildsValue}" uncheckedValue="false"/>
+        <span>${allowed_in_builds_note}</span>
+        <span class="error" id="error_${allowed_in_builds_param}"></span>
+      </td>
+    </tr>
+  </c:if>
+
+  </l:settingsGroup>
+</c:if>
+
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {
     const enableForm = this.enable.bind(this);

@@ -60,4 +60,12 @@ public final class AwsCloudConnectorConstants {
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "awsConnectionId";
   public static final String CHOSEN_AWS_CONN_ID_LABEL = "AWS Connection";
+
+  public static final String ALLOWED_IN_BUILDS_PARAM = "awsAllowedInBuilds";
+  public static final String ALLOWED_IN_BUILDS_LABEL = "Available for builds";
+  public static final String ALLOWED_IN_BUILDS_NOTE = "If this setting is enabled, build steps of this project can utilize the connection";
+
+  public static final String ALLOWED_IN_BUILDS_REQUEST_PARAM = "forBuilds";
+
+  public static final String ALLOWED_IN_BUILDS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForBuildsEnabled";
 }

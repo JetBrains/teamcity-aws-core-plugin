@@ -79,3 +79,10 @@
 
 
 <c:set var="aws_connection_id_generator_type" value="<%=AwsCloudConnectorConstants.AWS_CONNECTION_ID_GENERATOR_TYPE%>"/>
+
+<c:set var="allowed_in_builds_param" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM %>"/>
+<c:set var="allowed_in_builds_label" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_LABEL %>"/>
+<c:set var="allowed_in_builds_note" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_NOTE %>"/>
+
+<c:set var="allowed_in_builds_request_param" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_REQUEST_PARAM %>"/>
+<c:set var="allowed_in_builds_feature_enabled" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG %>"/>

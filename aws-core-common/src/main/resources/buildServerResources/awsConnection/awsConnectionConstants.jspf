@@ -86,3 +86,8 @@
 
 <c:set var="allowed_in_builds_request_param" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_REQUEST_PARAM %>"/>
 <c:set var="allowed_in_builds_feature_enabled" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG %>"/>
+
+<c:set var="allowed_in_subprojects_param" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM %>"/>
+<c:set var="allowed_in_subprojects_label" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_LABEL %>"/>
+<c:set var="allowed_in_subprojects_note" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_NOTE %>"/>
+<c:set var="allowed_in_subprojects_feature_enabled" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG %>"/>

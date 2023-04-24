@@ -1,6 +1,8 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptorBuilder;
@@ -11,6 +13,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.features.LinkedAwsCo
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.AwsConnToAgentBuildFeature;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
@@ -79,7 +82,19 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       return null;
     }
 
-    final boolean buildStepsFeatureEnabled = Boolean.parseBoolean(buildType.getProject().getParameterValue(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG));
+    final boolean subProjectsFeatureEnabled = Boolean.parseBoolean(buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG));
+    if (subProjectsFeatureEnabled) {
+      final List<SBuildFeatureDescriptor> filteredList = new ArrayList<SBuildFeatureDescriptor>();
+      for (SBuildFeatureDescriptor feature : awsConnectionsToExpose) {
+        final String connProjectId = getLinkedAwsConnection(feature.getParameters()).getProjectId();
+        if (connProjectId.equals(buildType.getProjectId()) || ParamUtil.isAllowedInSubProjects(feature.getParameters())) {
+          filteredList.add(feature);
+        }
+      }
+      awsConnectionsToExpose = filteredList;
+    }
+
+    final boolean buildStepsFeatureEnabled = Boolean.parseBoolean(buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG));
 
     if (!buildStepsFeatureEnabled) {
       return awsConnectionsToExpose.iterator().next();

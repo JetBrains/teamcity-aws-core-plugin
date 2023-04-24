@@ -1,9 +1,7 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +14,6 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.oauth.ConnectionCapability;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -87,6 +84,14 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
           final String isAllowedInBuildSteps = conn.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
           return isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps);
         }).collect(Collectors.toList());
+      }
+
+      final boolean childProjectsFeatureEnabled = Boolean.parseBoolean(project.getParameterValue(ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG));
+
+      if (childProjectsFeatureEnabled) {
+        awsConnections = awsConnections.stream()
+                                       .filter(conn -> conn.getProjectId().equals(projectId) || ParamUtil.isAllowedInSubProjects(conn.getParameters()))
+                                       .collect(Collectors.toList());
       }
 
       List<List<String>> readyAvailAwsConnProps = getAvailableAwsConnectionsParams(processAvailableAwsConnections(awsConnections, request));

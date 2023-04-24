@@ -28,6 +28,11 @@ public class ParamUtil {
     return true;
   }
 
+  public static boolean isAllowedInSubProjects(@NotNull final Map<String, String> properties){
+    String value = properties.get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM);
+    return value == null || Boolean.parseBoolean(value);
+  }
+
   public static String maskKey(String value) {
     if (value.length() > AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS)
       return AwsAccessKeysParams.KEY_MASK + value.substring(value.length() - AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS);

@@ -67,5 +67,10 @@ public final class AwsCloudConnectorConstants {
 
   public static final String ALLOWED_IN_BUILDS_REQUEST_PARAM = "forBuilds";
 
+  public static final String ALLOWED_IN_SUBPROJECTS_PARAM = "awsAllowedInSubProjects";
+  public static final String ALLOWED_IN_SUBPROJECTS_LABEL = "Available for sub-projects";
+  public static final String ALLOWED_IN_SUBPROJECTS_NOTE = "If this setting is enabled, sub-projects of this project can utilize the connection";
+
+  public static final String ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForSubProjectsEnabled";
   public static final String ALLOWED_IN_BUILDS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForBuildsEnabled";
 }

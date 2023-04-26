@@ -8,6 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionCredentialsConstants;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
   }
 
   @NotNull
-  public AWSCredentialsProvider toAWSCredentialsProvider() throws AwsConnectorException {
+  public AWSCredentialsProvider toAWSCredentialsProvider() throws ConnectionCredentialsException {
     if (myAccessKeyId == null || mySecretAccessKey == null) {
       throw new AwsConnectorException("Connection credentials were not provided");
     }
@@ -91,5 +92,25 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
   @Override
   public String getProviderType() {
     return AwsCloudConnectorConstants.CLOUD_TYPE;
+  }
+
+  @Nullable
+  public String getAwsRegion() {
+    return myAwsRegion;
+  }
+
+  @Nullable
+  public String getAccessKeyId() {
+    return myAccessKeyId;
+  }
+
+  @Nullable
+  public String getSecretAccessKey() {
+    return mySecretAccessKey;
+  }
+
+  @Nullable
+  public String getSessionToken() {
+    return mySessionToken;
   }
 }

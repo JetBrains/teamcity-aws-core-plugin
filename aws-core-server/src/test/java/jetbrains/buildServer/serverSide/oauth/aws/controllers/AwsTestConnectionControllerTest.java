@@ -11,7 +11,6 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -22,6 +21,7 @@ import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
@@ -62,7 +62,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
         Mockito.mock(AwsCredentialsFactory.class),
         getStsClientProvider(testAccessKeyId, testSecretAccessKey, null)
       );
-    } catch (AwsConnectorException e) {
+    } catch (ConnectionCredentialsException e) {
       fail("Test failed: " + e.getMessage());
     }
 

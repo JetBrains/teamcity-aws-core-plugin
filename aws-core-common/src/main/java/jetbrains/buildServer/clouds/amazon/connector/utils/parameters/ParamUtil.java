@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,11 +22,8 @@ public class ParamUtil {
   private final static Pattern validAwsSessionNamePattern = Pattern.compile(VALID_ROLE_SESSION_NAME_REGEX);
 
   public static boolean useSessionCredentials(@NotNull final Map<String, String> properties){
-    String useSessionCredentials = properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM);
-    if("false".equals(useSessionCredentials))
-      return false;
-
-    return true;
+    String useSessionCredentials = properties.getOrDefault(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM, AwsAccessKeysParams.SESSION_CREDENTIALS_DEFAULT);
+    return !"false".equals(useSessionCredentials);
   }
 
   public static boolean isAllowedInSubProjects(@NotNull final Map<String, String> properties){
@@ -119,5 +117,9 @@ public class ParamUtil {
   @Nullable
   public static String getLinkedAwsConnectionId(@NotNull final Map<String, String> otherFeatureProperties) {
     return otherFeatureProperties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
+  }
+
+  public static boolean withAwsConnectionId(@NotNull final Map<String, String> params) {
+    return StringUtils.isNotBlank(params.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM));
   }
 }

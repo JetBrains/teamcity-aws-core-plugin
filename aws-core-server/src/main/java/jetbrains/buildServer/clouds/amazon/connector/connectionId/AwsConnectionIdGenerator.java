@@ -53,7 +53,7 @@ public class AwsConnectionIdGenerator extends BaseExternalIdGenerator implements
   @Override
   public String newId(@NotNull Map<String, String> props) {
     String userDefinedConnId = props.get(USER_DEFINED_ID_PARAM);
-    props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
+    //props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
 
     if (userDefinedConnId == null) {
       userDefinedConnId = generateNewId();

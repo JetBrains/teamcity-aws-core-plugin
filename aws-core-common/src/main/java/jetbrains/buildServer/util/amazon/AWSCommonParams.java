@@ -21,15 +21,11 @@ import com.amazonaws.Protocol;
 import com.amazonaws.auth.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.Credentials;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import jetbrains.buildServer.parameters.ReferencesResolverUtil;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.util.BaseArchiveUtil;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -122,12 +118,7 @@ public final class AWSCommonParams {
     }
 
     if (!isUseDefaultCredentialProviderChain(params)) {
-      if (StringUtil.isEmptyOrSpaces(getAccessKeyId(params))) {
-        invalids.put(ACCESS_KEY_ID_PARAM, ACCESS_KEY_ID_LABEL + " must not be empty");
-      }
-      if (StringUtil.isEmptyOrSpaces(getSecretAccessKey(params))) {
-        invalids.put(SECURE_SECRET_ACCESS_KEY_PARAM, SECRET_ACCESS_KEY_LABEL + " must not be empty");
-      }
+      verifyAccessKeys(params, invalids);
     }
 
     final String credentialsType = getCredentialsType(params);
@@ -142,19 +133,32 @@ public final class AWSCommonParams {
     }
 
     if (ENVIRONMENT_TYPE_CUSTOM.equals(params.get(ENVIRONMENT_NAME_PARAM))) {
-      final String serviceEndpoint = params.get(SERVICE_ENDPOINT_PARAM);
-      if (StringUtil.isEmptyOrSpaces(serviceEndpoint)) {
-        invalids.put(SERVICE_ENDPOINT_PARAM, SERVICE_ENDPOINT_LABEL + " must not be empty");
-      } else {
-        try {
-          new URL(serviceEndpoint);
-        } catch (MalformedURLException e) {
-          invalids.put(SERVICE_ENDPOINT_PARAM, "Invalid URL format for " + SERVICE_ENDPOINT_LABEL);
-        }
-      }
+      verifyEndpoint(params, invalids);
     }
 
     return invalids;
+  }
+
+  public static void verifyEndpoint(@NotNull Map<String, String> params, Map<String, String> invalids) {
+    final String serviceEndpoint = params.get(SERVICE_ENDPOINT_PARAM);
+    if (StringUtil.isEmptyOrSpaces(serviceEndpoint)) {
+      invalids.put(SERVICE_ENDPOINT_PARAM, SERVICE_ENDPOINT_LABEL + " must not be empty");
+    } else {
+      try {
+        new URL(serviceEndpoint);
+      } catch (MalformedURLException e) {
+        invalids.put(SERVICE_ENDPOINT_PARAM, "Invalid URL format for " + SERVICE_ENDPOINT_LABEL);
+      }
+    }
+  }
+
+  public static void verifyAccessKeys(@NotNull Map<String, String> params, Map<String, String> invalids) {
+    if (StringUtil.isEmptyOrSpaces(getAccessKeyId(params))) {
+      invalids.put(ACCESS_KEY_ID_PARAM, ACCESS_KEY_ID_LABEL + " must not be empty");
+    }
+    if (StringUtil.isEmptyOrSpaces(getSecretAccessKey(params))) {
+      invalids.put(SECURE_SECRET_ACCESS_KEY_PARAM, SECRET_ACCESS_KEY_LABEL + " must not be empty");
+    }
   }
 
   private static boolean isAccessKeysOption(String credentialsType) {

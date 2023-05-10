@@ -19,7 +19,7 @@ package jetbrains.buildServer.util.amazon.retry;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.retry.RetryUtils;
 import com.intellij.openapi.diagnostic.Logger;
-import java.io.InterruptedIOException;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
@@ -47,7 +47,7 @@ public interface Retrier extends RetrierEventListener {
     return Retrier.withRetries(retriesNum)
                   .registerListener(new LoggingRetrierListener(logger))
                   .registerListener(
-                    new AbortingListener(SSLException.class, UnknownHostException.class, SocketException.class, InterruptedIOException.class, InterruptedException.class) {
+                    new AbortingListener(SSLException.class, UnknownHostException.class, SocketException.class, IOException.class, InterruptedException.class) {
                       @Override
                       public <T> void onFailure(@NotNull Callable<T> callable, int retry, @NotNull Exception e) {
                         if (e instanceof InterruptedException) {

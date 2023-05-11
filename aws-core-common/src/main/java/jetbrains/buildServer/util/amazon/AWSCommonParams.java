@@ -363,7 +363,7 @@ public final class AWSCommonParams {
     }
 
     final String environmentType = params.get(ENVIRONMENT_NAME_PARAM);
-    if (ENVIRONMENT_TYPE_CUSTOM.equals(environmentType)) {
+    if (StringUtil.areEqualIgnoringCase(ENVIRONMENT_TYPE_CUSTOM, environmentType)) {
       final String serviceEndpoint = params.get(SERVICE_ENDPOINT_PARAM);
       awsClients.setServiceEndpoint(serviceEndpoint);
     }

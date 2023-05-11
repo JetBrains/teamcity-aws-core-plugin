@@ -18,7 +18,6 @@ package jetbrains.buildServer.util.amazon;
 
 import com.amazonaws.AmazonWebServiceClient;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.PredefinedClientConfigurations;
 import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.internal.StaticCredentialsProvider;
@@ -30,7 +29,6 @@ import com.amazonaws.services.codepipeline.AWSCodePipelineClient;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
@@ -47,13 +45,13 @@ public class AWSClients {
   @Nullable private final AWSCredentials myCredentials;
   @Nullable private String myServiceEndpoint;
   @Nullable private String myS3SignerType;
-  @NotNull private final String myRegion;
+  @Nullable private final String myRegion;
   @NotNull private final ClientConfiguration myClientConfiguration;
   private boolean myDisablePathStyleAccess = false;
 
   private boolean myAccelerateModeEnabled = false;
 
-  private AWSClients(@Nullable AWSCredentials credentials, @NotNull String region) {
+  private AWSClients(@Nullable AWSCredentials credentials, @Nullable String region) {
     myCredentials = credentials;
     myRegion = region;
     myClientConfiguration = AWSCommonParams.createClientConfiguration();
@@ -74,7 +72,7 @@ public class AWSClients {
     return fromExistingCredentials(null, region);
   }
   @NotNull
-  public static AWSClients fromBasicCredentials(@NotNull String accessKeyId, @NotNull String secretAccessKey, @NotNull String region) {
+  public static AWSClients fromBasicCredentials(@NotNull String accessKeyId, @NotNull String secretAccessKey, @Nullable String region) {
     return fromExistingCredentials(new BasicAWSCredentials(accessKeyId, secretAccessKey), region);
   }
 
@@ -111,7 +109,7 @@ public class AWSClients {
   }
 
   @NotNull
-  private static AWSClients fromExistingCredentials(@Nullable AWSCredentials credentials, @NotNull String region) {
+  private static AWSClients fromExistingCredentials(@Nullable AWSCredentials credentials, @Nullable String region) {
     return new AWSClients(credentials, region);
   }
 

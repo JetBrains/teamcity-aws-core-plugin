@@ -47,4 +47,5 @@
 
     <bean class="jetbrains.buildServer.clouds.amazon.connector.health.DisabledAwsConnectionHealthReport"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.health.DisabledAwsConnectionHealthPage"/>
+    <bean class="jetbrains.buildServer.serverSide.connections.aws.AwsConnectionSettingsMapper"/>
 </beans>

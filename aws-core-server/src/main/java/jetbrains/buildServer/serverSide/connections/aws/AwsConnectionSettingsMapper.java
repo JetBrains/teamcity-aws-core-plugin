@@ -25,7 +25,8 @@ public class AwsConnectionSettingsMapper implements CustomSettingsMapper {
       .entrySet()
       .stream()
       .filter(e -> OAuthConstants.FEATURE_TYPE.equals(e.getKey().getType()) &&
-                   AwsCloudConnectorConstants.CLOUD_TYPE.equals(e.getKey().getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM)))
+              AwsCloudConnectorConstants.CLOUD_TYPE.equals(e.getKey().getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM)))
+      .peek(this::correctUserDefinedId)
       .collect(Collectors.toList());
 
     for (Map.Entry<SProjectFeatureDescriptor, SProjectFeatureDescriptor> newAwsConnection : newAwsConnections) {
@@ -46,6 +47,25 @@ public class AwsConnectionSettingsMapper implements CustomSettingsMapper {
                   newParams.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, copiedFeature.getId());
                   newProject.updateFeature(feature.getId(), feature.getType(), newParams);
                 });
+    }
+  }
+
+  // IDs might have consistency problems. This should be readdressed with TW-80943
+  private void correctUserDefinedId(Map.Entry<SProjectFeatureDescriptor, SProjectFeatureDescriptor> entry) {
+    final SProjectFeatureDescriptor src = entry.getKey();
+    final SProjectFeatureDescriptor copy = entry.getValue();
+
+    final String srcId = src.getParameters().get(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM);
+    if (srcId != null && srcId.equals(copy.getParameters().get(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM))) {
+      final SProject newProject = myProjectManager.findProjectById(copy.getProjectId());
+      if (newProject == null) {
+        return;
+      }
+
+      final Map<String, String> newParams = new HashMap<>(copy.getParameters());
+      newParams.put(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM, copy.getId());
+
+      newProject.updateFeature(copy.getId(), copy.getType(), newParams);
     }
   }
 }

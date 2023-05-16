@@ -58,7 +58,12 @@ public class AwsConnectionIdGenerator extends BaseExternalIdGenerator implements
       userDefinedConnId = generateNewId();
       LOG.debug("User did not define the connection id, will generate it using awsConnection_<incremental ID>");
     } else if (!isUnique(userDefinedConnId)) {
-      props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
+      try {
+        props.remove(USER_DEFINED_ID_PARAM, userDefinedConnId);
+      }catch (Throwable e){
+        // Ignore exception until TW-78234 is fixed
+      }
+
       userDefinedConnId = makeUnique(userDefinedConnId);
       LOG.warn("User-defined connection id is not unique, will add incremental ID");
     }

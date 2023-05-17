@@ -16,11 +16,14 @@
 
 package jetbrains.buildServer.util.amazon.retry.impl;
 
+import com.intellij.openapi.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import jetbrains.buildServer.util.ExceptionUtil;
 import jetbrains.buildServer.util.amazon.retry.AbortRetriesException;
 import jetbrains.buildServer.util.amazon.retry.ExecuteForAborted;
@@ -54,17 +57,7 @@ public class RetrierImpl implements Retrier {
         afterExecution(callable);
         return call;
       } catch (Exception e) {
-        if (exception == null) {
-          if (e instanceof RuntimeException) {
-            exception = (RuntimeException)e;
-          } else {
-            if (e instanceof InterruptedException) {
-              exception = new AbortRetriesException(e);
-            } else {
-              exception = new RuntimeException(e.getMessage(), e);
-            }
-          }
-        }
+        exception = asRuntimeException(e);
         try {
           onFailure(callable, retry, exception);
         } catch (AbortRetriesException abortRetriesException) {
@@ -74,6 +67,84 @@ public class RetrierImpl implements Retrier {
     }
     assert exception != null : "If we got here, exception cannot be null";
     throw exception;
+  }
+
+  private <T> void retryAsync(int remainingRetries,
+                              Throwable lastException,
+                              CompletableFuture<Pair<T, Integer>> futureResult,
+                              Supplier<CompletableFuture<T>> operationSupplier) {
+    // passing fake callable mainly for logging purposes
+    beforeRetry(() -> null, myMaxRetries - remainingRetries);
+
+    if (remainingRetries <= 0) {
+      futureResult.completeExceptionally(lastException);
+      return;
+    }
+
+    operationSupplier.get().whenComplete((result, error) -> {
+      if (error == null) {
+        futureResult.complete(new Pair<>(result, myMaxRetries - remainingRetries));
+      } else {
+        RuntimeException e = asRuntimeException(error);
+
+        try {
+          // passing fake callable, while we don't have real callable to pass to related function.
+          // this::onFailure will either complets successfully or throw "final" exception that will be handled by
+          // the result.handle method in this::executeAsync
+          onFailure(() -> null, myMaxRetries - remainingRetries, e);
+          retryAsync(remainingRetries - 1, e, futureResult, operationSupplier);
+        } catch (AbortRetriesException abortRetriesException) {
+          futureResult.completeExceptionally(abortRetriesException.getCause());
+        } catch (Throwable t) {
+          futureResult.completeExceptionally(t);
+        }
+      }
+    });
+  }
+
+  @NotNull
+  private static RuntimeException asRuntimeException(Throwable error) {
+    // wrap exception into RuntimeException if needed
+    RuntimeException e;
+    if (error instanceof RuntimeException) {
+      e = (RuntimeException)error;
+    } else if (error instanceof InterruptedException) {
+      e = new AbortRetriesException(error);
+    } else {
+      e = new RuntimeException(error.getMessage(), error);
+    }
+    return e;
+  }
+
+  @Override
+  public <T> CompletableFuture<T> executeAsync(@NotNull final Supplier<CompletableFuture<T>> futureSupplier) {
+    final CompletableFuture<Pair<T, Integer>> result = new CompletableFuture<>();
+    // we don't have real callable to pass to related function.
+    // gladly, they don't evaluate it with a :call method.
+    beforeExecution(() -> null);
+
+    // retry Async may throw exception in case of error in futureSupplier or ::beforeRetry call.
+    try {
+      retryAsync(myMaxRetries, null, result, futureSupplier);
+    } catch (Exception e) {
+      CompletableFuture<T> failure = new CompletableFuture<>();
+      failure.completeExceptionally(e);
+      return failure;
+    }
+
+    return result.handle((pair, error) -> {
+      if (error != null) {
+        // exception occured
+        ExceptionUtil.rethrowAsRuntimeException(error);
+      } else {
+        final T resultValue = pair.getFirst();
+        // result is ready
+        onSuccess(() -> resultValue, pair.getSecond());
+        afterExecution(() -> resultValue);
+        return resultValue;
+      }
+      return null;
+    });
   }
 
   @NotNull

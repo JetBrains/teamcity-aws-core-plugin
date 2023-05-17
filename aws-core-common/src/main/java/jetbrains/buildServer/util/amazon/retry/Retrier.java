@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLException;
 import jetbrains.buildServer.util.amazon.retry.impl.*;
 import org.jetbrains.annotations.NotNull;
@@ -53,9 +55,11 @@ public interface Retrier extends RetrierEventListener {
                         if (e instanceof InterruptedException) {
                           Thread.currentThread().interrupt();
                           return;
-                        } else if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
+                        }
+                        if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
                           return;
-                        } else if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+                        }
+                        if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
                           return;
                         }
                         super.onFailure(callable, retry, e);
@@ -65,6 +69,8 @@ public interface Retrier extends RetrierEventListener {
   }
 
   <T> T execute(@NotNull final Callable<T> callable);
+
+  <T> CompletableFuture<T> executeAsync(@NotNull final Supplier<CompletableFuture<T>> futureSupplier);
 
   default void execute(@NotNull final ExceptionalRunnable runnable) {
     execute(() -> {

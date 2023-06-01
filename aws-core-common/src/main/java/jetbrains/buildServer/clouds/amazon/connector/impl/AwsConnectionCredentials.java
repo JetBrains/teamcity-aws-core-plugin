@@ -94,8 +94,16 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
     return AwsCloudConnectorConstants.CLOUD_TYPE;
   }
 
-  @Nullable
+  /**
+   * Returns default AWS region in case of setting isn't provided.
+   * @return AWS region name
+   */
+  @NotNull
   public String getAwsRegion() {
+    if (myAwsRegion == null) {
+      return AwsCloudConnectorConstants.REGION_NAME_DEFAULT;
+    }
+
     return myAwsRegion;
   }
 

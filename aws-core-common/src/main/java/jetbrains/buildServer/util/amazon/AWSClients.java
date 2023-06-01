@@ -32,6 +32,8 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 import com.amazonaws.services.securitytoken.model.Credentials;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -128,10 +130,18 @@ public class AWSClients {
       builder.withCredentials(new AWSStaticCredentialsProvider(myCredentials));
     }
 
+    // null in myRegion will cause S3 client instantiation to fail
+    // we ensure, that we have at least default region
+    String region = myRegion;
+
+    if (myRegion == null) {
+      region = AwsCloudConnectorConstants.REGION_NAME_DEFAULT;
+    }
+
     if (StringUtil.isNotEmpty(myServiceEndpoint)) {
-      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, myRegion));
+      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, region));
     } else {
-      builder.withRegion(myRegion);
+      builder.withRegion(region);
     }
 
     return builder.build();
@@ -161,10 +171,18 @@ public class AWSClients {
       builder.withCredentials(new AWSStaticCredentialsProvider(myCredentials));
     }
 
+    // null in myRegion will cause S3 client instantiation to fail
+    // we ensure, that we have at least default region
+    String region = myRegion;
+
+    if (myRegion == null) {
+      region = AwsCloudConnectorConstants.REGION_NAME_DEFAULT;
+    }
+
     if (StringUtil.isNotEmpty(myServiceEndpoint)) {
-      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, myRegion));
+      builder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myServiceEndpoint, region));
     } else {
-      builder.withRegion(myRegion);
+      builder.withRegion(region);
     }
 
     return builder.build();
@@ -204,7 +222,16 @@ public class AWSClients {
 
   @NotNull
   private <T extends AmazonWebServiceClient> T withRegion(@NotNull T client) {
-    return client.withRegion(AWSRegions.getRegion(myRegion));
+    // null in myRegion will cause S3 client instantiation to fail
+    // we ensure, that we have at least default region
+    String region = myRegion;
+
+    if (myRegion == null) {
+      Loggers.SERVER.debug("Region is not specified, using default region: " + AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+      region = AwsCloudConnectorConstants.REGION_NAME_DEFAULT;
+    }
+
+    return client.withRegion(AWSRegions.getRegion(region));
   }
 
   @NotNull

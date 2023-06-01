@@ -24,6 +24,8 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.parameters.ReferencesResolverUtil;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
@@ -209,7 +211,8 @@ public final class AWSCommonParams {
           // do nothing
         }
       };
-    } else if (isTempCredentialsOption(credentialsType)) {
+    }
+    if (isTempCredentialsOption(credentialsType)) {
       return createSessionCredentialsProvider(params);
     }
 
@@ -247,9 +250,21 @@ public final class AWSCommonParams {
     return StringUtil.isNotEmpty(secretAccessKeyParam) ? secretAccessKeyParam : params.get(SECRET_ACCESS_KEY_PARAM_OLD);
   }
 
-  @Nullable
+  /**
+   * Default region name will be returned if neither new nor old parameter is specified.
+   * @param params
+   * @return region name
+   */
+  @NotNull
   public static String getRegionName(@NotNull Map<String, String> params) {
-    return getNewOrOld(params, REGION_NAME_PARAM, REGION_NAME_PARAM_OLD);
+    String regionName = getNewOrOld(params, REGION_NAME_PARAM, REGION_NAME_PARAM_OLD);
+
+    if (regionName == null) {
+      Loggers.SERVER.debug("Region name is not specified, using default region name: " + AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+      return AwsCloudConnectorConstants.REGION_NAME_DEFAULT;
+    }
+
+    return regionName;
   }
 
   @Nullable

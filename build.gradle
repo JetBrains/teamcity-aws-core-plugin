@@ -20,7 +20,7 @@ plugins {
 }
 
 ext {
-  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2023.05'
+  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2023.05-SNAPSHOT'
 //  teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/TeamCity"
 //  teamcityDev = "$teamcityDir/devPackage/"
 //  teamcityRuntime = "$teamcityDir/webapps/ROOT/WEB-INF/lib/"

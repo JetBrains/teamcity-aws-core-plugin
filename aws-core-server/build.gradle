@@ -37,7 +37,6 @@ dependencies {
     testImplementation "org.jetbrains.teamcity:oauth:${teamcityVersion}"
 
     testImplementation "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
-    testImplementation "org.jetbrains.teamcity:integration-tests:${teamcityVersion}"
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.1'
     testImplementation 'org.mockito:mockito-inline:3.12.1'
 }

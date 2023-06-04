@@ -31,6 +31,7 @@ dependencies {
     implementation "com.amazonaws:aws-java-sdk-ec2:${awsSDKVersion}"
 
 
+    testImplementation "org.jetbrains.teamcity:integration-tests:${teamcityIntegrationTestsPackageVersion}"
 
     testImplementation "org.jetbrains.teamcity:server-api:${teamcityVersion}"
     testImplementation "org.jetbrains.teamcity.internal:web:${teamcityVersion}"

@@ -20,12 +20,12 @@ plugins {
 }
 
 ext {
-  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : 'SNAPSHOT'
-  teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/TeamCity"
-  teamcityDev = "$teamcityDir/devPackage/"
-  teamcityRuntime = "$teamcityDir/webapps/ROOT/WEB-INF/lib/"
-  teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
-  teamcityJavaHome = System.properties['java.home']
+  teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2023.05'
+//  teamcityDir = findProperty('teamcityDir') ?: "$rootDir/teamcity/TeamCity"
+//  teamcityDev = "$teamcityDir/devPackage/"
+//  teamcityRuntime = "$teamcityDir/webapps/ROOT/WEB-INF/lib/"
+//  teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
+//  teamcityJavaHome = System.properties['java.home']
 
   awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.199'
 
@@ -35,15 +35,10 @@ ext {
   spaceUsername = findProperty('space.repository.user') ?: findProperty('spaceUsername')
   spacePassword = findProperty('space.repository.password') ?: findProperty('spacePassword')
 
-  buildUtils = new BuildUtils(ext)
+  pluginVersion = project.hasProperty('versionNumber') ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmm')
 }
 
 allprojects {
-
-  configurations {
-    teamcityRuntimeServer
-  }
-
   project.repositories.clear()
 
   repositories {
@@ -81,23 +76,23 @@ configure(subprojects) {
     testLogging.showStandardStreams = true
   }
 
-  dependencies {
-    compileOnly "org.codehaus.groovy:groovy-all:2.2.1"
+//  dependencies {
+//    compileOnly "org.codehaus.groovy:groovy-all:2.2.1"
+//
+//    teamcityRuntimeServer fileTree(dir: teamcityRuntime).include('*.jar').exclude('marketplace-zip-signer*.jar')
+//
+//    compileOnly fileTree(dir: teamcityRuntime, includes: ['annotations.jar', 'openapi.jar'])
+//
+//    testImplementation fileTree(dir: "$teamcityDev/tests/", includes: ['*.jar'])
+//    testImplementation fileTree(dir: teamcityRuntime).include('*.jar').exclude('marketplace-zip-signer*.jar')
+//    testImplementation "org.hamcrest:hamcrest-core:1.3"
+//
+//    configurations.compileOnly.extendsFrom(configurations.teamcityRuntimeServer)
+//  }
 
-    teamcityRuntimeServer fileTree(dir: teamcityRuntime).include('*.jar').exclude('marketplace-zip-signer*.jar')
-
-    compileOnly fileTree(dir: teamcityRuntime, includes: ['annotations.jar', 'openapi.jar'])
-
-    testImplementation fileTree(dir: "$teamcityDev/tests/", includes: ['*.jar'])
-    testImplementation fileTree(dir: teamcityRuntime).include('*.jar').exclude('marketplace-zip-signer*.jar')
-    testImplementation "org.hamcrest:hamcrest-core:1.3"
-
-    configurations.compileOnly.extendsFrom(configurations.teamcityRuntimeServer)
-  }
-
-  configurations.implementation {
-    exclude group : "org.apache.httpcomponents"
-  }
+//  configurations.implementation {
+//    exclude group : "org.apache.httpcomponents"
+//  }
 }
 
 task uploadMavenArtifacts {

@@ -17,6 +17,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
+    id 'java-library'
     id 'maven'
     id 'maven-publish'
     id 'distribution'
@@ -28,14 +29,20 @@ configurations {
 }
 
 dependencies {
-    compile "com.amazonaws:aws-java-sdk-codedeploy:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-core:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-codepipeline:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-s3:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-cloudfront:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-sts:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-codebuild:${awsSDKVersion}"
-    compile "com.amazonaws:aws-java-sdk-lambda:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-codedeploy:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-core:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-codepipeline:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-s3:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-cloudfront:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-sts:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-codebuild:${awsSDKVersion}"
+    api "com.amazonaws:aws-java-sdk-lambda:${awsSDKVersion}"
+
+    compileOnly "org.jetbrains.teamcity:server-api:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity.internal:web:${teamcityVersion}"
+    compileOnly "org.jetbrains.teamcity:oauth:${teamcityVersion}"
+
+    testImplementation "org.jetbrains.teamcity:tests-support:${teamcityVersion}"
 
     ftpDeployer "org.apache.maven.wagon:wagon-ftp:2.3"
 }

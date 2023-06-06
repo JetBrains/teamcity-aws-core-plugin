@@ -16,10 +16,13 @@
 
 package jetbrains.buildServer.util.amazon.retry.impl;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
+
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.amazon.retry.*;
@@ -184,18 +187,25 @@ public class RetrierTest extends BaseTestCase {
   void testDefaultRetrierRetriesExpectedExceptionsFromMapper() {
     final Retrier retrier = Retrier.defaultRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
     final AtomicInteger counter = new AtomicInteger();
-    IntStream.of(1).boxed().map(retrier.retryableMapper(i -> {
-      if (counter.getAndIncrement() < 4) {
-        throw new RecoverableException("Got error") {
-          @Override
-          public boolean isRecoverable() {
-            return true;
-          }
-        };
-      } else {
-        return null;
-      }
-    })).count();
+
+    List<Object> someObjects = Collections.singletonList(new Object());
+    someObjects
+      .stream()
+      .map(
+        retrier.retryableMapper(
+          it -> {
+            if (counter.getAndIncrement() < 4) {
+              throw new RecoverableException("Got error") {
+                @Override
+                public boolean isRecoverable() {
+                  return true;
+                }
+              };
+            } else {
+              return null;
+            }
+          })
+      ).collect(Collectors.toList());
     Assert.assertEquals(myCounterListener.getNumberOfRetries(), 4);
     Assert.assertEquals(myCounterListener.getNumberOfFailures(), 4);
   }

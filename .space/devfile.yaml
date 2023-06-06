@@ -1,0 +1,24 @@
+schemaVersion: 2.2.0
+metadata:
+  name: 'RD'
+attributes:
+  space:
+    instanceType: large
+    editor:
+      type: Idea
+      updateChannel: EAP
+
+    warmup:
+      startOn:
+      - type: schedule
+        cron: '0 4 * * 1'        # At 04:00 on Monday
+      script: './gradlew assemble check'
+
+
+components:
+- name: dev-container
+  container:
+    env:
+      # To please the Gradle Doctor
+      - name: JAVA_HOME
+        value: '/usr/lib/jvm/java-11-openjdk-amd64'

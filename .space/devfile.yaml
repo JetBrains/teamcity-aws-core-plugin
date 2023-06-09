@@ -22,3 +22,16 @@ components:
       # To please the Gradle Doctor
       - name: JAVA_HOME
         value: '/usr/lib/jvm/java-11-openjdk-amd64'
+    commands:
+    - id: open-in-intellij
+      command: 'devfile execute --command open-in-intellij'
+      environment:
+        - name: DISPLAY
+          value: $DISPLAY
+        - name: WORKSPACE_ID
+          value: $WORKSPACE_ID
+    - id: configure-project
+      command: "sed -i 's/<languageLevel>\\?.*<\\/languageLevel>/<languageLevel>11<\\/languageLevel>/g' \${STACK_WORKSPACE_DIRECTORY}/.idea/misc.xml && sed -i 's/<\\/versionString>/<\\/versionString>\n<languageLevel>11<\\/languageLevel>/g' \${STACK_WORKSPACE_DIRECTORY}/.idea/misc.xml"
+      workingDir: $DEVFILE_WORKING_DIRECTORY
+    onOpen: open-in-intellij
+    onPostStart: configure-project

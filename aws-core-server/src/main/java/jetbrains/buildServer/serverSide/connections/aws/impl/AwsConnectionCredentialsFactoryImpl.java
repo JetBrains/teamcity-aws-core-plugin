@@ -1,23 +1,31 @@
 package jetbrains.buildServer.serverSide.connections.aws.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.serverSide.InvalidIdentifierException;
+import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsFactory;
+import jetbrains.buildServer.serverSide.identifiers.IdentifiersUtil;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredentialsFactory, AwsCredentialsFactory {
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+
+public class AwsConnectionCredentialsFactoryImpl implements AwsConnectionCredentialsFactory {
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
 
@@ -49,7 +57,57 @@ public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredential
     if (existingBuilder != null && existingBuilder != credentialsBuilder) {
       throw new IllegalStateException(
         "Attempted to register AWS credentialsBuilder for credentials type \"" + credentialsType +
-        "\" when another one for this credentials type is already registered.");
+          "\" when another one for this credentials type is already registered.");
+    }
+  }
+
+  @NotNull
+  @Override
+  public List<InvalidProperty> getInvalidProperties(@NotNull final Map<String, String> properties) {
+    String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
+    try {
+      if (credentialsType == null) {
+        throw new NoSuchAwsCredentialsBuilderException("Credentials type is null");
+      }
+
+      if (ParamUtil.isDefaultCredsProviderType(properties) && ParamUtil.isDefaultCredsProvidertypeDisabled()) {
+        return Collections.singletonList(new InvalidProperty(CREDENTIALS_TYPE_PARAM, DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG));
+      }
+
+      AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
+      List<InvalidProperty> invalidProperties = credentialsBuilder.validateProperties(properties);
+
+      validateConnectionId(properties.get(USER_DEFINED_ID_PARAM), invalidProperties);
+
+      return invalidProperties;
+
+    } catch (NoSuchAwsCredentialsBuilderException e) {
+      List<InvalidProperty> invalidProperties = new ArrayList<>();
+      invalidProperties.add(new InvalidProperty(CREDENTIALS_TYPE_PARAM, "The credentials type " + credentialsType + " is not supported."));
+      return invalidProperties;
+    }
+  }
+
+  @NotNull
+  @Override
+  public Map<String, String> getDefaultProperties() {
+    Map<String, String> defaultProperties = new HashMap<>();
+    myCredentialBuilders.forEach((type, builder) -> defaultProperties.putAll(builder.getDefaultProperties()));
+    return defaultProperties;
+  }
+
+  @NotNull
+  @Override
+  public String describeAwsConnection(@NotNull final Map<String, String> properties) {
+    String credentialsType = properties.get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
+    try {
+      AwsCredentialsBuilder credentialsBuilder = getAwsCredentialsBuilderOfType(credentialsType);
+      return String.format(
+        "Credentials Type: %s",
+        credentialsBuilder.getPropertiesDescription(properties)
+      );
+    } catch (NoSuchAwsCredentialsBuilderException e) {
+      return "Unsupported credentials type: " + credentialsType;
     }
   }
 
@@ -66,5 +124,17 @@ public class AwsConnectionCredentialsFactoryImpl implements ConnectionCredential
       throw new NoSuchAwsCredentialsBuilderException(errMsg);
     }
     return builder;
+  }
+
+  private void validateConnectionId(@Nullable final String connectionId, @NotNull List<InvalidProperty> invalidProperties) {
+    if (connectionId == null) {
+      return;
+    }
+
+    try {
+      IdentifiersUtil.validateExternalId(connectionId, "AWS Connection ID", IdentifiersUtil.EXT_ID_LENGTH);
+    } catch (InvalidIdentifierException e) {
+      invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));
+    }
   }
 }

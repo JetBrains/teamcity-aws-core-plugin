@@ -1,19 +1,22 @@
 package jetbrains.buildServer.serverSide.oauth.aws;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
-import jetbrains.buildServer.serverSide.oauth.ConnectionCapability;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AwsConnectionProvider extends OAuthProvider {
 
@@ -22,12 +25,12 @@ public class AwsConnectionProvider extends OAuthProvider {
 
   private final String myEditParametersUrl;
 
-  private final AwsConnectorFactory myAwsConnectorFactory;
+  private final AwsConnectionCredentialsFactory myAwsConnectionCredentialsFactory;
 
 
-  public AwsConnectionProvider(@NotNull final PluginDescriptor descriptor, @NotNull final AwsConnectorFactory awsConnectorFactory) {
+  public AwsConnectionProvider(@NotNull final PluginDescriptor descriptor, @NotNull final AwsConnectionCredentialsFactory awsConnectionCredentialsFactory) {
     myEditParametersUrl = descriptor.getPluginResourcesPath(EDIT_PARAMS_URL);
-    myAwsConnectorFactory = awsConnectorFactory;
+    myAwsConnectionCredentialsFactory = awsConnectionCredentialsFactory;
   }
 
   @Override
@@ -46,7 +49,7 @@ public class AwsConnectionProvider extends OAuthProvider {
   @Override
   @NotNull
   public String describeConnection(@NotNull final OAuthConnectionDescriptor connection) {
-    return myAwsConnectorFactory.describeAwsConnection(connection.getParameters());
+    return myAwsConnectionCredentialsFactory.describeAwsConnection(connection.getParameters());
   }
 
   @Override
@@ -59,7 +62,7 @@ public class AwsConnectionProvider extends OAuthProvider {
       if (StringUtil.isEmpty(credentialsType)) {
         invalidProperties.add(new InvalidProperty(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM, "Please choose a credentials type."));
       } else {
-        invalidProperties.addAll(myAwsConnectorFactory.getInvalidProperties(map));
+        invalidProperties.addAll(myAwsConnectionCredentialsFactory.getInvalidProperties(map));
       }
 
       return invalidProperties;
@@ -69,7 +72,13 @@ public class AwsConnectionProvider extends OAuthProvider {
   @Override
   @Nullable
   public Map<String, String> getDefaultProperties() {
-    return myAwsConnectorFactory.getDefaultProperties();
+    Map<String, String> defaultProperties = new HashMap<>();
+    defaultProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
+    defaultProperties.put(AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsCloudConnectorConstants.STS_ENDPOINT_DEFAULT);
+    defaultProperties.put(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT);
+
+    defaultProperties.putAll(myAwsConnectionCredentialsFactory.getDefaultProperties());
+    return defaultProperties;
   }
 
   @Override

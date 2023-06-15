@@ -18,18 +18,15 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.*;
-import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.controllers.ActionErrors;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
-import jetbrains.buildServer.serverSide.oauth.ConnectionCapability;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
+import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -38,26 +35,20 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
-
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.createConnectionDescriptor;
 import static org.mockito.Mockito.when;
 
 public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
-  private AvailableAwsConnsController availableAwsConnsController;
-
-  private OAuthConnectionsManager connectionsManager;
-  private SProject project;
-
-  private OAuthConnectionDescriptor mockedAwsConnection;
-
-
   private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
   private final String UNKNOWN_RESOURCE = "UNKNOWN";
   private final String AWS_CONNECTION_ID = "PROJECT_FEATURE_ID";
   private final String AWS_CONNECTION_DISPLAY_NAME = "Test AWS Connection";
+  private AvailableAwsConnsController availableAwsConnsController;
+  private ProjectConnectionsManager connectionsManager;
+  private SProject project;
+  private ConnectionDescriptor mockedAwsConnection;
 
   @BeforeMethod
   public void setUp() throws IOException {
@@ -69,7 +60,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     when(projectManager.findProjectByExternalId(PROJECT_ID))
       .thenReturn(project);
 
-    connectionsManager = Mockito.mock(OAuthConnectionsManager.class);
+    connectionsManager = Mockito.mock(ProjectConnectionsManager.class);
 
     availableAwsConnsController = new AvailableAwsConnsController(
       Mockito.mock(SBuildServer.class),
@@ -81,7 +72,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     );
 
 
-    mockedAwsConnection = Mockito.mock(OAuthConnectionDescriptor.class);
+    mockedAwsConnection = Mockito.mock(ConnectionDescriptor.class);
   }
 
   @Test
@@ -98,7 +89,8 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     String result = responseOutputStream.toString();
     ActionErrors expectedErrors = new ActionErrors();
-    expectedErrors.addError("error_" + AVAIL_AWS_CONNECTIONS_SELECT_ID, "Resource " + UNKNOWN_RESOURCE + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
+    expectedErrors.addError("error_" + AVAIL_AWS_CONNECTIONS_SELECT_ID,
+                            "Resource " + UNKNOWN_RESOURCE + " is not supported. Only " + AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME + " is supported.");
     String expectedErrorsJson = OBJECT_MAPPER.writeValueAsString(expectedErrors);
 
     assertEquals(expectedErrorsJson, result);
@@ -109,16 +101,6 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     when(request.getParameter("resource"))
       .thenReturn(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME);
 
-    mockedAwsConnection = new OAuthConnectionDescriptor(
-      project,
-      new ProjectFeatureDescriptorImpl(
-        AWS_CONNECTION_ID,
-        OAuthConstants.FEATURE_TYPE,
-        Collections.emptyMap(),
-        PROJECT_ID
-      ),
-      Mockito.mock(ExtensionHolder.class)
-    );
     when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
       .thenReturn(Collections.singletonList(mockedAwsConnection));
 
@@ -164,13 +146,13 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     when(request.getParameter("resource"))
       .thenReturn(AVAIL_AWS_CONNECTIONS_REST_RESOURCE_NAME);
 
-    List<OAuthConnectionDescriptor> availableAsConnections = Arrays.asList(mockedAwsConnection, mockedAwsConnection, mockedAwsConnection);
+    List<ConnectionDescriptor> availableAsConnections = Arrays.asList(mockedAwsConnection, mockedAwsConnection, mockedAwsConnection);
     when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
       .thenReturn(availableAsConnections);
 
     when(mockedAwsConnection.getId())
       .thenReturn(AWS_CONNECTION_ID);
-    when(mockedAwsConnection.getConnectionDisplayName())
+    when(mockedAwsConnection.getDisplayName())
       .thenReturn(AWS_CONNECTION_DISPLAY_NAME);
 
 
@@ -201,33 +183,15 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     when(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG)).thenReturn("true");
 
-    OAuthConnectionDescriptor mockedAwsConnection1 = new OAuthConnectionDescriptor(
-      project,
-      new ProjectFeatureDescriptorImpl(
-        AWS_CONNECTION_ID + 1,
-        OAuthConstants.FEATURE_TYPE,
-        params,
-        PROJECT_ID
-      ),
-      Mockito.mock(ExtensionHolder.class)
-    );
+    ConnectionDescriptor mockedAwsConnection1 = createConnectionDescriptor(PROJECT_ID, AWS_CONNECTION_ID + 1, params);
 
     final Map<String, String> params2 = new HashMap<>();
     params2.put(ALLOWED_IN_BUILDS_PARAM, "true");
 
-    OAuthConnectionDescriptor mockedAwsConnection2 = new OAuthConnectionDescriptor(
-      project,
-      new ProjectFeatureDescriptorImpl(
-        AWS_CONNECTION_ID + 2,
-        OAuthConstants.FEATURE_TYPE,
-        params2,
-        PROJECT_ID
-      ),
-      Mockito.mock(ExtensionHolder.class)
-    );
+    ConnectionDescriptor mockedAwsConnection2 = createConnectionDescriptor(PROJECT_ID, AWS_CONNECTION_ID + 2, params2);
 
 
-    List<OAuthConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
+    List<ConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
 
     when(connectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE))
       .thenReturn(availableAwsConnections);

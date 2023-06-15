@@ -1,25 +1,34 @@
 package jetbrains.buildServer.clouds.amazon.connector.common.impl;
 
-import java.util.Map;
+import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
+import jetbrains.buildServer.serverSide.connections.utils.ConnectionUtils;
+import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
+public class AwsConnectionDescriptorImpl extends ProjectFeatureDescriptorImpl implements AwsConnectionDescriptor {
 
   private final AwsCredentialsHolder myAwsCredentialsHolder;
-  private final SProjectFeatureDescriptor myProjectFeatureDescriptor;
-
-  private final String myDescription;
+  private final ConnectionProvider myConnectionProvider;
 
   public AwsConnectionDescriptorImpl(@NotNull final SProjectFeatureDescriptor projectFeatureDescriptor,
                                      @NotNull final AwsCredentialsHolder awsCredentialsHolder,
-                                     @NotNull final String description) {
+                                     @NotNull final ExtensionHolder extensionHolder) {
+    super(
+      projectFeatureDescriptor.getId(),
+      projectFeatureDescriptor.getType(),
+      projectFeatureDescriptor.getParameters(),
+      projectFeatureDescriptor.getProjectId()
+    );
     myAwsCredentialsHolder = awsCredentialsHolder;
-    myProjectFeatureDescriptor = projectFeatureDescriptor;
-    myDescription = description;
+
+    myConnectionProvider = ConnectionUtils.getConnectionProviderOfType(extensionHolder, AwsCloudConnectorConstants.CLOUD_TYPE);
   }
 
   @NotNull
@@ -30,37 +39,19 @@ public class AwsConnectionDescriptorImpl implements AwsConnectionDescriptor {
 
   @NotNull
   @Override
-  public String getDescription() {
-    return myDescription;
-  }
-
-  @NotNull
-  @Override
   public String getRegion() {
     return getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
   }
 
   @NotNull
   @Override
-  public String getType() {
-    return myProjectFeatureDescriptor.getType();
+  public String getDisplayName() {
+    return StringUtil.emptyIfNull(getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
   }
 
   @NotNull
   @Override
-  public Map<String, String> getParameters() {
-    return myProjectFeatureDescriptor.getParameters();
-  }
-
-  @NotNull
-  @Override
-  public String getProjectId() {
-    return myProjectFeatureDescriptor.getProjectId();
-  }
-
-  @NotNull
-  @Override
-  public String getId() {
-    return myProjectFeatureDescriptor.getId();
+  public ConnectionProvider getConnectionProvider() {
+    return myConnectionProvider;
   }
 }

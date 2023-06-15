@@ -13,6 +13,11 @@ import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.util.executors.ExecutorsFactory;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * All AWS Connections-related management logic is in the {@link jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory}.
+ * @deprecated Use {@link jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager} to retrieve credentials.
+ */
+@Deprecated
 public class AwsCredentialsRefresheringManager {
   protected static final int SESSION_CREDENTIALS_VALID_THRESHOLD_MINUTES = 1;
   protected static final int SESSION_CREDENTIALS_VALID_HANDICAP_MINUTES = 2;

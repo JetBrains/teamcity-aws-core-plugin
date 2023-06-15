@@ -12,7 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +21,7 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final StsClientProvider myStsClientProvider;
 
   public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
-                                  @NotNull final AwsCredentialsFactory awsCredentialsFactory,
+                                  @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
                                   @NotNull final StsClientProvider stsClientProvider) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);

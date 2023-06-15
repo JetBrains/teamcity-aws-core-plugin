@@ -64,14 +64,9 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
     return myAwsConnectionDescriptorBuilder.buildWithSessionDuration(awsConnectionDescriptor, sessionDuration);
   }
 
-  //TODO: TW-75618 Add support for several AWS Connections exposing
   @Nullable
   @Override
   public SBuildFeatureDescriptor getAwsConnectionFeatureFromBuild(@NotNull SBuild build) throws AwsBuildFeatureException {
-    if (build.getBuildId() < 0) {
-      throw new AwsBuildFeatureException("Dummy build with negative id " + build.getBuildId() + " does not have AWS Connections to expose");
-    }
-
     SBuildType buildType = build.getBuildType();
     if (buildType == null) {
       throw new AwsBuildFeatureException("There is no BuildType for the Build with id: " + build.getBuildId());
@@ -113,7 +108,6 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   @NotNull
   @Override
-  @Deprecated
   public AwsConnectionBean getLinkedAwsConnection(@NotNull final Map<String, String> featureProperties, @NotNull final SProject project) throws LinkedAwsConnNotFoundException {
     String awsConnectionId = featureProperties.get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM);
     if (awsConnectionId == null) {
@@ -131,7 +125,6 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   @Nullable
   @Override
-  @Deprecated
   public AwsConnectionBean getAwsConnection(@NotNull SProject project, @NotNull String awsConnectionId, Map<String, String> connectionParameters) {
     try {
       AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
@@ -144,7 +137,6 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   @Nullable
   @Override
-  @Deprecated
   public AwsConnectionBean getEnvVarAwsConnectionForBuild(@NotNull final SBuild build) throws AwsBuildFeatureException {
     final SBuildFeatureDescriptor feature = getAwsConnectionFeatureFromBuild(build);
     SBuildType buildType = build.getBuildType();

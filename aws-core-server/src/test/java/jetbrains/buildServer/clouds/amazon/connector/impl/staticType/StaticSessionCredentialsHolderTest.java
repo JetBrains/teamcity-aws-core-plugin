@@ -10,7 +10,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -51,9 +51,9 @@ public class StaticSessionCredentialsHolderTest extends AbstractAwsConnectionTes
       myProject.getProjectId()
     ));
 
-    StaticCredentialsBuilder registeredStaticCredentialsBuilder = new StaticCredentialsBuilder(
+    new StaticCredentialsBuilder(
       getAwsConnectorFactory(),
-      Mockito.mock(AwsCredentialsFactory.class),
+      Mockito.mock(AwsConnectionCredentialsFactory.class),
       getStsClientProvider(TEST_SESSION_ACCESS_KEY_ID, TEST_SESSION_SECRET_ACCESS_KEY, TEST_SESSION_TOKEN)
     );
   }

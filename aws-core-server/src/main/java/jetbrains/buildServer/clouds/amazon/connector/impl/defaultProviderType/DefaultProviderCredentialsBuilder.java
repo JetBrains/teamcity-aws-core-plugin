@@ -12,7 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
@@ -21,7 +21,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 public class DefaultProviderCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   public DefaultProviderCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
-                                           @NotNull final AwsCredentialsFactory awsCredentialsFactory) {
+                                           @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory) {
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);
   }

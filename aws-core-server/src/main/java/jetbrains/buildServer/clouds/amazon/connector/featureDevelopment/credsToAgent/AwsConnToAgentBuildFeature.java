@@ -3,15 +3,10 @@ package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsTo
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
-import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
-import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,11 +22,8 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
 
   private final String myPluginResourcesEditUrl;
   public static final String DISPLAY_NAME = "AWS Credentials";
-  private final AwsConnectionsManager myAwsConnectionsManager;
 
-  public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor,
-                                      @NotNull final AwsConnectionsManager awsConnectionsManager) {
-    myAwsConnectionsManager = awsConnectionsManager;
+  public AwsConnToAgentBuildFeature(@NotNull final PluginDescriptor pluginDescriptor) {
     myPluginResourcesEditUrl = pluginDescriptor.getPluginResourcesPath(EDIT_PARAMETERS_URL);
   }
 
@@ -79,20 +71,13 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
   @Override
   public String describeParameters(@NotNull final Map<String, String> params) {
     StringBuilder featureDescriptionBuilder = new StringBuilder();
-    featureDescriptionBuilder.append("Adds credentials of AWS Connection ");
+    featureDescriptionBuilder.append("Adds credentials of AWS Connection with ID: ");
 
     String connId = params.get(CHOSEN_AWS_CONN_ID_PARAM);
     if (connId != null) {
-      try {
-        AwsConnectionDescriptor awsConnectionDescriptor = myAwsConnectionsManager.getAwsConnection(connId);
-        featureDescriptionBuilder.append("\"");
-        featureDescriptionBuilder.append(awsConnectionDescriptor.getParameters().get(OAuthConstants.DISPLAY_NAME_PARAM));
-        featureDescriptionBuilder.append("\"");
-      } catch (AwsConnectorException e) {
-        String erroMessage = "Cannot get description for AWS Connection with ID " + connId;
-        Loggers.CLOUD.warnAndDebugDetails(erroMessage + " in BuildFeature", e);
-        return erroMessage;
-      }
+      featureDescriptionBuilder.append("\"");
+      featureDescriptionBuilder.append(connId);
+      featureDescriptionBuilder.append("\"");
     }
     featureDescriptionBuilder.append(" to the build");
     String sessionDurationParam = params.get(SESSION_DURATION_PARAM);

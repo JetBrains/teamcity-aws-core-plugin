@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
@@ -20,7 +19,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpoin
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
@@ -57,9 +56,9 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     super.setUp();
     myAwsConnectorFactory = new AwsConnectorFactoryImpl();
     try {
-      AwsCredentialsBuilder registeredCredentialsBuilder = new StaticCredentialsBuilder(
+      new StaticCredentialsBuilder(
         myAwsConnectorFactory,
-        Mockito.mock(AwsCredentialsFactory.class),
+        Mockito.mock(AwsConnectionCredentialsFactory.class),
         getStsClientProvider(testAccessKeyId, testSecretAccessKey, null)
       );
     } catch (ConnectionCredentialsException e) {

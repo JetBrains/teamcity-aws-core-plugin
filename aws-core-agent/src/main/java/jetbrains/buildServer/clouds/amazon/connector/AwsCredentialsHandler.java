@@ -29,7 +29,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
     String encodedCredentials = runningBuild.getSharedConfigParameters()
                                             .get(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT);
     String awsAccessKey = runningBuild.getSharedConfigParameters()
-                                      .get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_ENV_PARAM_DEFAULT);
+                                      .get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM);
 
     if (Strings.isBlank(encodedCredentials)) {
       return;
@@ -64,10 +64,10 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
       runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Created the AWS Credentials file"));
 
       runner.addEnvironmentVariable(
-        AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE,
+        AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE_ENV,
         awsCredentialsFile.getAbsolutePath()
       );
-      runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(String.format("Added Environment Variable <%s> which points to the AWS Credentials file", AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE)));
+      runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(String.format("Added Environment Variable <%s> which points to the AWS Credentials file", AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE_ENV)));
 
     } catch (Exception e) {
       String msg = "Failed to create temporary file for AWS credentials, reason: " + e.getMessage();

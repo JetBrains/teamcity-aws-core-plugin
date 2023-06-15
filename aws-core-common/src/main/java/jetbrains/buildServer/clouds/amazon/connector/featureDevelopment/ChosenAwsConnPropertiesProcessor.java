@@ -20,7 +20,7 @@ public class ChosenAwsConnPropertiesProcessor implements PropertiesProcessor {
     String chosenAwsConnectionId = properties.get(CHOSEN_AWS_CONN_ID_PARAM);
     if (chosenAwsConnectionId == null ||
         AwsCloudConnectorConstants.UNSELECTED_AWS_CONNECTION_ID_VALUE.equals(chosenAwsConnectionId)) {
-      invalidProperties.add(new InvalidProperty(CHOSEN_AWS_CONN_ID_PARAM, "Principal AWS Connection is not specified"));
+      invalidProperties.add(new InvalidProperty(CHOSEN_AWS_CONN_ID_PARAM, "Linked AWS Connection ID is not specified"));
     }
 
     if (! ParamUtil.isValidSessionDuration(properties.get(SESSION_DURATION_PARAM))) {

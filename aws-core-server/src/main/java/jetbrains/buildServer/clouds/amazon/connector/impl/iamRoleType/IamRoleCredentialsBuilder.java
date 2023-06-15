@@ -34,7 +34,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
@@ -47,7 +47,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final StsClientProvider myStsClientProvider;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
-                                   @NotNull final AwsCredentialsFactory awsCredentialsFactory,
+                                   @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
                                    @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager,
                                    @NotNull final StsClientProvider stsClientProvider) {

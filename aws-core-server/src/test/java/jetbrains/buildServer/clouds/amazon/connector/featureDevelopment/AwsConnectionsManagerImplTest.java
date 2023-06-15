@@ -27,11 +27,13 @@ import jetbrains.buildServer.clouds.amazon.connector.testUtils.AbstractAwsConnec
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
@@ -67,9 +69,9 @@ public class AwsConnectionsManagerImplTest extends AbstractAwsConnectionTest {
       myProject.getProjectId()
     ));
 
-    StaticCredentialsBuilder registeredStaticCredentialsFactory = new StaticCredentialsBuilder(
+    new StaticCredentialsBuilder(
       getAwsConnectorFactory(),
-      Mockito.mock(AwsCredentialsFactory.class),
+      Mockito.mock(AwsConnectionCredentialsFactory.class),
       getStsClientProvider(
         testSessionAccessKeyId,
         testSessionSecretAccessKey,
@@ -190,14 +192,20 @@ public class AwsConnectionsManagerImplTest extends AbstractAwsConnectionTest {
     return new AwsConnectionDescriptor() {
       @NotNull
       @Override
-      public AwsCredentialsHolder getAwsCredentialsHolder() {
-        return credentialsHolder;
+      public String getDisplayName() {
+        return "";
       }
 
       @NotNull
       @Override
-      public String getDescription() {
-        return testConnectionDescription;
+      public ConnectionProvider getConnectionProvider() {
+        return new AwsConnectionProvider(Mockito.mock(PluginDescriptor.class), Mockito.mock(AwsConnectionCredentialsFactory.class));
+      }
+
+      @NotNull
+      @Override
+      public AwsCredentialsHolder getAwsCredentialsHolder() {
+        return credentialsHolder;
       }
 
       @NotNull

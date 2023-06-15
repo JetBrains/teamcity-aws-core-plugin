@@ -14,8 +14,8 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
-import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
+import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -30,28 +30,28 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
   public static final String PATH = AVAIL_AWS_CONNECTIONS_CONTROLLER_URL;
   private final String availableAwsConnsBeanName = "awsConnections";
 
-  private final OAuthConnectionsManager myConnectionsManager;
+  private final ProjectConnectionsManager myConnectionsManager;
   private final ProjectManager myProjectManager;
   private final PluginDescriptor myDescriptor;
 
   public AvailableAwsConnsController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
-                                     @NotNull final OAuthConnectionsManager oAuthConnectionsManager,
+                                     @NotNull final ProjectConnectionsManager connectionsManager,
                                      @NotNull final ProjectManager projectManager,
                                      @NotNull final AuthorizationInterceptor authInterceptor,
                                      @NotNull final PluginDescriptor descriptor) {
     super(PATH, server, projectManager, webControllerManager, authInterceptor);
-    myConnectionsManager = oAuthConnectionsManager;
+    myConnectionsManager = connectionsManager;
     myProjectManager = projectManager;
     myDescriptor = descriptor;
   }
 
-  public static List<List<String>> getAvailableAwsConnectionsParams(List<OAuthConnectionDescriptor> awsConnections) {
+  public static List<List<String>> getAvailableAwsConnectionsParams(List<ConnectionDescriptor> awsConnections) {
     List<List<String>> res = new ArrayList<>();
-    for (OAuthConnectionDescriptor awsConnection : awsConnections) {
+    for (ConnectionDescriptor awsConnection : awsConnections) {
       List<String> props = new ArrayList<>();
       props.add(awsConnection.getId());
-      props.add(awsConnection.getConnectionDisplayName());
+      props.add(awsConnection.getDisplayName());
       props.add(ParamUtil.useSessionCredentials(awsConnection.getParameters()) ? "true" : "false");
       res.add(props);
     }
@@ -75,7 +75,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
         throw new AwsConnectorException("Could not find the project with id: " + projectId);
       }
 
-      List<OAuthConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+      List<ConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
 
       final boolean forBuildStepFeatureEnabled = Boolean.parseBoolean(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG));
       final boolean isForBuildStep = Boolean.parseBoolean(request.getParameter(ALLOWED_IN_BUILDS_REQUEST_PARAM));
@@ -121,12 +121,17 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
     return null;
   }
 
-  private List<OAuthConnectionDescriptor> processAvailableAwsConnections(List<OAuthConnectionDescriptor> awsConnections, HttpServletRequest request) {
+  private List<ConnectionDescriptor> processAvailableAwsConnections(List<ConnectionDescriptor> awsConnections, HttpServletRequest request) {
     String principalAwsConnId = request.getParameter(PRINCIPAL_AWS_CONNECTION_ID);
     if(StringUtil.nullIfEmpty(principalAwsConnId) != null){
-      return awsConnections.stream().filter(connectionDescriptor -> {
-        return !connectionDescriptor.getId().equals(principalAwsConnId);
-      }).collect(Collectors.toList());
+      return awsConnections
+        .stream()
+        .filter(
+          connectionDescriptor -> !connectionDescriptor
+            .getId()
+            .equals(principalAwsConnId)
+        )
+        .collect(Collectors.toList());
     }
 
     return awsConnections;

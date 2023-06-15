@@ -5,16 +5,18 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.externalId.AwsExternalIdsManagerImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.testUtils.AbstractAwsConnectionTest;
-import jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImpl;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsCredentialsFactory;
+import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
+import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
+import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
@@ -27,6 +29,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.createConnectionDescriptor;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 import static org.mockito.Mockito.when;
 
@@ -65,6 +68,15 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
       myProject.getProjectId()
     ));
 
+    ConnectionDescriptor testConnectionDescriptor = createConnectionDescriptor(
+      myProject.getProjectId(),
+      TEST_PRINCIPAL_AWS_CONN_ID,
+      myAwsDefaultConnectionProperties
+    );
+    ProjectConnectionsManager projectConnectionsManager = Mockito.mock(ProjectConnectionsManager.class);
+    when(projectConnectionsManager.findConnectionById(myProject, TEST_PRINCIPAL_AWS_CONN_ID))
+      .thenReturn(testConnectionDescriptor);
+
     ProjectConnectionCredentialsManager projectConnectionCredentialsManager = Mockito.mock(ProjectConnectionCredentialsManager.class);
     when(projectConnectionCredentialsManager.requestConnectionCredentials(myProject, TEST_PRINCIPAL_AWS_CONN_ID))
       .thenReturn(new AwsConnectionCredentials(new AwsCredentialsData() {
@@ -87,16 +99,16 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
         }
       }, myAwsDefaultConnectionProperties));
 
-    StaticCredentialsBuilder registeredStaticCredentialsBuilder = new StaticCredentialsBuilder(
+    new StaticCredentialsBuilder(
       getAwsConnectorFactory(),
-      Mockito.mock(AwsCredentialsFactory.class),
+      Mockito.mock(AwsConnectionCredentialsFactory.class),
       getStsClientProvider(TEST_ACCESS_KEY_ID, TEST_SECRET_ACCESS_KEY, null)
     );
 
-    IamRoleCredentialsBuilder registeredIamRoleCredentialsBuilder = new IamRoleCredentialsBuilder(
+    new IamRoleCredentialsBuilder(
       getAwsConnectorFactory(),
-      Mockito.mock(AwsCredentialsFactory.class),
-      new LinkedAwsConnectionProviderImpl(myProjectManager, projectConnectionCredentialsManager),
+      Mockito.mock(AwsConnectionCredentialsFactory.class),
+      new LinkedAwsConnectionProviderImpl(myProjectManager, projectConnectionsManager, projectConnectionCredentialsManager),
       new AwsExternalIdsManagerImpl(myProjectManager),
       getStsClientProvider(TEST_IAM_ROLE_SESSION_ACCESS_KEY_ID, TEST_IAM_ROLE_SESSION_SECRET_ACCESS_KEY, TEST_IAM_ROLE_SESSION_TOKEN)
     );

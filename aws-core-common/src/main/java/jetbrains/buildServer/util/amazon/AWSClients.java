@@ -47,13 +47,13 @@ public class AWSClients {
   @Nullable private final AWSCredentials myCredentials;
   @Nullable private String myServiceEndpoint;
   @Nullable private String myS3SignerType;
-  @Nullable private final String myRegion;
+  @NotNull private final String myRegion;
   @NotNull private final ClientConfiguration myClientConfiguration;
   private boolean myDisablePathStyleAccess = false;
 
   private boolean myAccelerateModeEnabled = false;
 
-  private AWSClients(@Nullable AWSCredentials credentials, @Nullable String region) {
+  private AWSClients(@Nullable AWSCredentials credentials, @NotNull String region) {
     myCredentials = credentials;
     myRegion = region;
     myClientConfiguration = AWSCommonParams.createClientConfiguration();
@@ -74,7 +74,7 @@ public class AWSClients {
     return fromExistingCredentials(null, region);
   }
   @NotNull
-  public static AWSClients fromBasicCredentials(@NotNull String accessKeyId, @NotNull String secretAccessKey, @Nullable String region) {
+  public static AWSClients fromBasicCredentials(@NotNull String accessKeyId, @NotNull String secretAccessKey, @NotNull String region) {
     return fromExistingCredentials(new BasicAWSCredentials(accessKeyId, secretAccessKey), region);
   }
 
@@ -111,7 +111,7 @@ public class AWSClients {
   }
 
   @NotNull
-  private static AWSClients fromExistingCredentials(@Nullable AWSCredentials credentials, @Nullable String region) {
+  private static AWSClients fromExistingCredentials(@Nullable AWSCredentials credentials, @NotNull String region) {
     return new AWSClients(credentials, region);
   }
 
@@ -192,6 +192,7 @@ public class AWSClients {
   private AWSSecurityTokenService createSecurityTokenService() {
     AWSSecurityTokenServiceClientBuilder builder = AWSSecurityTokenServiceClientBuilder
       .standard()
+      .withRegion(getRegion())
       .withClientConfiguration(myClientConfiguration);
     if (myCredentials != null){
       builder.withCredentials(new StaticCredentialsProvider(myCredentials));

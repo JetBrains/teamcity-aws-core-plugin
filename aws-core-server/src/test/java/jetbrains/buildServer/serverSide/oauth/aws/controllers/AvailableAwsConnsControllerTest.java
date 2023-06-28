@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 import static jetbrains.buildServer.testUtils.TestUtils.createConnectionDescriptor;
 import static org.mockito.Mockito.when;
@@ -208,5 +209,31 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     String expectedResponseJson = OBJECT_MAPPER.writeValueAsString(AvailableAwsConnsController.getAvailableAwsConnectionsParams(availableAwsConnections));
 
     assertEquals(expectedResponseJson, result);
+  }
+
+  @Test
+  public void givenAwsConn_withDefaultCredsProviderType_thenReturnParamsWithSessionDurationOff() {
+    final Map<String, String> params = new HashMap<>();
+    params.put(CREDENTIALS_TYPE_PARAM, DEFAULT_PROVIDER_CREDENTIALS_TYPE);
+    ConnectionDescriptor mockedAwsConnection1 = createConnectionDescriptor(PROJECT_ID, AWS_CONNECTION_ID + 1, params);
+
+    final Map<String, String> params2 = new HashMap<>();
+    params2.put(CREDENTIALS_TYPE_PARAM, STATIC_CREDENTIALS_TYPE);
+    params2.put(SESSION_CREDENTIALS_PARAM, "true");
+    ConnectionDescriptor mockedAwsConnection2 = createConnectionDescriptor(PROJECT_ID, AWS_CONNECTION_ID + 2, params2);
+
+    List<ConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
+
+    String expectedResult = Arrays.asList(
+      Arrays.asList(mockedAwsConnection1.getId(), "", "false"),
+      Arrays.asList(mockedAwsConnection2.getId(), "", "true")
+    ).toString();
+
+    assertEquals(
+      expectedResult,
+      AvailableAwsConnsController
+        .getAvailableAwsConnectionsParams(availableAwsConnections)
+        .toString()
+    );
   }
 }

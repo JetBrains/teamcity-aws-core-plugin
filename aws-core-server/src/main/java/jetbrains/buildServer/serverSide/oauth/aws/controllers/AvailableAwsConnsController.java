@@ -2,6 +2,7 @@ package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.ModelAndView;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil.isDefaultCredsProviderType;
 
 public class AvailableAwsConnsController extends BaseAwsConnectionController {
   public static final String PATH = AVAIL_AWS_CONNECTIONS_CONTROLLER_URL;
@@ -52,7 +54,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       List<String> props = new ArrayList<>();
       props.add(awsConnection.getId());
       props.add(awsConnection.getDisplayName());
-      props.add(ParamUtil.useSessionCredentials(awsConnection.getParameters()) ? "true" : "false");
+      props.add(Boolean.toString(isSessionDurationConfigVisible(awsConnection.getParameters())));
       res.add(props);
     }
     return res;
@@ -119,6 +121,13 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
     }
 
     return null;
+  }
+
+  private static boolean isSessionDurationConfigVisible(@NotNull final Map<String, String> awsConnParams) {
+    if (isDefaultCredsProviderType(awsConnParams)) {
+      return false;
+    }
+    return ParamUtil.useSessionCredentials(awsConnParams);
   }
 
   private List<ConnectionDescriptor> processAvailableAwsConnections(List<ConnectionDescriptor> awsConnections, HttpServletRequest request) {

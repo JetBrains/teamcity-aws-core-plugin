@@ -11,8 +11,8 @@ attributes:
     warmup:
       startOn:
       - type: schedule
-        cron: '0 4 * * 1'        # At 04:00 on Monday
-      script: './gradlew assemble check'
+        cron: '0 4 * * 1' # At 04:00 on Monday
+      script: sh ./.space/warmup.sh
 
 
 components:

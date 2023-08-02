@@ -16,51 +16,26 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
-import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
-import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.messages.DefaultMessagesInfo;
-import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.serverSide.BuildStartContext;
-import jetbrains.buildServer.serverSide.buildLog.MessageAttrs;
-import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
-import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AwsCredentialsInjector {
-  private final LinkedAwsConnectionProvider myLinkedAwsConnectionProvider;
 
-  public AwsCredentialsInjector(LinkedAwsConnectionProvider linkedAwsConnectionProvider) {
-    myLinkedAwsConnectionProvider = linkedAwsConnectionProvider;
-  }
-
-  public void injectCredentials(BuildStartContext context){
-      try {
-        List<ConnectionCredentials> linkedAwsConnectionCredentials = myLinkedAwsConnectionProvider.getConnectionCredentialsFromBuild(context.getBuild());
-        if (linkedAwsConnectionCredentials.isEmpty()) {
-          reportProblem(context, String.format("Build with id: <%s> has AWS Connection to inject, but none was added. Enable debug to see more information.", context.getBuild().getBuildId()));
-          return;
-        }
-
-        //TODO: TW-75618 Add support for several AWS Connections exposing
-        AwsConnectionCredentials credentials = new AwsConnectionCredentials(linkedAwsConnectionCredentials.stream().findFirst().get());
+  public void injectCredentials(BuildStartContext context, AwsConnectionCredentials credentials){
         Map<String, String> parameters = getConnectionParametersToExpose(credentials);
 
         String encodedCredentials = parametersToEncodedString(parameters);
 
         context.addSharedParameter(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM, parameters.get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM));
         context.addSharedParameter(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT, encodedCredentials);
-
-      } catch (ConnectionCredentialsException e) {
-        String warningMessage = "Failed to inject AWS Connection to a build: " + e.getMessage();
-        Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
-        reportProblem(context, warningMessage);
-      }
   }
 
 
@@ -88,14 +63,4 @@ public class AwsCredentialsInjector {
     return parameters;
   }
 
-  private void reportProblem(@NotNull BuildStartContext context, @NotNull String message) {
-    context
-      .getBuild()
-      .getBuildLog()
-      .messageAsync(
-        message,
-        Status.WARNING,
-        MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
-      );
-  }
 }

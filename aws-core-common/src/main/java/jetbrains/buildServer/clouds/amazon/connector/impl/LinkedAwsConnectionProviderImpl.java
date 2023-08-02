@@ -70,6 +70,23 @@ public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvi
 
   @NotNull
   @Override
+  public ConnectionCredentials getCredentialsFromParameters(@NotNull SProject project, @NotNull final BuildRunnerDescriptor buildRunnerWithChosenConnection)
+    throws ConnectionCredentialsException {
+    String failedMessage =
+      String.format("Failed to get linked AWS connection for build runner <%s> in Project <%s>. Reason: ", buildRunnerWithChosenConnection.getId(), project.getExternalId());
+
+    Map<String, String> parameters = buildRunnerWithChosenConnection.getParameters();
+
+    try {
+      return getConnectionCredentials(project, parameters);
+
+    } catch (ConnectionCredentialsException e) {
+      throw new AwsConnectorException(failedMessage + e.getMessage());
+    }
+  }
+
+  @NotNull
+  @Override
   public ConnectionDescriptor getLinkedConnectionFromParameters(@NotNull final SProject project, @NotNull final Map<String, String> featureProperties) throws ConnectionCredentialsException {
     validateParamsWithLinkedConnectionId(featureProperties);
 

@@ -205,6 +205,7 @@ public final class S3Util {
     private int myTtlSeconds = DEFAULT_URL_LIFETIME_SEC;
     private int myNThreads = TeamCityProperties.getInteger(TRANSFER_MANAGER_THREAD_POOL_SIZE, DEFAULT_S3_THREAD_POOL_SIZE);
     private boolean myConsistencyCheckEnabled = DEFAULT_ENABLE_CONSISTENCY_CHECK;
+    private boolean myAllowPlainHttpUpload = false;
 
     @NotNull
     private CannedAccessControlList myAcl = CannedAccessControlList.BucketOwnerFullControl;
@@ -300,6 +301,11 @@ public final class S3Util {
       return this;
     }
 
+    public S3AdvancedConfiguration allowPlainHttpUpload(boolean allowPlainHttpUpload) {
+      myAllowPlainHttpUpload = allowPlainHttpUpload;
+      return this;
+    }
+
     public int getPresignedUrlMaxChunkSize() {
       return myPresignedUrlMaxChunkSize;
     }
@@ -344,6 +350,10 @@ public final class S3Util {
       return myConsistencyCheckEnabled;
     }
 
+    public boolean isAllowPlainHttpUpload() {
+      return myAllowPlainHttpUpload;
+    }
+
     @NotNull
     public CannedAccessControlList getAcl() {
       return myAcl;
@@ -364,6 +374,7 @@ public final class S3Util {
              ", myNThreads=" + myNThreads +
              ", myConsistencyCheckEnabled=" + myConsistencyCheckEnabled +
              ", myAcl=" + myAcl +
+             ", myAllowPlainHttpUpload=" + myAllowPlainHttpUpload +
              '}';
     }
   }

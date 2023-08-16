@@ -31,11 +31,12 @@ public class ParamUtil {
     return value == null || Boolean.parseBoolean(value);
   }
 
+  @Deprecated
+  /**
+   * Deprecated, decided to stop masking AWS Access Key ID, it should be completely visible, the Secret Access Key is not visible.
+   */
   public static String maskKey(String value) {
-    if (value.length() > AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS)
-      return AwsAccessKeysParams.KEY_MASK + value.substring(value.length() - AwsAccessKeysParams.KEY_MASK_VISIBLE_SYMBOLS);
-    else
-      return AwsAccessKeysParams.KEY_MASK + value;
+    return value;//TW-82810 TeamCity hides an AWS access key id as a secret
   }
 
   public static boolean isValidSessionDuration(@Nullable final String strSessionDuration) {

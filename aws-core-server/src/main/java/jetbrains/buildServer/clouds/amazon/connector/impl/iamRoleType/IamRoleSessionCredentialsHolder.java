@@ -33,6 +33,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProv
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
@@ -123,6 +124,6 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
       assumeRoleRequest.setExternalId(externalId);
     }
 
-    return sts.assumeRole(assumeRoleRequest);
+    return IOGuard.allowNetworkCall(() -> sts.assumeRole(assumeRoleRequest));
   }
 }

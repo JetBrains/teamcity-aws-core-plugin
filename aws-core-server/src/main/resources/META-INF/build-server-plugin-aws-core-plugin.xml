@@ -20,6 +20,7 @@
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl"/>
     <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsCredentialsRefresheringManager"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.AwsConnectionParametersProvider"/>
 <!--    ^-->
 
     <bean class="jetbrains.buildServer.serverSide.connections.aws.impl.AwsConnectionCredentialsFactoryImpl"/>

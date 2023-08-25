@@ -16,41 +16,83 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.BuildStartContext;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AwsCredentialsInjector {
 
-  public void injectCredentials(BuildStartContext context, AwsConnectionCredentials credentials){
-        Map<String, String> parameters = getConnectionParametersToExpose(credentials);
+  /**
+   * Adds specific AWS Credentials to the Build Context via corresponding properties.
+   * Use this method when there is one AWS Connection and its credentials should be available when running a build.
+   *
+   * @param context     A Build Context where to inject AWS credentials.
+   * @param credentials AWS credentials to be injected.
+   */
+  public void injectCredentials(BuildStartContext context, AwsConnectionCredentials credentials) {
+    String encodedCredentials = credentialsToEncodedString(Collections.singletonList(credentials));
 
-        String encodedCredentials = parametersToEncodedString(parameters);
+    if (credentials.getAccessKeyId() != null) {
+      context.addSharedParameter(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM, credentials.getAccessKeyId());
+    }
+    context.addSharedParameter(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT, encodedCredentials);
+  }
 
-        context.addSharedParameter(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM, parameters.get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM));
-        context.addSharedParameter(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT, encodedCredentials);
+  /**
+   * Adds several AWS Credentials to the Build Context via corresponding properties using different AWS Profiles.
+   * Use this method when there are multiple AWS Connections with different AWS Profile names. Basically used only when there are multiple AWS Credentials Build Features.
+   *
+   * @param context     A Build Context where to inject AWS credentials.
+   * @param credentials AWS credentials to be injected.
+   * @throws ConnectionCredentialsException thrown when there are duplicated AWS Profile names provided.
+   */
+  public void injectMultipleCredentials(BuildStartContext context, List<AwsConnectionCredentials> awsConnectionCredentials) throws ConnectionCredentialsException {
+    throwExceptionIfDuplicatedProfileNames(awsConnectionCredentials);
+
+    context.addSharedParameter(
+      AwsConnBuildFeatureParams.INJECTED_AWS_ACCESS_KEYS,
+      awsConnectionCredentials
+        .stream()
+        .map(AwsConnectionCredentials::getAccessKeyId)
+        .collect(Collectors.joining(",", "", ""))
+    );
+
+    context.addSharedParameter(
+      AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT,
+      credentialsToEncodedString(awsConnectionCredentials)
+    );
   }
 
 
   @NotNull
-  private String parametersToEncodedString(@NotNull Map<String, String> parameters) {
-    String prefix = "[default]" + "\n";
-    String credentials = parameters.entrySet().stream()
-      .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
-      .collect(Collectors.joining("\n", prefix, ""));
+  private String credentialsToEncodedString(@NotNull final List<AwsConnectionCredentials> awsConnectionCredentials) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (AwsConnectionCredentials credentials : awsConnectionCredentials) {
+      Map<String, String> parameters = getConnectionParametersToInject(credentials);
 
-    return Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+      String awsProfileName = credentials.getAwsProfileName() != null ? credentials.getAwsProfileName() : "default";
+      String prefix = "[" + awsProfileName + "]" + "\n";
+      String awsCredentialsFileEntry = parameters
+        .entrySet()
+        .stream()
+        .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
+        .collect(Collectors.joining("\n", prefix, "\n"));
+
+      stringBuilder.append(awsCredentialsFileEntry);
+    }
+
+    return Base64.getEncoder().encodeToString(
+      stringBuilder.toString().getBytes(StandardCharsets.UTF_8)
+    );
   }
 
   @NotNull
-  private Map<String, String> getConnectionParametersToExpose(@NotNull final AwsConnectionCredentials credentials) {
+  private Map<String, String> getConnectionParametersToInject(@NotNull final AwsConnectionCredentials credentials) {
     Map<String, String> parameters = new HashMap<>();
 
     parameters.put(AwsConnBuildFeatureParams.AWS_REGION_CONFIG_FILE_PARAM, credentials.getAwsRegion());
@@ -63,4 +105,28 @@ public class AwsCredentialsInjector {
     return parameters;
   }
 
+  private void throwExceptionIfDuplicatedProfileNames(@NotNull final List<AwsConnectionCredentials> awsConnectionCredentials) throws ConnectionCredentialsException {
+    Map<String, List<AwsConnectionCredentials>> groupedByAwsProfiles = awsConnectionCredentials
+      .stream()
+      .collect(Collectors.groupingBy(credentials -> {
+        String profileName = credentials.getAwsProfileName();
+        return profileName != null ? profileName : "default";
+      }));
+
+    Map<String, List<AwsConnectionCredentials>> nonUniqueProfiles = groupedByAwsProfiles
+      .entrySet().stream()
+      .filter(entry -> entry.getValue().size() > 1)
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    if (!nonUniqueProfiles.isEmpty()) {
+      throw new ConnectionCredentialsException(createErrorMsgForDuplicatedProfileNames(nonUniqueProfiles));
+    }
+  }
+
+  private String createErrorMsgForDuplicatedProfileNames(Map<String, List<AwsConnectionCredentials>> nonUniqueProfiles) {
+    return nonUniqueProfiles
+      .keySet().stream()
+      .map(profileName -> "<" + profileName + ">")
+      .collect(Collectors.joining(",", "There are duplicated AWS Profile names: ", "\n"));
+  }
 }

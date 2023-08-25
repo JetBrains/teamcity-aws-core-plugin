@@ -28,14 +28,14 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
   public void buildStarted(@NotNull AgentRunningBuild runningBuild) {
     String encodedCredentials = runningBuild.getSharedConfigParameters()
                                             .get(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT);
-    String awsAccessKey = runningBuild.getSharedConfigParameters()
-                                      .get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM);
+    String awsAccessKeys = runningBuild.getSharedConfigParameters()
+                                      .get(AwsConnBuildFeatureParams.INJECTED_AWS_ACCESS_KEYS);
 
     if (Strings.isBlank(encodedCredentials)) {
       return;
     }
     LOG.debug(String.format("Encoded AWS credentials were provided in build with id <%s>", runningBuild.getBuildId()));
-    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Found AWS Credentials with Access Key ID: " + ParamUtil.maskKey(awsAccessKey)));
+    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Found AWS Credentials with Access Key ID: " + awsAccessKeys));
 
     try {
       myCredentialsData = Base64.getDecoder().decode(encodedCredentials);

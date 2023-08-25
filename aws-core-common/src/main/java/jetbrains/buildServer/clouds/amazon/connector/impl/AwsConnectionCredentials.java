@@ -22,6 +22,8 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
   private final String mySecretAccessKey;
   @Nullable
   private final String mySessionToken;
+  @Nullable
+  private String myAwsProfileName;
 
   public AwsConnectionCredentials(@NotNull ConnectionCredentials connectionCredentials) {
     myAwsRegion = connectionCredentials.getProperties().get(AwsConnectionCredentialsConstants.REGION);
@@ -30,6 +32,8 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
     mySecretAccessKey = connectionCredentials.getProperties().get(AwsConnectionCredentialsConstants.SECRET_ACCESS_KEY);
 
     mySessionToken = connectionCredentials.getProperties().get(AwsConnectionCredentialsConstants.SESSION_TOKEN);
+
+    myAwsProfileName = connectionCredentials.getProperties().get(AwsConnectionCredentialsConstants.AWS_PROFILE_NAME);
   }
 
   public AwsConnectionCredentials(@NotNull AwsCredentialsData awsCredentialsData, @NotNull Map<String, String> properties) {
@@ -39,6 +43,8 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
     mySecretAccessKey = awsCredentialsData.getSecretAccessKey();
 
     mySessionToken = awsCredentialsData.getSessionToken();
+
+    myAwsProfileName = properties.get(AwsConnectionCredentialsConstants.AWS_PROFILE_NAME);
   }
 
   @NotNull
@@ -84,6 +90,9 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
     if (myAwsRegion != null) {
       credsProps.put(AwsConnectionCredentialsConstants.REGION, myAwsRegion);
     }
+    if (myAwsProfileName != null) {
+      credsProps.put(AwsConnectionCredentialsConstants.AWS_PROFILE_NAME, myAwsProfileName);
+    }
 
     return credsProps;
   }
@@ -120,5 +129,14 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
   @Nullable
   public String getSessionToken() {
     return mySessionToken;
+  }
+
+  @Nullable
+  public String getAwsProfileName() {
+    return myAwsProfileName;
+  }
+
+  public void setAwsProfileName(@Nullable final String awsProfileName) {
+    myAwsProfileName = awsProfileName;
   }
 }

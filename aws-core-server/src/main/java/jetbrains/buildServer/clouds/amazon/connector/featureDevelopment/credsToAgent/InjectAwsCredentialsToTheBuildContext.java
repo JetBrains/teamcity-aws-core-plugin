@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.log.Loggers;
@@ -34,11 +35,14 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
           return;
         }
 
-        //TODO: TW-75618 Add support for several AWS Connections exposing
-        final ConnectionCredentials firstCredentials = linkedAwsConnectionCredentials.stream().findFirst().get();
-        AwsConnectionCredentials credentials = new AwsConnectionCredentials(firstCredentials);
+        myAwsCredentialsInjector.injectMultipleCredentials(
+          context,
+          linkedAwsConnectionCredentials
+            .stream()
+            .map(connectionCredentials -> new AwsConnectionCredentials(connectionCredentials))
+            .collect(Collectors.toList())
+        );
 
-        myAwsCredentialsInjector.injectCredentials(context, credentials);
       } catch (ConnectionCredentialsException e) {
         String warningMessage = "Failed to inject AWS Connection to a build: " + e.getMessage();
         Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);

@@ -1,5 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
+import java.util.*;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
@@ -19,10 +20,6 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM;
@@ -61,7 +58,7 @@ public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvi
     Map<String, String> featureParams = featureWithConnectionDescriptor.getParameters();
 
     try {
-      return getConnectionCredentials(project, featureParams);
+      return getAwsConnectionCredentials(project, featureParams);
 
     } catch (ConnectionCredentialsException e) {
       throw new AwsConnectorException(failedMessage + e.getMessage());
@@ -78,7 +75,7 @@ public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvi
     Map<String, String> parameters = buildRunnerWithChosenConnection.getParameters();
 
     try {
-      return getConnectionCredentials(project, parameters);
+      return getAwsConnectionCredentials(project, parameters);
 
     } catch (ConnectionCredentialsException e) {
       throw new AwsConnectorException(failedMessage + e.getMessage());
@@ -164,30 +161,38 @@ public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvi
         .collect(Collectors.toList());
     }
 
-    //TODO: TW-75618 Add support for several AWS Connections exposing - add a new property to each ConnectionCredentials with profile information
+    List<ConnectionCredentials> credentialsToInject = new ArrayList<>();
     for (SBuildFeatureDescriptor awsConnectionBuildFeature : awsConnectionsToInject) {
-      return Collections.singletonList(getConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
+      credentialsToInject.add(getAwsConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
     }
 
-    return Collections.emptyList();
+    return credentialsToInject;
   }
 
   @NotNull
-  private ConnectionCredentials getConnectionCredentials(@NotNull final SProject project, @NotNull final Map<String, String> featureProps) throws ConnectionCredentialsException {
+  private AwsConnectionCredentials getAwsConnectionCredentials(@NotNull final SProject project, @NotNull final Map<String, String> featureProps) throws ConnectionCredentialsException {
     validateParamsWithLinkedConnectionId(featureProps);
 
     ConnectionDescriptor linkedAwsConnection = getLinkedConnectionFromParameters(project, featureProps);
 
     String sessionDuration = featureProps.get(SESSION_DURATION_PARAM);
+    Map<String, String> additionalProperties = new HashMap<>();
     if (sessionDuration != null) {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(
-        project,
-        linkedAwsConnection.getId(),
-        Collections.singletonMap(SESSION_DURATION_PARAM, sessionDuration)
-      );
-    } else {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(project, linkedAwsConnection.getId());
+      additionalProperties.put(SESSION_DURATION_PARAM, sessionDuration);
     }
+
+    ConnectionCredentials connectionCredentials = myProjectConnectionCredentialsManager.requestConnectionCredentials(
+      project,
+      linkedAwsConnection.getId(),
+      additionalProperties
+    );
+
+    //TW-75618 Add AWS Profile name for multiple AWS Connection injection
+    AwsConnectionCredentials awsConnectionCredentials = new AwsConnectionCredentials(connectionCredentials);
+    awsConnectionCredentials.setAwsProfileName(
+      featureProps.get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM)
+    );
+    return awsConnectionCredentials;
   }
 
   private void validateParamsWithLinkedConnectionId(@NotNull final Map<String, String> featureProperties) throws ConnectionCredentialsException {

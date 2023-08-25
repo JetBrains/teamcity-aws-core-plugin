@@ -12,7 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 

@@ -5,7 +5,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.PropertiesProcessor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
 import jetbrains.buildServer.util.StringUtil;

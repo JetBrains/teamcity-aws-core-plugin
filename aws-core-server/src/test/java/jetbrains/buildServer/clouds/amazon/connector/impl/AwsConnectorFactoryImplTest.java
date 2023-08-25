@@ -8,7 +8,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;

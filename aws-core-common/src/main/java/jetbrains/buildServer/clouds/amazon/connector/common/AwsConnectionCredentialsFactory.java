@@ -1,6 +1,5 @@
-package jetbrains.buildServer.serverSide.connections.aws;
+package jetbrains.buildServer.clouds.amazon.connector.common;
 
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsFactory;
 import org.jetbrains.annotations.NotNull;

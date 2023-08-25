@@ -15,7 +15,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;

@@ -3,7 +3,7 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator;

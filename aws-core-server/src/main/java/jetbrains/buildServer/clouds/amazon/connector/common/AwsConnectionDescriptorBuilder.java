@@ -24,7 +24,7 @@ import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * All AWS Connections-related management logic is in the {@link jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory}.
+ * All AWS Connections-related management logic is in the {@link AwsConnectionCredentialsFactory}.
  * @deprecated Use {@link jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager} to retrieve credentials.
  */
 @Deprecated

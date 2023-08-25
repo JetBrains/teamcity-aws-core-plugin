@@ -1,6 +1,8 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * All AWS Connections-related management logic is in the {@link jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory}.
+ * All AWS Connections-related management logic is in the {@link AwsConnectionCredentialsFactory}.
  * @deprecated Use {@link jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager} to retrieve credentials.
  */
 @Deprecated

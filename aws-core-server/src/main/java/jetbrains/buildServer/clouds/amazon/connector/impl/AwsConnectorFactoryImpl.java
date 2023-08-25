@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;

@@ -1,7 +1,7 @@
 package jetbrains.buildServer.serverSide.connections.aws.impl;
 
 import jetbrains.buildServer.ExtensionHolder;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
@@ -10,7 +10,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsFactory;

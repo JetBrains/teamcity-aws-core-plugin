@@ -16,7 +16,7 @@ import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
-import jetbrains.buildServer.serverSide.connections.aws.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;

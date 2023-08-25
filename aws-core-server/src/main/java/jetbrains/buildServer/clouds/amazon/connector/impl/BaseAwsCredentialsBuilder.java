@@ -17,7 +17,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.List;
-import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsBuilder;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.serverSide.IOGuard;

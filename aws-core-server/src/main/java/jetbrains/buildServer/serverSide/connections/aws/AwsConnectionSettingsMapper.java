@@ -1,9 +1,11 @@
 
 package jetbrains.buildServer.serverSide.connections.aws;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.*;
@@ -25,8 +27,7 @@ public class AwsConnectionSettingsMapper implements CustomSettingsMapper {
       .entrySet()
       .stream()
       .filter(e -> OAuthConstants.FEATURE_TYPE.equals(e.getKey().getType()) &&
-              AwsCloudConnectorConstants.CLOUD_TYPE.equals(e.getKey().getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM)))
-      .peek(this::correctUserDefinedId)
+                   AwsCloudConnectorConstants.CLOUD_TYPE.equals(e.getKey().getParameters().get(OAuthConstants.OAUTH_TYPE_PARAM)))
       .collect(Collectors.toList());
 
     for (Map.Entry<SProjectFeatureDescriptor, SProjectFeatureDescriptor> newAwsConnection : newAwsConnections) {
@@ -39,6 +40,9 @@ public class AwsConnectionSettingsMapper implements CustomSettingsMapper {
         continue;
       }
 
+      updateBuildTypeSettings(newProject::getOwnBuildTypes, sourceId, copiedFeature);
+      updateBuildTypeSettings(newProject::getOwnBuildTypeTemplates, sourceId, copiedFeature);
+
       newProject.getOwnFeatures()
                 .stream()
                 .filter(feature -> sourceId.equals(feature.getParameters().get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM)))
@@ -50,22 +54,26 @@ public class AwsConnectionSettingsMapper implements CustomSettingsMapper {
     }
   }
 
-  // IDs might have consistency problems. This should be readdressed with TW-80943
-  private void correctUserDefinedId(Map.Entry<SProjectFeatureDescriptor, SProjectFeatureDescriptor> entry) {
-    final SProjectFeatureDescriptor src = entry.getKey();
-    final SProjectFeatureDescriptor copy = entry.getValue();
+  private void updateBuildTypeSettings(Supplier<List<?>> supplier, String sourceId, SProjectFeatureDescriptor copiedFeature) {
+    List<BuildTypeSettings> bts = supplier.get()
+                                          .stream()
+                                          .map(bt -> (BuildTypeSettings)bt)
+                                          .collect(Collectors.toList());
+    updateBuildFeatures(sourceId, copiedFeature, bts);
+  }
 
-    final String srcId = src.getParameters().get(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM);
-    if (srcId != null && srcId.equals(copy.getParameters().get(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM))) {
-      final SProject newProject = myProjectManager.findProjectById(copy.getProjectId());
-      if (newProject == null) {
-        return;
+  private void updateBuildFeatures(String sourceId, SProjectFeatureDescriptor copiedFeature, List<BuildTypeSettings> btSettingsList) {
+    for (BuildTypeSettings bts : btSettingsList) {
+      Collection<SBuildFeatureDescriptor> features = bts.getBuildFeatures();
+
+      for (SBuildFeatureDescriptor feature : features) {
+        if (sourceId.equals(feature.getParameters().get(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM))) {
+          final Map<String, String> newParams = new HashMap<>(feature.getParameters());
+          newParams.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, copiedFeature.getId());
+          bts.updateBuildFeature(feature.getId(), feature.getType(), newParams);
+        }
       }
-
-      final Map<String, String> newParams = new HashMap<>(copy.getParameters());
-      newParams.put(AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM, copy.getId());
-
-      newProject.updateFeature(copy.getId(), copy.getType(), newParams);
     }
   }
+
 }

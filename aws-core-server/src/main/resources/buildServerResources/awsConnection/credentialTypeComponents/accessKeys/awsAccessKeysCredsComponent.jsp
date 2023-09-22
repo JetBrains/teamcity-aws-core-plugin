@@ -142,7 +142,7 @@
             $j("#${keyRotatedInfoId}").addClass("hidden");
 
             $j('#${rotate_key_button_id}').attr('disabled','disabled');
-            $j('#testConnectionButton').attr('disabled','disabled');
+            $j('#awsTestConnectionButton').attr('disabled','disabled');
             $j('.cancel').attr('disabled','disabled');
             this.disable();
 
@@ -151,7 +151,7 @@
 
             this.enable();
             $j('#${rotate_key_button_id}').removeAttr('disabled');
-            $j('#testConnectionButton').removeAttr('disabled');
+            $j('#awsTestConnectionButton').removeAttr('disabled');
             $j('.cancel').removeAttr('disabled');
         }
     };

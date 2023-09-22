@@ -45,8 +45,7 @@
 </style>
 
 <tr class="awsConnectionNote">
-  <td></td>
-  <td>
+  <td colspan="2">
     Adds a new Connection that allows TeamCity to store and manage AWS Credentials.
     <bs:helpLink file="configuring-connections#AmazonWebServices"><bs:helpIcon/></bs:helpLink>
   </td>
@@ -189,8 +188,8 @@
 
   const afterClose = BS.OAuthConnectionDialog.afterClose;
   BS.OAuthConnectionDialog.afterClose = function () {
-    $j('.testConnectionButton').remove();
-    afterClose()
+    $j('#awsTestConnectionButton').remove();
+    afterClose();
   };
 
   BS.OAuthConnectionDialog.addError = function (errorHTML, errorId){
@@ -208,7 +207,7 @@
   };
 </script>
 
-<forms:button id="testConnectionButton" className="testConnectionButton"
+<forms:button id="awsTestConnectionButton" className="testConnectionButton"
               onclick="return BS.OAuthConnectionDialog.submitTestConnection();">Test Connection</forms:button>
 
 <bs:dialog dialogId="testConnectionDialog" title="Test Connection" closeCommand="BS.TestConnectionDialog.close();"
@@ -218,6 +217,12 @@
 </bs:dialog>
 
 <script>
-  $j('#OAuthConnectionDialog .popupSaveButtonsBlock .testConnectionButton').remove();
-  $j('#OAuthConnectionDialog .popupSaveButtonsBlock .cancel').after($j('#testConnectionButton'))
+  // duplication of awsTestConnectionButton can happen for some reason, when the page rendered twice.
+  // check if the button is already moved
+  if ($j('#OAuthConnectionDialog .popupSaveButtonsBlock .testConnectionButton').length == 0) {
+    $j('#awsTestConnectionButton').insertAfter('#OAuthConnectionDialog .popupSaveButtonsBlock .cancel');
+  } else if ($j('.testConnectionButton').length > 1) {
+    // remove the duplicate button from the top of the dialog
+    $j('.testConnectionButton').first().remove();
+  }
 </script>

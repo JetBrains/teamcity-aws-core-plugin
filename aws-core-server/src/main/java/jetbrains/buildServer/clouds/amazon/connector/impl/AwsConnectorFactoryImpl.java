@@ -4,9 +4,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
-import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionDescriptor;
+import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.NoSuchAwsCredentialsBuilderException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -17,14 +17,11 @@ import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.identifiers.IdentifiersUtil;
-import jetbrains.buildServer.serverSide.impl.IdGeneratorRegistry;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DISABLED_AWS_CONNECTION_TYPE_ERROR_MSG;
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
 public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
 
@@ -150,9 +147,6 @@ public class AwsConnectorFactoryImpl implements AwsConnectorFactory {
     }
 
     try {
-      StringBuilder errorMessageBuilder = new StringBuilder();
-      errorMessageBuilder.append("This ID is invalid, please, dont use these symbols: ");
-      errorMessageBuilder.append(IdGeneratorRegistry.PROHIBITED_CHARS);
       IdentifiersUtil.validateExternalId(connectionId, "AWS Connection ID", IdentifiersUtil.EXT_ID_LENGTH);
     } catch (InvalidIdentifierException e) {
       invalidProperties.add(new InvalidProperty(USER_DEFINED_ID_PARAM, e.getMessage()));

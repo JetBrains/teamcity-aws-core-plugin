@@ -97,6 +97,40 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
     ));
   }
 
+  @Test
+  public void givenAwsConnFactory_withoutProperStsEndpoint_thenReturnInvalidPropWithStsEndpoint() {
+    createStaticCredentialsBuilder();
+
+    myConnectorProperties.put(SESSION_CREDENTIALS_PARAM, "true");
+    myConnectorProperties.remove(STS_ENDPOINT_PARAM);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
+
+    assertFalse(invalidProperties.isEmpty());
+    assertEquals(invalidProperties.get(0).getPropertyName(), STS_ENDPOINT_PARAM);
+  }
+
+  @Test
+  public void givenAwsConnFactory_withtInvalidStsEndpoint_thenReturnInvalidPropWithStsEndpoint() {
+    createStaticCredentialsBuilder();
+
+    myConnectorProperties.put(SESSION_CREDENTIALS_PARAM, "true");
+    myConnectorProperties.put(STS_ENDPOINT_PARAM, "http://localhost");
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
+
+    assertFalse(invalidProperties.isEmpty());
+    assertEquals(invalidProperties.get(0).getPropertyName(), STS_ENDPOINT_PARAM);
+  }
+
+  @Test
+  public void givenAwsConnFactory_withoutProperStsEndpointButDisabled_thenReturnNothing() {
+    createStaticCredentialsBuilder();
+
+    myConnectorProperties.remove(STS_ENDPOINT_PARAM);
+    List<InvalidProperty> invalidProperties = myAwsConnectorFactory.getInvalidProperties(myConnectorProperties);
+
+    assertTrue(invalidProperties.isEmpty());
+  }
+
   @Test(expectedExceptions = {NoSuchAwsCredentialsBuilderException.class})
   public void givenAwsConnFactory_withoutCredentialsType_thenThrowException() throws AwsConnectorException {
     createStaticCredentialsBuilder();

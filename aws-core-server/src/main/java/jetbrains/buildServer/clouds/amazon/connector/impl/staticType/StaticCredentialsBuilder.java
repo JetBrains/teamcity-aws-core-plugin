@@ -14,6 +14,7 @@ import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.util.StringUtil;
+import org.apache.commons.lang.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
@@ -61,7 +62,8 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
       invalidProperties.add(new InvalidProperty(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
     }
 
-    if (!StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
+    if (BooleanUtils.toBoolean(properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM)) &&
+        !StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
       invalidProperties.add(
         new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
     }

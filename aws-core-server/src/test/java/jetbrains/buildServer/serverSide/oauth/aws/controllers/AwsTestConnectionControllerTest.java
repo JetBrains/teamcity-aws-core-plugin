@@ -153,6 +153,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
   public void givenAwsConnectionPropertiesWithCustomStsEndpoint_whenItsNotWhitelisted_thenReturnCorrespondingError() {
     Map<String, String> defaultProperties = createDefaultProperties();
     defaultProperties.put(propertyPrefix + STS_ENDPOINT_PARAM, "https://someEndpoint");
+    defaultProperties.put(propertyPrefix + SESSION_CREDENTIALS_PARAM, "true");
 
     Map<String, String[]> parametersMapMock = Mockito.mock(Map.class);
     when(parametersMapMock.keySet())

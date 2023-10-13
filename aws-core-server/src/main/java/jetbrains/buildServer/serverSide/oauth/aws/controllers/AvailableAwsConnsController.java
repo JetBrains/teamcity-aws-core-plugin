@@ -72,7 +72,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       if (projectId == null) {
         throw new AwsConnectorException("The ID of the project where to find Available AWS Connections is null");
       }
-      SProject project = myProjectManager.findProjectByExternalId(projectId);
+      final SProject project = myProjectManager.findProjectByExternalId(projectId);
       if (project == null) {
         throw new AwsConnectorException("Could not find the project with id: " + projectId);
       }
@@ -92,7 +92,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
 
       if (childProjectsFeatureEnabled) {
         awsConnections = awsConnections.stream()
-                                       .filter(conn -> conn.getProjectId().equals(projectId) || ParamUtil.isAllowedInSubProjects(conn.getParameters()))
+                                       .filter(conn -> conn.getProjectId().equals(project.getProjectId()) || ParamUtil.isAllowedInSubProjects(conn.getParameters()))
                                        .collect(Collectors.toList());
       }
 

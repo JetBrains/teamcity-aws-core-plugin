@@ -52,20 +52,20 @@
 </tr>
 
 <tr>
-  <td><label for="displayName">Display name:</label><l:star/></td>
+  <th><label for="displayName">Display name:</label><l:star/></th>
   <td>
-    <props:textProperty name="${connectionDisplayNameProp}" className="longField" style="width: 20em;"/>
+    <props:textProperty name="${connectionDisplayNameProp}" className="longField"/>
     <span class="smallNote nowrap">Provide a name to distinguish this connection from others</span>
     <span class="error" id="error_displayName"></span>
   </td>
 </tr>
 
 
-<td><label for="${connection_id_param}">${connection_id_label}:</label></td>
+<th><label for="${connection_id_param}">${connection_id_label}:</label></th>
 <td>
   <c:choose>
     <c:when test = "${empty connectionId}">
-      <props:textProperty name="${connection_id_param}"
+      <props:textProperty name="${connection_id_param}" className="longField"
                           value="${connectionId}"/>
       <span class="smallNote">This ID is used in URLs, REST API, HTTP requests to the server and configuration settings in the TeamCity Data Directory.</span>
       <script type="application/javascript">
@@ -84,7 +84,7 @@
 <tr>
   <th><label for="${region_name_param}">${region_name_label}: </label></th>
   <td>
-    <props:selectProperty id="${region_select_id}" name="${region_name_param}" enableFilter="true">
+    <props:selectProperty id="${region_select_id}" name="${region_name_param}" enableFilter="true" style="width: 20em;">
       <c:forEach var="region" items="${allRegions.keySet()}">
         <props:option value="${region}" selected="${region eq previouslyChosenRegion}"><c:out value="${allRegions[region]}"/></props:option>
       </c:forEach>
@@ -93,7 +93,7 @@
   </td>
 </tr>
 
-<props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:">
+<props:selectSectionProperty name="${credentials_type_param}" title="${credentials_type_label}:" style="width: 20em;">
   <props:selectSectionPropertyContent value="${credentials_type_access_keys_option}" caption="${credentials_type_access_keys_label}">
     <jsp:include page="credentialTypeComponents/accessKeys/awsAccessKeysCredsComponent.jsp">
       <jsp:param name="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>

@@ -1,9 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.*;
@@ -11,7 +12,8 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.AVAIL_AWS_CONNS_BUILD_FORM_JSP_FILE_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
 
@@ -46,7 +48,8 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
 
   @Override
   public Map<String, String> getDefaultParameters() {
-    return Collections.singletonMap(SESSION_DURATION_PARAM, SESSION_DURATION_DEFAULT);
+    return ImmutableMap.of(SESSION_DURATION_PARAM, SESSION_DURATION_DEFAULT,
+                           AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM, "false");
   }
 
   @NotNull

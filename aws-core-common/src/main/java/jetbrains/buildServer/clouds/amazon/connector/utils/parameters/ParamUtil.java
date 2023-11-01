@@ -28,7 +28,7 @@ public class ParamUtil {
 
   public static boolean isAllowedInSubProjects(@NotNull final Map<String, String> properties){
     String value = properties.get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM);
-    return value == null || Boolean.parseBoolean(value);
+    return Boolean.parseBoolean(value);
   }
 
   @Deprecated

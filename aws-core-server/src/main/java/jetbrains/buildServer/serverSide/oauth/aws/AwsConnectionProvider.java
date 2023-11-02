@@ -76,6 +76,7 @@ public class AwsConnectionProvider extends OAuthProvider {
     defaultProperties.put(AwsCloudConnectorConstants.REGION_NAME_PARAM, AwsCloudConnectorConstants.REGION_NAME_DEFAULT);
     defaultProperties.put(AwsAccessKeysParams.STS_ENDPOINT_PARAM, AwsCloudConnectorConstants.STS_ENDPOINT_DEFAULT);
     defaultProperties.put(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, AwsSessionCredentialsParams.SESSION_DURATION_DEFAULT);
+    defaultProperties.put(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM, "false");
 
     defaultProperties.putAll(myAwsConnectionCredentialsFactory.getDefaultProperties());
     return defaultProperties;

@@ -96,6 +96,16 @@
         </description>
       </option>
     </param>
+    <param name="awsAllowedInSubProjects" dslName="allowInSubProjects" type="boolean" trueValue="true" falseValue="false">
+      <description>
+        Whether sub-projects can utilize the connection or not
+      </description>
+    </param>
+    <param name="awsAllowedInBuilds" dslName="allowInBuilds" type="boolean" trueValue="true" falseValue="false">
+      <description>
+        Whether build steps can utilize the connection or not
+      </description>
+    </param>
   </params>
 
   <examples>

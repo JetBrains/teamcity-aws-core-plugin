@@ -33,7 +33,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
  *
  * @since 2023.11
  */
-public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvider {
+  public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvider {
 
   private final ProjectManager myProjectManager;
   private final ProjectConnectionsManager myProjectConnectionsManager;
@@ -136,7 +136,7 @@ public class LinkedAwsConnectionProviderImpl implements LinkedAwsConnectionProvi
               ConnectionDescriptor awsConnectionToInject = getLinkedConnectionFromParameters(project, awsConnBuildFeature.getParameters());
               return
                 awsConnectionToInject.getProjectId().equals(buildType.getProjectId()) ||
-                ParamUtil.isAllowedInSubProjects(awsConnBuildFeature.getParameters());
+                ParamUtil.isAllowedInSubProjects(awsConnectionToInject.getParameters());
 
             } catch (ConnectionCredentialsException e) {
               Loggers.CLOUD.warn(String.format("Project %s, Build %s, AWS Connection will not be injected: %s", project.getExternalId(), build.getBuildId(), e.getMessage()));

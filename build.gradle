@@ -18,6 +18,7 @@ plugins {
   id 'idea'
   id 'groovy'
   id 'com.github.jk1.dependency-license-report' version '1.17'
+  id "com.github.hierynomus.license" version "0.15.0"
 }
 
 ext {
@@ -112,4 +113,10 @@ licenseReport {
   renderers = [new JsonReportRenderer('third-party-libraries.json')]
 }
 
-build.finalizedBy generateLicenseReport
+downloadLicenses {
+  includeProjectDependencies = true
+  dependencyConfiguration = 'compileClasspath'
+}
+
+build.finalizedBy downloadLicenses
+//build.finalizedBy generateLicenseReport

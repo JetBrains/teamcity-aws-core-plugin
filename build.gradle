@@ -106,4 +106,10 @@ task uploadMavenArtifacts {
   tasks.uploadMavenArtifacts.dependsOn ':aws-core-common:prepareUploadMavenArtifactsTask'
 }
 
-generateLicenseReport.shouldRunAfter build
+import com.github.jk1.license.render.*
+
+licenseReport {
+  renderers = [new JsonReportRenderer('third-party-libraries.json')]
+}
+
+build.finalizedBy generateLicenseReport

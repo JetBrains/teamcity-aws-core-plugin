@@ -17,6 +17,7 @@
 plugins {
   id 'idea'
   id 'groovy'
+  id 'com.github.jk1.dependency-license-report' version '1.17'
 }
 
 ext {
@@ -58,6 +59,7 @@ allprojects {
     }
     mavenCentral()
   }
+
 }
 
 idea {

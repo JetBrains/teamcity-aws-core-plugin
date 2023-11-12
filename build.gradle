@@ -115,8 +115,8 @@ licenseReport {
 
 downloadLicenses {
   includeProjectDependencies = true
-  dependencyConfiguration = 'compileClasspath'
+  dependencyConfiguration = 'compile'
 }
 
-build.finalizedBy downloadLicenses
+build.finalizedBy project.tasks.getByName('downloadLicenses')
 //build.finalizedBy generateLicenseReport

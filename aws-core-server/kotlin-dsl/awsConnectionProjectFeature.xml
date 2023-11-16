@@ -112,7 +112,7 @@
     <example>
       <description>
         Adds a new Connection that allows TeamCity to store and manage AWS Credentials (IAM User Access Key).
-        When using Session Credentials a new temporary Access Key will be ge created each time this connection is used.
+        When using Session Credentials, a new temporary Access Key will be generated each time this connection is used.
       </description>
       <code>
         awsConnection {
@@ -128,10 +128,45 @@
         }
       </code>
     </example>
-
     <example>
       <description>
-        Adds a new Connection that allows TeamCity to assume AWS IAM Role using another AWS Connection.
+        Adds a new Connection that allows TeamCity to store and manage AWS Credentials (IAM User Access Key).
+        This connection can be used by subprojects.
+      </description>
+      <code>
+        awsConnection {
+          id = "AwsIamUser"
+          name = "AWS IAM User"
+          regionName = "eu-central-1"
+          credentialsType = static {
+            accessKeyId = "keyId"
+            secretAccessKey = "Link to credentialsJSON property containing AWS secret access key"
+          }
+          allowInSubProjects = true
+        }
+      </code>
+    </example>
+    <example>
+      <description>
+        Adds a new Connection that allows TeamCity to store and manage AWS Credentials (IAM User Access Key).
+        This connection can be used in build steps.
+      </description>
+      <code>
+        awsConnection {
+          id = "AwsIamUser"
+          name = "AWS IAM User"
+          regionName = "eu-central-1"
+          credentialsType = static {
+            accessKeyId = "keyId"
+            secretAccessKey = "Link to credentialsJSON property containing AWS secret access key"
+          }
+          allowInBuilds = true
+        }
+      </code>
+    </example>
+    <example>
+      <description>
+        Adds a new Connection that allows TeamCity to assume an AWS IAM Role using another AWS Connection.
       </description>
       <code>
         awsConnection {
@@ -150,7 +185,7 @@
 
     <example>
       <description>
-        Adds a new Connection that allows TeamCity to extract credentials from default places on the TeamCity server machine using the Default Credentials Provider Chain.
+        Adds a new Connection that allows TeamCity to look for credentials in the default locations on the TeamCity server machine using the Default Credentials Provider Chain.
       </description>
       <code>
         awsConnection {

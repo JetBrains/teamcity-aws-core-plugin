@@ -157,8 +157,14 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
         .stream()
         .filter(
           awsConnBuildFeature -> {
-            final String isAllowedInBuildSteps = awsConnBuildFeature.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
-            return isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps);
+            try {
+              ConnectionDescriptor awsConnectionToInject = getLinkedConnectionFromParameters(project, awsConnBuildFeature.getParameters());
+              final String isAllowedInBuildSteps = awsConnectionToInject.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
+              return isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps);
+            } catch (ConnectionCredentialsException e) {
+              Loggers.CLOUD.warn(String.format("Project %s, Build %s, AWS Connection will not be injected: %s", project.getExternalId(), build.getBuildId(), e.getMessage()));
+            }
+            return false;
           }
         )
         .collect(Collectors.toList());

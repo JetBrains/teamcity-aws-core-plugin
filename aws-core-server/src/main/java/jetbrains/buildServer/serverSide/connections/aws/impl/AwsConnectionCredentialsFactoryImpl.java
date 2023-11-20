@@ -9,6 +9,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.InvalidIdentifierException;
 import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
@@ -29,11 +30,12 @@ public class AwsConnectionCredentialsFactoryImpl implements AwsConnectionCredent
 
   private final ConcurrentMap<String, AwsCredentialsBuilder> myCredentialBuilders = new ConcurrentHashMap<>();
 
-  public AwsConnectionCredentialsFactoryImpl(@NotNull final ExtensionHolder extensionHolder) {
+  public  AwsConnectionCredentialsFactoryImpl(@NotNull final ExtensionHolder extensionHolder) {
     extensionHolder.registerExtension(ConnectionCredentialsFactory.class, AwsConnectionCredentialsFactoryImpl.class.getName(), this);
   }
 
   @NotNull
+  @Deprecated
   @Override
   public ConnectionCredentials requestCredentials(@NotNull ConnectionDescriptor connectionDescriptor) throws ConnectionCredentialsException {
     String credentialsType = connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM);
@@ -42,6 +44,16 @@ public class AwsConnectionCredentialsFactoryImpl implements AwsConnectionCredent
     AwsCredentialsHolder credentialsHolder = credentialsBuilder.constructSpecificCredentialsProvider(connectionDescriptor);
 
     return new AwsConnectionCredentials(credentialsHolder.getAwsCredentials(), connectionDescriptor.getParameters());
+  }
+
+  @NotNull
+  @Override
+  public ConnectionCredentials requestCredentials(@NotNull SProject project, @NotNull ConnectionDescriptor connectionDescriptor) throws ConnectionCredentialsException {
+    if (!project.getProjectId().equals(connectionDescriptor.getProjectId()) && !ParamUtil.isAllowedInSubProjects(connectionDescriptor.getParameters())) {
+      throw new ConnectionCredentialsException("Connection is not allowed to be used in subprojects");
+    }
+
+    return requestCredentials(connectionDescriptor);
   }
 
   @NotNull

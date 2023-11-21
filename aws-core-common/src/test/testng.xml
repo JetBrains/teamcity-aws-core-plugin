@@ -5,6 +5,7 @@
       <class name="jetbrains.buildServer.util.amazon.retry.impl.RetrierTest"/>
       <class name="jetbrains.buildServer.util.amazon.S3UtilIntegrationTest"/>
       <class name="jetbrains.buildServer.util.amazon.Java9CompatibilityTest"/>
+      <class name="jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImplTest"/>
     </classes>
   </test>
   <test name="Param Utils Tests">

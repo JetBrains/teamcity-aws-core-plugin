@@ -77,7 +77,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       return null;
     }
 
-    final boolean subProjectsFeatureEnabled = Boolean.parseBoolean(buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG));
+    final boolean subProjectsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG);
     if (subProjectsFeatureEnabled) {
       final List<SBuildFeatureDescriptor> filteredList = new ArrayList<SBuildFeatureDescriptor>();
       for (SBuildFeatureDescriptor feature : awsConnectionsToExpose) {
@@ -89,7 +89,7 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       awsConnectionsToExpose = filteredList;
     }
 
-    final boolean buildStepsFeatureEnabled = Boolean.parseBoolean(buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG));
+    final boolean buildStepsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG);
 
     if (!buildStepsFeatureEnabled) {
       return awsConnectionsToExpose.iterator().next();

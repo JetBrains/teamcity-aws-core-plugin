@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jetbrains.teamcity.plugins</groupId>
+    <artifactId>aws-core-plugin</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <revision>${PluginVersion}</revision>
+        <PluginVersion>LOCAL-SNAPSHOT</PluginVersion>
+        <teamcity.version>LOCAL-SNAPSHOT</teamcity.version>
+        <local.repo.path>local-repo</local.repo.path>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <url>https://github.com/JetBrains/teamcity-aws-core-plugin</url>
+    <organization>
+        <name>JetBrains</name>
+        <url>https://www.jetbrains.com</url>
+    </organization>
+
+    <modules>
+        <module>aws-core-agent</module>
+        <module>aws-core-server</module>
+        <module>aws-core-common</module>
+        <module>aws-core-webapp</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>local-teamcity-artifacts</id>
+            <!--suppress UnresolvedMavenProperty -->
+            <url>file://${maven.multiModuleProjectDirectory}/${local.repo.path}</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>teamcity-space</id>
+            <url>https://packages.jetbrains.team/maven/p/tc/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>teamcity-space</id>
+            <url>https://packages.jetbrains.team/maven/p/tc/maven</url>
+        </repository>
+    </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jetbrains.teamcity.plugins</groupId>
+                <artifactId>aws-core-server</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity.plugins</groupId>
+                <artifactId>aws-core-agent</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity.plugins</groupId>
+                <artifactId>aws-core-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>deploy-to-local-aws-repo</id>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <altDeploymentRepository>local-repo::file://local-aws-repo</altDeploymentRepository>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>javac-release-flag-compat</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.release>8</maven.compiler.release>
+            </properties>
+        </profile>
+        <profile>
+            <id>dont-deploy-war</id>
+            <activation>
+                <property>
+                    <name>packaging</name>
+                    <value>war</value>
+                </property>
+            </activation>
+            <properties>
+                <maven.deploy.skip>true</maven.deploy.skip>
+            </properties>
+        </profile>
+    </profiles>
+</project>

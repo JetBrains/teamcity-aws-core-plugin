@@ -47,16 +47,25 @@ public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
     myLinkedAwsConnectionProvider = new LinkedAwsConnectionProviderImpl(myProjectManager, myProjectConnectionCredentialsManager, Mockito.mock(ProjectConnectionCredentialsManager.class));
   }
 
-  @Test
-  public void testUsingConnectionWhenAllowingSubprojectsIsDisabled() throws ConnectionCredentialsException {
+  private void testWithParamIsDisabled(String allowedInSubprojectsParam) throws ConnectionCredentialsException {
     ConnectionDescriptor descriptor = Mockito.mock(ConnectionDescriptor.class);
     Mockito.when(descriptor.getProjectId()).thenReturn(myProject.getProjectId());
-    Mockito.when(descriptor.getParameters()).thenReturn(ImmutableMap.of(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM, "false"));
+    Mockito.when(descriptor.getParameters()).thenReturn(ImmutableMap.of(allowedInSubprojectsParam, "false"));
     Mockito.when(myProjectConnectionCredentialsManager.findConnectionById(myChildProject, CONNECTION_ID)).thenReturn(descriptor);
     SRunningBuild build = createRunningBuild(myBuildType, new String[0], new String[0]);
 
 
     List<ConnectionCredentials> connectionCredentialsFromBuild = myLinkedAwsConnectionProvider.getConnectionCredentialsFromBuild(build);
     then(connectionCredentialsFromBuild).isEmpty();
+  }
+
+  @Test
+  public void testUsingConnectionWhenAllowingSubprojectsIsDisabled() throws ConnectionCredentialsException {
+    testWithParamIsDisabled(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM);
+  }
+
+  @Test
+  public void testUsingConnectionWhenAllowingInBuildIsDisabled() throws ConnectionCredentialsException {
+    testWithParamIsDisabled(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_REQUEST_PARAM);
   }
 }

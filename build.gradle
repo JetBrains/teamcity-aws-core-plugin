@@ -28,7 +28,7 @@ ext {
   teamcityDataDir = "$rootDir/teamcity/data/" + teamcityVersion
   teamcityJavaHome = System.properties['java.home']
 
-  awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.199'
+  awsSDKVersion = findProperty('aws.sdk.version') ?: '1.12.589'
 
   libVersion = project.hasProperty('awsCoreVersion') ? property('awsCoreVersion') : teamcityVersion
   providedPluginVersion = findProperty('versionNumber')

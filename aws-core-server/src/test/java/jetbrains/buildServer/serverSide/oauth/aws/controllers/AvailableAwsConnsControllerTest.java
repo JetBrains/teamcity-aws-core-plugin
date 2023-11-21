@@ -27,6 +27,7 @@ import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
+import jetbrains.buildServer.serverSide.impl.ProjectEx;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -48,7 +49,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
   private final String AWS_CONNECTION_DISPLAY_NAME = "Test AWS Connection";
   private AvailableAwsConnsController availableAwsConnsController;
   private ProjectConnectionsManager connectionsManager;
-  private SProject project;
+  private ProjectEx project;
   private ConnectionDescriptor mockedAwsConnection;
 
   @BeforeMethod
@@ -57,7 +58,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     setInternalProperty(AwsCloudConnectorConstants.FEATURE_PROPERTY_NAME, "true");
 
-    project = Mockito.mock(SProject.class);
+    project = Mockito.mock(ProjectEx.class);
     when(projectManager.findProjectByExternalId(PROJECT_ID))
       .thenReturn(project);
 

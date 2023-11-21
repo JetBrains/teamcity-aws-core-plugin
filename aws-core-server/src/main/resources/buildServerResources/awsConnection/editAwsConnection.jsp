@@ -109,8 +109,8 @@
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
 
-<c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, false)}"/>
-<c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, false)}"/>
+<c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}"/>
+<c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}"/>
 
 <c:if test="${buildStepsFeatureEnabled || subProjectsFeatureEnabled}">
   <l:settingsGroup title="Security">

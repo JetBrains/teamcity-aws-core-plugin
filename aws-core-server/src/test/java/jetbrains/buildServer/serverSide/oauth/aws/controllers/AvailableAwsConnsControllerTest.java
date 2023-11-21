@@ -74,6 +74,7 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
 
     mockedAwsConnection = Mockito.mock(ConnectionDescriptor.class);
+    when(mockedAwsConnection.getProjectId()).thenReturn(PROJECT_ID);
   }
 
   @Test
@@ -181,8 +182,6 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
 
     final Map<String, String> params = new HashMap<>();
     params.put(ALLOWED_IN_BUILDS_PARAM, "false");
-
-    when(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG)).thenReturn("true");
 
     ConnectionDescriptor mockedAwsConnection1 = createConnectionDescriptor(PROJECT_ID, AWS_CONNECTION_ID + 1, params);
 

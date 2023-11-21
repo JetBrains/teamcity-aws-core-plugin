@@ -5,9 +5,11 @@ import java.util.Map;
 
 import java.util.regex.Pattern;
 
+import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +31,14 @@ public class ParamUtil {
   public static boolean isAllowedInSubProjects(@NotNull final Map<String, String> properties){
     String value = properties.get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_PARAM);
     return value == null || Boolean.parseBoolean(value);
+  }
+
+  public static boolean toBooleanOrTrue(SBuildType buildType, String featureFlag) {
+    return toBooleanOrTrue(buildType.getConfigParameters().get(featureFlag));
+  }
+
+  public static boolean toBooleanOrTrue(String value) {
+    return StringUtil.isEmpty(value) || Boolean.parseBoolean(value);
   }
 
   @Deprecated

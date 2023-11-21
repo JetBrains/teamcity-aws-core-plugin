@@ -1,5 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
@@ -18,12 +23,6 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
@@ -122,9 +121,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
       return Collections.emptyList();
     }
 
-    final boolean subProjectsFeatureEnabled = Boolean.parseBoolean(
-      buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG)
-    );
+    final boolean subProjectsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG);
     if (subProjectsFeatureEnabled) {
       reportInfo(build, "Filtering AWS Connections, injecting connections only from the same project or allowed to be used in SubProjects");
 
@@ -147,9 +144,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
         .collect(Collectors.toList());
     }
 
-    final boolean buildStepsFeatureEnabled = Boolean.parseBoolean(
-      buildType.getConfigParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG)
-    );
+    final boolean buildStepsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG);
     if (buildStepsFeatureEnabled) {
       reportInfo(build, "Filtering AWS Connections, injecting connections which are allowed to be used in Builds");
 

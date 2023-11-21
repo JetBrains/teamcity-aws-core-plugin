@@ -1,7 +1,0 @@
-
-
-rootProject.name = 'aws-core-plugin'
-
-include 'aws-core-common'
-include 'aws-core-agent'
-include 'aws-core-server'

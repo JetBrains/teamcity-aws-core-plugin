@@ -19,6 +19,7 @@ import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import jetbrains.buildServer.serverSide.impl.BuildFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.impl.NoOpBuildLog;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +69,7 @@ public class InjectAwsCredentialsToTheBuildContextTest {
     BuildTypeEx buildType = Mockito.mock(BuildTypeEx.class);
     when(mockedBuildStartContext.getBuild()).thenReturn(runningBuild);
     when(runningBuild.getBuildType()).thenReturn(buildType);
+    when(runningBuild.getBuildLog()).thenReturn(new NoOpBuildLog());
     when(runningBuild.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE))
       .thenReturn(
         Collections.singletonList(

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jetbrains.teamcity.plugins</groupId>
+        <artifactId>aws-core-plugin</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>aws-core-webapp</artifactId>
+    <packaging>war</packaging>
+    <name>AWS Core</name>
+    <description>Core utilities common for TeamCity Amazon-related plugins. Before TeamCity 2019.2 was a part of teamcity-aws-codedeploy-plugin.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.teamcity.plugins</groupId>
+            <artifactId>aws-core-agent</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.teamcity.plugins</groupId>
+            <artifactId>aws-core-server</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>teamcity-maven-plugin</artifactId>
+                <version>1.6.27</version>
+                <executions>
+                    <execution>
+                        <id>teamcity-assemble-plugin</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <agent>
+                        <spec>:aws-core-agent</spec>
+                        <pluginName>aws-core-agent</pluginName>
+                        <exclusions>
+                            <exclusion>org.jetbrains.teamcity</exclusion>
+                            <exclusion>::zip</exclusion>
+                            <exclusion>commons-logging</exclusion>
+                            <exclusion>commons-codec</exclusion>
+                            <exclusion>org.apache.httpcomponents</exclusion>
+                            <exclusion>com.fasterxml.jackson.core</exclusion>
+                            <exclusion>joda-time</exclusion>
+                        </exclusions>
+                        <descriptor>
+                            <useSeparateClassloader>true</useSeparateClassloader>
+                        </descriptor>
+                    </agent>
+                    <server>
+                        <pluginName>aws-core-plugin</pluginName>
+                        <exclusions>
+                            <exclusion>org.jetbrains.teamcity</exclusion>
+                            <exclusion>commons-logging</exclusion>
+                            <exclusion>commons-codec</exclusion>
+                            <exclusion>org.apache.httpcomponents</exclusion>
+                            <exclusion>com.fasterxml.jackson.core</exclusion>
+                            <exclusion>joda-time</exclusion>
+                        </exclusions>
+                        <descriptor>
+                            <useSeparateClassloader>true</useSeparateClassloader>
+                            <nodeResponsibilitiesAware>true</nodeResponsibilitiesAware>
+                        </descriptor>
+                    </server>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

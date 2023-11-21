@@ -7,3 +7,9 @@ downloads
 target
 TeamCityDist
 teamcity_raw
+.DS_Store
+old
+.flattened-pom.xml
+local-aws-repo
+local-repo
+.mvn/maven.config

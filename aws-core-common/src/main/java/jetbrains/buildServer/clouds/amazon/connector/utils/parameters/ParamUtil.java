@@ -5,6 +5,7 @@ import java.util.Map;
 
 import java.util.regex.Pattern;
 
+import jetbrains.buildServer.serverSide.BuildTypeEx;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
@@ -34,11 +35,8 @@ public class ParamUtil {
   }
 
   public static boolean toBooleanOrTrue(SBuildType buildType, String featureFlag) {
-    return toBooleanOrTrue(buildType.getConfigParameters().get(featureFlag));
-  }
-
-  public static boolean toBooleanOrTrue(String value) {
-    return StringUtil.isEmpty(value) || Boolean.parseBoolean(value);
+    BuildTypeEx buildTypeEx = (BuildTypeEx) buildType;
+    return buildTypeEx.getBooleanInternalParameterOrTrue(featureFlag);
   }
 
   @Deprecated

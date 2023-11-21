@@ -17,6 +17,7 @@ import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
+import jetbrains.buildServer.serverSide.impl.ProjectEx;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -78,8 +79,9 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       }
 
       List<ConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
+      final ProjectEx projectEx = (ProjectEx) project;
 
-      final boolean forBuildStepFeatureEnabled = ParamUtil.toBooleanOrTrue(project.getParameterValue(ALLOWED_IN_BUILDS_FEATURE_FLAG));
+      final boolean forBuildStepFeatureEnabled = projectEx.getBooleanInternalParameterOrTrue(ALLOWED_IN_BUILDS_FEATURE_FLAG);
       final boolean isForBuildStep = Boolean.parseBoolean(request.getParameter(ALLOWED_IN_BUILDS_REQUEST_PARAM));
       if (forBuildStepFeatureEnabled && isForBuildStep) {
         awsConnections = awsConnections.stream().filter(conn -> {
@@ -88,7 +90,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
         }).collect(Collectors.toList());
       }
 
-      final boolean childProjectsFeatureEnabled = ParamUtil.toBooleanOrTrue(project.getParameterValue(ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG));
+      final boolean childProjectsFeatureEnabled = projectEx.getBooleanInternalParameterOrTrue(ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG);
 
       if (childProjectsFeatureEnabled) {
         awsConnections = awsConnections.stream()

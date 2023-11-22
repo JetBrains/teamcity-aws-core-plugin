@@ -78,7 +78,7 @@ public class InjectAwsCredentialsToTheBuildContextTest {
 
     Map<String, String> buildFeatureProperties = new HashMap<>();
     buildFeatureProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, TEST_AWS_CONNECTION_ID);
-    SRunningBuild runningBuild = Mockito.mock(SRunningBuild.class);
+    SRunningBuild runningBuild = Mockito.mock(SRunningBuild.class, RETURNS_DEEP_STUBS);
     BuildTypeEx buildType = Mockito.mock(BuildTypeEx.class);
     when(mockedBuildStartContext.getBuild()).thenReturn(runningBuild);
     when(runningBuild.getBuildType()).thenReturn(buildType);

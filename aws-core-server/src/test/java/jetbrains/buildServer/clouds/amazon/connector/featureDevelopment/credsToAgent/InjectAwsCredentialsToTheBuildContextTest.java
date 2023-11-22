@@ -25,7 +25,9 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionPro
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.BuildStartContext;
+import jetbrains.buildServer.serverSide.BuildTypeEx;
 import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SRunningBuild;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
@@ -76,8 +78,11 @@ public class InjectAwsCredentialsToTheBuildContextTest {
 
     Map<String, String> buildFeatureProperties = new HashMap<>();
     buildFeatureProperties.put(AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM, TEST_AWS_CONNECTION_ID);
-
-    when(mockedBuildStartContext.getBuild().getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE))
+    SRunningBuild runningBuild = Mockito.mock(SRunningBuild.class);
+    BuildTypeEx buildType = Mockito.mock(BuildTypeEx.class);
+    when(mockedBuildStartContext.getBuild()).thenReturn(runningBuild);
+    when(runningBuild.getBuildType()).thenReturn(buildType);
+    when(runningBuild.getBuildFeaturesOfType(AwsConnBuildFeatureParams.AWS_CONN_TO_ENV_VARS_BUILD_FEATURE_TYPE))
       .thenReturn(
         Collections.singletonList(
           new BuildFeatureDescriptorImpl(

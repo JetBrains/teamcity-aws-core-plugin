@@ -32,7 +32,6 @@
 
 <c:set var="previouslyChosenRegion" value="${(empty propertiesBean.properties[region_name_param]) ? region_name_default : propertiesBean.properties[region_name_param]}"/>
 <c:set var="connectionId" value="${oauthConnectionBean.getConnectionId()}"/>
-<c:set var="connectionDisplayNameProp" value="displayName"/>
 
 <bs:linkScript>
   /js/bs/testConnection.js
@@ -52,9 +51,9 @@
 </tr>
 
 <tr>
-  <th><label for="displayName">Display name:</label><l:star/></th>
+  <th><label for="${display_name_param}">Display name:</label><l:star/></th>
   <td>
-    <props:textProperty name="${connectionDisplayNameProp}" className="longField"/>
+    <props:textProperty name="${display_name_param}" className="longField"/>
     <span class="smallNote nowrap">Provide a name to distinguish this connection from others</span>
     <span class="error" id="error_displayName"></span>
   </td>

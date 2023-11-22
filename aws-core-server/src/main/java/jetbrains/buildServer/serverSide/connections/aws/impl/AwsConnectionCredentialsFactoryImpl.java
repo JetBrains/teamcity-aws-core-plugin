@@ -17,6 +17,7 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.identifiers.IdentifiersUtil;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,10 +51,22 @@ public class AwsConnectionCredentialsFactoryImpl implements AwsConnectionCredent
   @Override
   public ConnectionCredentials requestCredentials(@NotNull SProject project, @NotNull ConnectionDescriptor connectionDescriptor) throws ConnectionCredentialsException {
     if (!project.getProjectId().equals(connectionDescriptor.getProjectId()) && !ParamUtil.isAllowedInSubProjects(connectionDescriptor.getParameters())) {
-      throw new ConnectionCredentialsException("Connection is not allowed to be used in subprojects");
+      throw new ConnectionCredentialsException(getNotAllowedInSubProjectsErrorMessage(connectionDescriptor));
     }
 
     return requestCredentials(connectionDescriptor);
+  }
+
+  private String getNotAllowedInSubProjectsErrorMessage(ConnectionDescriptor connectionDescriptor){
+    final String awsConnectionName = connectionDescriptor.getParameters().get(AwsCloudConnectorConstants.AWS_CONN_DISPLAY_NAME_PARAM);
+    final String errorMessage;
+    if (!StringUtil.isEmpty(awsConnectionName)){
+      errorMessage = String.format("Cannot access the '%s' AWS connection. Check connection settings and ensure it is shared with child subprojects.", awsConnectionName);
+    } else {
+      errorMessage = String.format("Cannot access the AWS connection used in this build. Check connection settings and ensure it is shared with child subprojects.");
+    }
+    
+    return errorMessage;
   }
 
   @NotNull

@@ -32,6 +32,8 @@
 <c:set var="connection_id_param" value="<%=AwsCloudConnectorConstants.USER_DEFINED_ID_PARAM%>"/>
 <c:set var="connection_id_label" value="<%=AwsCloudConnectorConstants.USER_DEFINED_ID_LABEL%>"/>
 
+<c:set var="display_name_param" value="<%=AwsCloudConnectorConstants.AWS_CONN_DISPLAY_NAME_PARAM%>"/>
+
 <c:set var="credentials_type_param" value="<%=AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM%>"/>
 <c:set var="credentials_type_label" value="<%=AwsCloudConnectorConstants.CREDENTIALS_TYPE_LABEL%>"/>
 

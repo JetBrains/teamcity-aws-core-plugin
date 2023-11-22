@@ -1,15 +1,19 @@
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
+import java.util.Collection;
 import java.util.List;
 import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildStartContext;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
+import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SRunningBuild;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
+import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextProcessor {
@@ -25,12 +29,14 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
 
   @Override
   public void updateParameters(@NotNull BuildStartContext context) {
-    if (!AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(context.getBuild()).isEmpty()) {
+    Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(context.getBuild());
+    if (!awsConnectionsToExpose.isEmpty()) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to inject, looking for AWS Connection...", context.getBuild().getBuildId()));
       try {
         List<ConnectionCredentials> linkedAwsConnectionCredentials = myLinkedAwsConnectionProvider.getConnectionCredentialsFromBuild(context.getBuild());
         if (linkedAwsConnectionCredentials.isEmpty()) {
-          finishBuildWithProblem(context, String.format("Build has AWS Connection to inject, but none was added. Enable debug to see more information."));
+          final String errorMessage = getUnavailableConnectionErrorMessage(awsConnectionsToExpose);
+          finishBuildWithProblem(context, errorMessage);
           return;
         }
 
@@ -45,6 +51,19 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         finishBuildWithProblem(context, warningMessage);
       }
     }
+  }
+
+  private static String getUnavailableConnectionErrorMessage(Collection<SBuildFeatureDescriptor> awsConnectionsToExpose) {
+    final SBuildFeatureDescriptor awsConnection = awsConnectionsToExpose.stream().findFirst().get();
+    final String awsConnectionName = awsConnection.getParameters().get(AwsCloudConnectorConstants.AWS_CONN_DISPLAY_NAME_PARAM);
+
+    final String errorMessage;
+    if (!StringUtil.isEmpty(awsConnectionName)){
+      errorMessage = String.format("Cannot access the '%s' AWS connection. Check connection settings and ensure it is shared with child subprojects and/or available for build steps.", awsConnectionName);
+    } else {
+      errorMessage = String.format("Cannot access the AWS connection used in this build. Check connection settings and ensure it is shared with child subprojects and/or available for build steps.");
+    }
+    return errorMessage;
   }
 
   private void finishBuildWithProblem(@NotNull BuildStartContext context, @NotNull String message) {

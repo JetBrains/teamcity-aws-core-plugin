@@ -59,6 +59,7 @@ public final class AwsCloudConnectorConstants {
   public static final String AWS_CONN_ID_REST_PARAM = "awsConnectionId";
   public static final String AVAIL_AWS_CONNECTIONS_SELECT_ID = "availableAwsConnectionsSelect";
   public static final String CHOSEN_AWS_CONN_ID_PARAM = "awsConnectionId";
+  public static final String AWS_CONN_DISPLAY_NAME_PARAM = "displayName";
   public static final String CHOSEN_AWS_CONN_ID_LABEL = "AWS Connection";
 
   public static final String ALLOWED_IN_BUILDS_PARAM = "awsAllowedInBuilds";

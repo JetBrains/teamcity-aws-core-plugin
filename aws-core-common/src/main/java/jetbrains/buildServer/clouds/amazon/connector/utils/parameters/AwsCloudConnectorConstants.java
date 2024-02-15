@@ -74,4 +74,6 @@ public final class AwsCloudConnectorConstants {
 
   public static final String ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForSubProjectsEnabled";
   public static final String ALLOWED_IN_BUILDS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForBuildsEnabled";
+
+  public static final String REACT_UI_ENABLED = "teamcity.internal.aws.connection.reactUiEnabled";
 }

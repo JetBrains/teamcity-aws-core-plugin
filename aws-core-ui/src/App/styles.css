@@ -1,0 +1,40 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ring-font-family);
+  font-size: var(--ring-font-size);
+  background-color: var(--ring-content-background-color, #fff);
+  color: var(--ring-text-color, #1f2326);
+  padding: 0 20px 0 20px;
+}
+
+.formControlButtons {
+  margin-top: 32px;
+}
+
+.credTypesCustom {
+  display: flex;
+  flex-basis: 25%;
+  flex-direction: column;
+}
+
+.commentary {
+  overflow-wrap: break-word;
+  margin-block-start: 0;
+  margin-block-end: 0;
+
+  color: #737577;
+
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.note {
+  display: flex;
+  flex-direction: row;
+  margin-top: 16px;
+}
+
+.dropDownPopup {
+  z-index: 15 !important;
+}

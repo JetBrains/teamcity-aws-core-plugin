@@ -32,6 +32,7 @@ import AwsType from './Components/AwsType';
 import OptionalSectionHeader from './Components/OptionalSectionHeader';
 import SwitchTypeContent from './SwitchTypeContent';
 import ButtonControlPanel from "./Components/ButtonControlPanel";
+import ConnectionAvailabilitySettings from "./Components/ConnectionAvailabilitySettings";
 
 function redirectToDefaultPage(projectId: string) {
   document.location.href = `${utils.resolveRelativeURL(
@@ -147,6 +148,7 @@ export function App({
               <SwitchTypeContent />
               <section>
                 <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
+                <ConnectionAvailabilitySettings />
               </section>
               <ButtonControlPanel onClose={doClose}
                                   genericErrorHandler={genericError}

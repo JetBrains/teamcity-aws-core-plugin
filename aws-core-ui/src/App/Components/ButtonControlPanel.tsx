@@ -22,7 +22,7 @@ import Icon, {Color} from "@jetbrains/ring-ui/components/icon";
 import styles from "../styles.css"
 import {Config, FormFields} from "../../types";
 import {useFormContext} from "react-hook-form";
-import {errorMessage, useErrorService} from "@jetbrains-internal/tcci-react-ui-components";
+import {useErrorService} from "@jetbrains-internal/tcci-react-ui-components";
 import {testAwsConnection} from "../../Utilities/testAwsConnection";
 import okIcon from '@jetbrains/icons/ok';
 import TestAwsConnectionDialog from "./TestAwsConnectionDialog";

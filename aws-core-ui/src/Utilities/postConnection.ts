@@ -1,10 +1,7 @@
 import {FormFields, Config, awsProviderKey, FormFieldsNames} from '../types';
 
 import { post } from './fetchHelper';
-import {Simulate} from "react-dom/test-utils";
-import encrypted = Simulate.encrypted;
 import {encodeSecret} from "./parametersUtil";
-import {useApplicationContext} from "../Contexts/ApplicationContext";
 
 type FormFieldsKey = keyof FormFields;
 

@@ -56,6 +56,8 @@ export enum FormFieldsNames {
   AWS_IAM_ROLE_ARN = 'prop:awsIamRoleArn',
   AWS_CONNECTION_ID = 'prop:awsConnectionId',
   AWS_IAM_ROLE_SESSION_NAME = 'prop:awsIamRoleSessionName',
+  ALLOWED_IN_BUILDS_REQUEST = 'prop:forBuilds',
+  ALLOWED_IN_SUBPROJECTS = 'prop:awsAllowedInSubProjects'
 }
 
 const formFieldsKeys = [
@@ -72,6 +74,8 @@ const formFieldsKeys = [
   FormFieldsNames.AWS_IAM_ROLE_ARN,
   FormFieldsNames.AWS_CONNECTION_ID,
   FormFieldsNames.AWS_IAM_ROLE_SESSION_NAME,
+  FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST,
+  FormFieldsNames.ALLOWED_IN_SUBPROJECTS,
 ];
 
 interface FormFieldsBase {
@@ -88,6 +92,8 @@ interface FormFieldsBase {
   [FormFieldsNames.AWS_IAM_ROLE_ARN]: string;
   [FormFieldsNames.AWS_CONNECTION_ID]: string;
   [FormFieldsNames.AWS_IAM_ROLE_SESSION_NAME]: string;
+  [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: boolean;
+  [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: boolean;
 }
 
 export type FormFields = Partial<FormFieldsBase>;
@@ -102,3 +108,9 @@ export function errorKeyToFieldNameConvertor(key: string): string | null {
 const helpUrlPrefix = (window.BS?.helpUrlPrefix ?? '').replace(/\?$/, '');
 export const resolveHelpURL = (page: string): string =>
   `${helpUrlPrefix}${page}`;
+
+export type AwsConnection = string & {
+  displayName: string;
+  id: string;
+  usingSessionCreds: boolean;
+};

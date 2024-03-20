@@ -38,3 +38,11 @@
 .dropDownPopup {
   z-index: 15 !important;
 }
+
+.awsConnectionButtonPanel {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+}
+

@@ -12,3 +12,10 @@ export function getErrorsFromResponseIfAny(response: Document) {
     return result;
   }
 }
+
+export function parseResponse(response: Document, selector: string) {
+  const result: Element[] = [];
+  response.querySelectorAll(selector).forEach((elem) => result.push(elem));
+
+  return result;
+}

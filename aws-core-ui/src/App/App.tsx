@@ -31,6 +31,7 @@ import AwsRegion from './Components/AwsRegion';
 import AwsType from './Components/AwsType';
 import OptionalSectionHeader from './Components/OptionalSectionHeader';
 import SwitchTypeContent from './SwitchTypeContent';
+import ButtonControlPanel from "./Components/ButtonControlPanel";
 
 function redirectToDefaultPage(projectId: string) {
   document.location.href = `${utils.resolveRelativeURL(
@@ -147,6 +148,7 @@ export function App({
               <section>
                 <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
               </section>
+              <ButtonControlPanel doClose={doClose}/>
             </form>
           </FormProvider>
         </ControlsHeightContext.Provider>

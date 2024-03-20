@@ -20,28 +20,33 @@ import ButtonSet from "@jetbrains/ring-ui/components/button-set/button-set";
 import Button from "@jetbrains/ring-ui/components/button/button";
 import Icon, {Color} from "@jetbrains/ring-ui/components/icon";
 import styles from "../styles.css"
-import {FormFields} from "../../types";
+import {Config, FormFields} from "../../types";
 import {useFormContext} from "react-hook-form";
 import {errorMessage, useErrorService} from "@jetbrains-internal/tcci-react-ui-components";
 import {testAwsConnection} from "../../Utilities/testAwsConnection";
 import okIcon from '@jetbrains/icons/ok';
 import TestAwsConnectionDialog from "./TestAwsConnectionDialog";
+import {toRequestData} from "../../Utilities/postConnection";
 
 
 export default function ButtonControlPanel({
-                                               doClose
+                                               onClose,
+                                               genericErrorHandler,
+                                               config,
                                            }: {
-    doClose: () => void;
+    onClose: () => void;
+    genericErrorHandler: (error: unknown) => void;
+    config: Config
 }) {
 
     const [showSuccessText, setShowSuccessText] = React.useState(false);
     const [testingConnection, setTestingConnection] = React.useState(false);
     const [showErrorDialog, setShowErrorDialog] = React.useState(false);
     const [errorMessages, setErrorMessages] = React.useState('');
-    const { clearAlerts, showErrorAlert } = useErrorService();
+    const {clearAlerts, showErrorAlert} = useErrorService();
 
 
-    const { getValues } = useFormContext<FormFields>();
+    const {getValues} = useFormContext<FormFields>();
 
     const testConnection = React.useCallback(async () => {
         const formData = getValues();
@@ -50,7 +55,7 @@ export default function ButtonControlPanel({
         setShowErrorDialog(false);
         setTestingConnection(true);
         try {
-            const result = await testAwsConnection(formData as {[k: string]:string});
+            const result = await testAwsConnection(toRequestData(config, formData));
 
             if (result.success) {
                 setShowSuccessText(true);
@@ -59,7 +64,7 @@ export default function ButtonControlPanel({
                 setErrorMessages(result.message);
             }
         } catch (e) {
-            showErrorAlert(errorMessage(e));
+            genericErrorHandler(e);
         } finally {
             setTestingConnection(false);
         }
@@ -71,7 +76,7 @@ export default function ButtonControlPanel({
                 <Button primary type='submit'>
                     {'Save'}
                 </Button>
-                <Button onClick={() => doClose()}>{'Cancel'}</Button>
+                <Button onClick={() => onClose()}>{'Cancel'}</Button>
                 <Button loader={testingConnection} onClick={testConnection}>
                     {'Test Connection'}
                 </Button>

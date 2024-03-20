@@ -148,7 +148,9 @@ export function App({
               <section>
                 <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
               </section>
-              <ButtonControlPanel doClose={doClose}/>
+              <ButtonControlPanel onClose={doClose}
+                                  genericErrorHandler={genericError}
+                                  config={config}/>
             </form>
           </FormProvider>
         </ControlsHeightContext.Provider>

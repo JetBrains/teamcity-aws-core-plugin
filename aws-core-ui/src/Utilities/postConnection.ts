@@ -1,6 +1,10 @@
-import { FormFields, Config, awsProviderKey } from '../types';
+import {FormFields, Config, awsProviderKey, FormFieldsNames} from '../types';
 
 import { post } from './fetchHelper';
+import {Simulate} from "react-dom/test-utils";
+import encrypted = Simulate.encrypted;
+import {encodeSecret} from "./parametersUtil";
+import {useApplicationContext} from "../Contexts/ApplicationContext";
 
 type FormFieldsKey = keyof FormFields;
 
@@ -13,6 +17,9 @@ export function toRequestData(config: Config, data: FormFields) {
 
       if (value) {
         switch (key) {
+          case FormFieldsNames.AWS_SECRET_ACCESSKEY:
+            acc[key] = encodeSecret(value.toString(), config.publicKey);
+            break;
           default:
             if (typeof value === 'string') acc[key] = value;
             else if (typeof value === 'boolean') acc[key] = value.toString();

@@ -9,7 +9,7 @@ type TestAwsConnectionResponse = {
   message: string;
 };
 export async function testAwsConnection(formData: {
-  [key: string]: string;
+  [key: string]: string | null;
 }): Promise<TestAwsConnectionResponse> {
   const responseStr = await post(url, formData);
   const response = new DOMParser().parseFromString(responseStr, 'text/xml');

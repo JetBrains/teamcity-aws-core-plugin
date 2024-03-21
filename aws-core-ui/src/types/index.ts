@@ -59,7 +59,7 @@ export enum FormFieldsNames {
   AWS_CONNECTION_ID = 'prop:awsConnectionId',
   AWS_IAM_ROLE_SESSION_NAME = 'prop:awsIamRoleSessionName',
   ALLOWED_IN_BUILDS_REQUEST = 'prop:forBuilds',
-  ALLOWED_IN_SUBPROJECTS = 'prop:awsAllowedInSubProjects'
+  ALLOWED_IN_SUBPROJECTS = 'prop:awsAllowedInSubProjects',
 }
 
 const formFieldsKeys = [

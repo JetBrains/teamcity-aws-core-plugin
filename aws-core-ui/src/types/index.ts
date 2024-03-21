@@ -34,6 +34,7 @@ export interface Config {
   // customization section of the config file
   onClose?: () => void;
   disableTypeSelection?: boolean;
+  id: string;
   afterSubmit?: (
     data: FormFields,
     isError: boolean,
@@ -45,7 +46,8 @@ export interface Config {
 export enum FormFieldsNames {
   PROVIDER_TYPE = '__providerType',
   DISPLAY_NAME = 'prop:displayName',
-  FEATURE_ID = 'prop:id',
+  FEATURE_ID = 'prop:featureId',
+  ID = 'prop:id',
   CONNECTION_ID = 'connectionId',
   AWS_REGION = 'prop:awsRegionName',
   AWS_CREDENTIALS_TYPE = 'prop:awsCredentialsType',
@@ -64,6 +66,7 @@ const formFieldsKeys = [
   FormFieldsNames.PROVIDER_TYPE,
   FormFieldsNames.DISPLAY_NAME,
   FormFieldsNames.FEATURE_ID,
+  FormFieldsNames.ID,
   FormFieldsNames.CONNECTION_ID,
   FormFieldsNames.AWS_REGION,
   FormFieldsNames.AWS_CREDENTIALS_TYPE,
@@ -82,6 +85,7 @@ interface FormFieldsBase {
   [FormFieldsNames.PROVIDER_TYPE]: Option | string;
   [FormFieldsNames.DISPLAY_NAME]: string;
   [FormFieldsNames.FEATURE_ID]: string;
+  [FormFieldsNames.ID]: string;
   [FormFieldsNames.CONNECTION_ID]: string;
   [FormFieldsNames.AWS_REGION]: Option | string;
   [FormFieldsNames.AWS_CREDENTIALS_TYPE]: Option | string;

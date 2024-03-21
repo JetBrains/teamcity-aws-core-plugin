@@ -9,19 +9,18 @@ import {
   ControlsHeight,
   ControlsHeightContext,
 } from '@jetbrains/ring-ui/components/global/controls-height';
-import { FormProvider } from 'react-hook-form';
+import {FormProvider} from 'react-hook-form';
 
 import {
   Config,
   errorKeyToFieldNameConvertor,
-  FormFields,
-  resolveHelpURL,
+  FormFields, FormFieldsNames, resolveHelpURL,
 } from '../types';
 import { SupportedProvidersContextProvider } from '../Contexts/SupportedProvidersContext';
 import postConnection from '../Utilities/postConnection';
 import { getErrorsFromResponseIfAny } from '../Utilities/responseParserUtils';
 import useAwsConnectionForm from '../Hooks/useAwsConnectionForm';
-import { ApplicationContextProvider } from '../Contexts/ApplicationContext';
+import {ApplicationContextProvider, useApplicationContext} from '../Contexts/ApplicationContext';
 
 import styles from './styles.css';
 import { SupportedProviders } from './SupportedProviders';
@@ -101,6 +100,12 @@ export function App({
       let isError = false;
 
       try {
+
+        if (config.connectionId === null || config.connectionId === "") {
+          data[FormFieldsNames.ID] = data[FormFieldsNames.CONNECTION_ID];
+          data[FormFieldsNames.CONNECTION_ID] = undefined;
+        }
+
         const resp = await postConnection(config, data);
         response = new DOMParser().parseFromString(resp, 'text/xml');
         const errors = getErrorsFromResponseIfAny(response);

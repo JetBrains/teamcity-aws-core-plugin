@@ -10,6 +10,7 @@ type ApplicationContextType = {
 
 const ApplicationContext = React.createContext<ApplicationContextType>({
   config: {
+    id: '',
     connectionId: '',
     disableTypeSelection: false,
     projectId: '',

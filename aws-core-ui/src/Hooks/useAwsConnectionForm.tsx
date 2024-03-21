@@ -57,6 +57,7 @@ export default function useAwsConnectionForm(
       [FormFieldsNames.AWS_IAM_ROLE_ARN]: config.iamRoleArn || undefined,
       [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: config.allowedInSubProjectsValue,
       [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: config.allowedInBuildsValue,
+      [FormFieldsNames.ID]: config.id || undefined,
     },
   });
 }

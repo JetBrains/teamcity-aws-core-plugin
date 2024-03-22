@@ -12,7 +12,7 @@ export function toRequestData(config: Config, data: FormFields) {
     (acc, key) => {
       const value = data[key as FormFieldsKey];
 
-      if (value) {
+      if (value !== null && value !== undefined) {
         switch (key) {
           case FormFieldsNames.AWS_SECRET_ACCESSKEY:
             acc[key] = encodeSecret(value.toString(), config.publicKey);
@@ -31,7 +31,6 @@ export function toRequestData(config: Config, data: FormFields) {
     {
       projectId: config.projectId,
       saveConnection: 'save',
-      // connectionId: undefined, // TODO: fix this
       providerType: awsProviderKey,
     }
   );

@@ -39,7 +39,7 @@
 <c:set var="connectionsUrl" value="admin/oauth/connections.html" />
 <c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}" />
 <c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}" />
-<c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}" />
+<c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_request_param]}" />
 <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}" />
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
 <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}" />

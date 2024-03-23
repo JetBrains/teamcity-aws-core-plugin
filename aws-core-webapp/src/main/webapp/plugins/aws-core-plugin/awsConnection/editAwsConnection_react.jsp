@@ -37,12 +37,15 @@
 <c:set var="testConnectionUrl" value="/repo/aws-test-connection.html" />
 <c:set var="supportedProvidersUrl" value="<%=SupportedProvidersController.CONTROLLER_PATH%>" />
 <c:set var="connectionsUrl" value="admin/oauth/connections.html" />
+<c:set var="avail_connections_controller_url" value="${avail_connections_controller_url}" />
+<c:set var="avail_connections_rest_resource_name" value="${avail_connections_rest_resource_name}"/>
 <c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}" />
 <c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}" />
 <c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_request_param]}" />
 <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}" />
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
 <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}" />
+<c:set var="awsConnectionId" value="${propertiesBean.properties[principal_aws_connection_param]}" />
 
 <%--All Regions--%>
 <c:set var="allRegionKeys"
@@ -95,6 +98,9 @@
     testConnectionUrl: "<bs:forJs>${testConnectionUrl}</bs:forJs>",
     allRegions: allRegions,
     isDefaultCredProviderEnabled: "<bs:forJs>${isDefaultCredProviderEnabled}</bs:forJs>" === "true",
+    availableAwsConnectionsControllerResource: "<bs:forJs>${avail_connections_rest_resource_name}</bs:forJs>",
+    availableAwsConnectionsControllerUrl: "<bs:forJs>${avail_connections_controller_url}</bs:forJs>",
+    awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
   };
 
   var loadJS = function(url, implementationCode, location) {

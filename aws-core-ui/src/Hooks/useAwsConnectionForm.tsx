@@ -10,12 +10,15 @@ import {
 import { useSupportedProvidersContext } from '../Contexts/SupportedProvidersContext';
 import { credentialsTypeOptions } from '../App/Components/AwsType';
 import { useRegionOptions } from '../App/Components/AwsRegion';
+import useAwsConnections from "./useAwsConnections";
+import {useMemo} from "react";
 
 export default function useAwsConnectionForm(
   config: Config
 ): UseFormReturn<FormFields> {
   const { providers: supportedProviders } = useSupportedProvidersContext();
   const allRegions = useRegionOptions(config);
+  const { connectionOptions } = useAwsConnections();
 
   const providerType =
     supportedProviders.find((it) => it.key === awsProviderKey) ??
@@ -40,6 +43,18 @@ export default function useAwsConnectionForm(
     ? config.sessionCredentialsEnabled === 'true'
     : true;
 
+  const awsConnectionValue = useMemo(() => {
+    if (connectionOptions) {
+      return connectionOptions.find(
+          ({key}) => key.id === config.awsConnectionId
+      );
+    }
+
+    return undefined;
+  }, [
+    connectionOptions,
+  ]);
+
   return useForm<FormFields>({
     defaultValues: {
       [FormFieldsNames.PROVIDER_TYPE]: providerType,
@@ -58,6 +73,7 @@ export default function useAwsConnectionForm(
       [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: config.allowedInSubProjectsValue,
       [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: config.allowedInBuildsValue,
       [FormFieldsNames.ID]: config.id || undefined,
+      [FormFieldsNames.AWS_CONNECTION_ID]: awsConnectionValue,
     },
   });
 }

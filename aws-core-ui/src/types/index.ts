@@ -9,6 +9,8 @@ export interface Config {
   connectionId: string;
   supportedProvidersUrl: string;
   connectionsUrl: string;
+  availableAwsConnectionsControllerResource: string;
+  availableAwsConnectionsControllerUrl: string;
   displayName: string;
   region: string;
   defaultRegion: string;
@@ -26,6 +28,7 @@ export interface Config {
   publicKey: string;
   featureId: string;
   testConnectionUrl: string;
+  awsConnectionId: string;
   allRegions: {
     allRegionKeys: string;
     allRegionValues: string;
@@ -94,7 +97,7 @@ interface FormFieldsBase {
   [FormFieldsNames.AWS_SESSION_CREDENTIALS]: boolean;
   [FormFieldsNames.AWS_STS_ENDPOINT]: string;
   [FormFieldsNames.AWS_IAM_ROLE_ARN]: string;
-  [FormFieldsNames.AWS_CONNECTION_ID]: string;
+  [FormFieldsNames.AWS_CONNECTION_ID]: Option<AwsConnection>;
   [FormFieldsNames.AWS_IAM_ROLE_SESSION_NAME]: string;
   [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: boolean;
   [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: boolean;

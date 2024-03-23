@@ -8,6 +8,13 @@ type ApplicationContextType = {
   isEditMode: boolean;
 };
 
+//here be dragons:
+//if connection id is empty when the data is received aka config -> it means it's a new connection
+//in this case you'd put new connection id in prop:id field
+//otherwise, it's non-editable and no shenanigans are required
+//awsConnectionId has nothing to do with a new or old connection
+//it's a principal connection for an iam type connection
+
 const ApplicationContext = React.createContext<ApplicationContextType>({
   config: {
     id: '',
@@ -15,6 +22,8 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
     disableTypeSelection: false,
     projectId: '',
     supportedProvidersUrl: '',
+    availableAwsConnectionsControllerResource: '',
+    availableAwsConnectionsControllerUrl: '',
     connectionsUrl: '',
     displayName: '',
     region: '',
@@ -33,6 +42,7 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
     publicKey: '',
     featureId: '',
     testConnectionUrl: '',
+    awsConnectionId: '',
     allRegions: {
       allRegionKeys: '',
       allRegionValues: ''

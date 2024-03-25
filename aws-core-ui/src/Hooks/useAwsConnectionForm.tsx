@@ -10,16 +10,12 @@ import {
 import { useSupportedProvidersContext } from '../Contexts/SupportedProvidersContext';
 import { credentialsTypeOptions } from '../App/Components/AwsType';
 import { useRegionOptions } from '../App/Components/AwsRegion';
-import useAwsConnections from "./useAwsConnections";
-import {useMemo} from "react";
 
 export default function useAwsConnectionForm(
   config: Config
 ): UseFormReturn<FormFields> {
   const { providers: supportedProviders } = useSupportedProvidersContext();
   const allRegions = useRegionOptions(config);
-  const { connectionOptions } = useAwsConnections();
-
   const providerType =
     supportedProviders.find((it) => it.key === awsProviderKey) ??
     awsProviderName;
@@ -43,18 +39,6 @@ export default function useAwsConnectionForm(
     ? config.sessionCredentialsEnabled === 'true'
     : true;
 
-  const awsConnectionValue = useMemo(() => {
-    if (connectionOptions) {
-      return connectionOptions.find(
-          ({key}) => key.id === config.awsConnectionId
-      );
-    }
-
-    return undefined;
-  }, [
-    connectionOptions,
-  ]);
-
   return useForm<FormFields>({
     defaultValues: {
       [FormFieldsNames.PROVIDER_TYPE]: providerType,
@@ -70,10 +54,9 @@ export default function useAwsConnectionForm(
       [FormFieldsNames.AWS_IAM_ROLE_SESSION_NAME]:
         config.iamRoleSessionName || 'TeamCity-session',
       [FormFieldsNames.AWS_IAM_ROLE_ARN]: config.iamRoleArn || undefined,
-      [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: config.allowedInSubProjectsValue,
-      [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: config.allowedInBuildsValue,
+      [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: config.allowedInSubProjectsValue || false,
+      [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: config.allowedInBuildsValue || false,
       [FormFieldsNames.ID]: config.id || undefined,
-      [FormFieldsNames.AWS_CONNECTION_ID]: awsConnectionValue,
     },
   });
 }

@@ -6,15 +6,13 @@ import {
 } from '@jetbrains-internal/tcci-react-ui-components';
 
 import { post } from '../Utilities/fetchHelper';
-import {AwsConnection} from "../types";
 import {useApplicationContext} from "../Contexts/ApplicationContext";
 
 export default function useAwsConnections() {
   const ctx = useApplicationContext();
   const [error, setError] = useState<string | undefined>();
   const [connectionOptions, setConnectionOptions] = useState<
-    Option<AwsConnection>[] | undefined
-  >();
+    Option[] | undefined >();
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAwsConnections = useCallback(async () => {
@@ -32,15 +30,11 @@ export default function useAwsConnections() {
 
     return responseData.reduce((processedValue, dataValue) => {
       processedValue.push({
-        label: dataValue[1],
-        key: {
-          displayName: dataValue[1],
-          id: dataValue[0],
-          usingSessionCreds: dataValue[2] === 'true',
-        } as AwsConnection,
-      });
+        key: dataValue[0],
+        label: dataValue[1]
+        } as Option);
       return processedValue;
-    }, [] as Option<AwsConnection>[]);
+    }, [] as Option[]);
   }, [ctx]);
 
   const reloadConnectionOptions = useCallback(() => {
@@ -55,5 +49,5 @@ export default function useAwsConnections() {
     reloadConnectionOptions();
   }, [reloadConnectionOptions]);
 
-  return { connectionOptions, error, isLoading, reloadConnectionOptions };
+  return { connectionOptions, error, isLoading, reloadConnectionOptions, fetchAwsConnections };
 }

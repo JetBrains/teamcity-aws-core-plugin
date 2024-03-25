@@ -97,7 +97,7 @@ interface FormFieldsBase {
   [FormFieldsNames.AWS_SESSION_CREDENTIALS]: boolean;
   [FormFieldsNames.AWS_STS_ENDPOINT]: string;
   [FormFieldsNames.AWS_IAM_ROLE_ARN]: string;
-  [FormFieldsNames.AWS_CONNECTION_ID]: Option<AwsConnection>;
+  [FormFieldsNames.AWS_CONNECTION_ID]: Option | string;
   [FormFieldsNames.AWS_IAM_ROLE_SESSION_NAME]: string;
   [FormFieldsNames.ALLOWED_IN_BUILDS_REQUEST]: boolean;
   [FormFieldsNames.ALLOWED_IN_SUBPROJECTS]: boolean;

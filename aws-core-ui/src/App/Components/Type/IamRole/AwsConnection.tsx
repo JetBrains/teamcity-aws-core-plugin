@@ -1,7 +1,7 @@
 import {React} from '@jetbrains/teamcity-api';
 import {
     FormRow,
-    FormSelect,
+    FormSelect, Option,
 } from '@jetbrains-internal/tcci-react-ui-components';
 import {useFormContext} from 'react-hook-form';
 import {Size} from '@jetbrains/ring-ui/components/input/input';
@@ -9,14 +9,16 @@ import {Size} from '@jetbrains/ring-ui/components/input/input';
 import appStyles from '../../../styles.css';
 import {FormFields, FormFieldsNames} from '../../../../types';
 import useAwsConnections from "../../../../Hooks/useAwsConnections";
+import {useApplicationContext} from "../../../../Contexts/ApplicationContext";
 
 export default function AwsConnection() {
-    const {control, setError, clearErrors, getValues} = useFormContext<FormFields>();
+    const ctx = useApplicationContext();
+    const {control, setError, clearErrors, getValues, setValue} = useFormContext<FormFields>();
     const {connectionOptions, error, isLoading, reloadConnectionOptions} =
         useAwsConnections();
 
     const [ , setCurrentConnectionId ] = React.useState(
-        getValues(FormFieldsNames.AWS_CONNECTION_ID)?.key?.id
+        (getValues(FormFieldsNames.AWS_CONNECTION_ID) as Option)?.key
     );
 
     const handleSelection = React.useCallback(
@@ -26,6 +28,18 @@ export default function AwsConnection() {
         },
         [clearErrors]
     );
+
+    React.useEffect(() => {
+        if (ctx.config.awsConnectionId && connectionOptions) {
+            const conn = connectionOptions.find(
+                ({key}) => key === ctx.config.awsConnectionId
+            );
+
+            if (conn !== null) {
+                setValue(FormFieldsNames.AWS_CONNECTION_ID, conn);
+            }
+        }
+    }, [connectionOptions])
 
     React.useEffect(() => {
         if (error) {

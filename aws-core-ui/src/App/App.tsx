@@ -20,7 +20,7 @@ import { SupportedProvidersContextProvider } from '../Contexts/SupportedProvider
 import postConnection from '../Utilities/postConnection';
 import { getErrorsFromResponseIfAny } from '../Utilities/responseParserUtils';
 import useAwsConnectionForm from '../Hooks/useAwsConnectionForm';
-import {ApplicationContextProvider, useApplicationContext} from '../Contexts/ApplicationContext';
+import {ApplicationContextProvider} from '../Contexts/ApplicationContext';
 
 import styles from './styles.css';
 import { SupportedProviders } from './SupportedProviders';

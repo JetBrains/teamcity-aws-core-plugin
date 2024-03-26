@@ -1,5 +1,5 @@
 import {FormFields, FormFieldsNames} from "../../types";
-import {FormCheckbox, FormRow, Label} from "@jetbrains-internal/tcci-react-ui-components";
+import {FormCheckbox, Label} from "@jetbrains-internal/tcci-react-ui-components";
 import {useFormContext} from "react-hook-form";
 import {React} from "@jetbrains/teamcity-api";
 

@@ -156,8 +156,7 @@ export function App({
                 <ConnectionAvailabilitySettings />
               </section>
               <ButtonControlPanel onClose={doClose}
-                                  genericErrorHandler={genericError}
-                                  config={config}/>
+                                  genericErrorHandler={genericError} />
             </form>
           </FormProvider>
         </ControlsHeightContext.Provider>

@@ -6,6 +6,7 @@
   background-color: var(--ring-content-background-color, #fff);
   color: var(--ring-text-color, #1f2326);
   padding: 0 20px 0 20px;
+  line-height: 1.5rem;
 }
 
 .formControlButtons {
@@ -60,7 +61,7 @@
 }
 
 .fixDialog {
-  z-index: 100;
+  z-index: 100 !important;
 }
 
 .headerSeparator {

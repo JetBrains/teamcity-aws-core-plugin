@@ -44,5 +44,25 @@
   flex-direction: row;
   gap: 8px;
   align-items: baseline;
+  border-top: 0 !important;
+  padding: 16px 32px 32px 0 !important
 }
 
+.successText {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.successText > p {
+  color: var(--ring-icon-success-color);
+}
+
+.fixDialog {
+  z-index: 100;
+}
+
+.headerSeparator {
+  margin-top: 16px;
+}

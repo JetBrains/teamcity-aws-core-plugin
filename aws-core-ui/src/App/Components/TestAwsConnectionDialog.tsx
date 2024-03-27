@@ -5,6 +5,8 @@ import { Content, Header } from '@jetbrains/ring-ui/components/island/island';
 
 import Loader from '@jetbrains/ring-ui/components/loader/loader';
 
+import styles from '../styles.css';
+
 function TestConnectionContent({
   loading = false,
   success,
@@ -57,6 +59,7 @@ export default function TestAwsConnectionDialog({
       trapFocus
       autoFocusFirst
       showCloseButton
+      className={styles.fixDialog}
     >
       <Header>{'Test Connection'}</Header>
       <Content>

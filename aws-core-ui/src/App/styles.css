@@ -1,0 +1,105 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--ring-font-family);
+  font-size: var(--ring-font-size);
+  background-color: var(--ring-content-background-color, #fff);
+  color: var(--ring-text-color, #1f2326);
+  padding: 0 20px 0 20px;
+}
+
+.App h3 {
+  margin-top: 1rem !important;
+  font-weight: bold;
+}
+
+.App button {
+  font-size: var(--ring-font-size);
+  height: 28px;
+}
+
+.formControlButtons {
+  margin-top: 32px;
+}
+
+.credTypesCustom {
+  display: flex;
+  flex-basis: 25%;
+  flex-direction: column;
+}
+
+.commentary {
+  overflow-wrap: break-word;
+  margin-block-start: 0;
+  margin-block-end: 0;
+
+  color: #737577;
+
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.note {
+  display: flex;
+  align-items: baseline;
+  flex-direction: row;
+  margin-top: 0.25rem;
+}
+
+.dropDownPopup {
+  z-index: 15 !important;
+}
+
+.awsConnectionButtonPanel {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+  border-top: 0 !important;
+  padding: 0.5rem 2rem 1rem 0 !important
+}
+
+.successText {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+  margin: auto;
+  padding-right: 3rem;
+}
+
+.successText > p {
+  color: var(--ring-icon-success-color);
+}
+
+.fixDialog {
+  z-index: 100 !important;
+}
+
+.fixDialog div[data-test='ring-island-content'] {
+  padding: 0 0 1rem 0;
+}
+
+.rowStyle {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rowStyle > div[class*='label'] {
+  flex-basis: 33% !important;
+  text-align: left;
+  font-size: calc(var(--ring-font-size) - 1px);
+}
+
+.rowStyle > span {
+  flex-grow: 1;
+  width: 0;
+  min-width: 0;
+  padding-right: 6px;
+}
+
+.rowStyle > div[class*='fieldRow'] {
+  flex-grow: 1;
+}

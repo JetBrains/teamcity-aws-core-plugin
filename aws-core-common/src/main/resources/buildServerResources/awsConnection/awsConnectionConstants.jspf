@@ -79,3 +79,5 @@
 <c:set var="allowed_in_subprojects_label" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_LABEL %>"/>
 <c:set var="allowed_in_subprojects_note" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_NOTE %>"/>
 <c:set var="allowed_in_subprojects_feature_enabled" value="<%= AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG %>"/>
+
+<c:set var="react_ui_enabled" value="<%= AwsCloudConnectorConstants.REACT_UI_ENABLED %>"/>

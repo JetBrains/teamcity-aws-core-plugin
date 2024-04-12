@@ -1,0 +1,21 @@
+{
+  "extends": "./node_modules/@jetbrains/teamcity-api/plugin.tsconfig.json",
+  "include": [
+    "./src/**/*"
+  ],
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "jsx": "react-jsx",
+    "typeRoots": ["./node_modules/@types", "./src/types"]
+  },
+}

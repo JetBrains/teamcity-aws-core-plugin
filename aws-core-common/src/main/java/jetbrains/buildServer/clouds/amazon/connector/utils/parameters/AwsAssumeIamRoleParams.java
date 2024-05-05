@@ -16,7 +16,7 @@ public final class AwsAssumeIamRoleParams {
 
   public static final String STS_ENDPOINT_FIELD_ID_IAM_ROLE = "stsEndpointFieldIamRole";
 
-  public static final String VALID_ROLE_SESSION_NAME_REGEX = "[\\w+=,.@-]*";
+  public static final String VALID_ROLE_SESSION_NAME_REGEX = "[\\w+=,.@%-]*";
 
   public static final String AVAIL_AWS_CONNS_URL = "../../availableAwsConnections/" + AVAIL_AWS_CONNS_JSP_FILE_NAME;
 

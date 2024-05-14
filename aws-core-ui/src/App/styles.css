@@ -56,7 +56,8 @@
   gap: 8px;
   align-items: baseline;
   border-top: 0 !important;
-  padding: 0.5rem 2rem 1rem 0 !important
+  padding: 0.5rem 2rem 1rem 0 !important;
+  margin-top: 1rem !important;
 }
 
 .successText {
@@ -102,4 +103,49 @@
 
 .rowStyle > div[class*='fieldRow'] {
   flex-grow: 1;
+}
+
+.convertWarningBox {
+  margin-top: 12px;
+  width: 400px;
+  height: 48px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  background: #FAECCD;
+}
+
+.convertWarningBox button {
+  padding: 0;
+  height: 16px;
+}
+
+.convertWarningBox button span > span {
+  color: #0F5B99;
+}
+
+.connectionsDialog div[data-test='ring-island ring-dialog'] {
+  width: 45em;
+}
+
+.connectionsDialog div[data-test='ring-island-header'] {
+  padding-left: 20px;
+}
+
+.iconButtonsSet {
+  display: flex !important;
+  gap: 0;
+}
+
+.iconButtonsSet > button {
+  margin-right: 0 !important;
+  margin-top: 2.25rem !important;
+}
+
+.connectionControlPanel {
+  display: flex;
 }

@@ -17,9 +17,6 @@
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean" />
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request" />
 
-
-<%--<c:set var="" value="" />--%>
-<%--<c:set var="" value="${propertiesBean.properties[]}" />--%>
 <c:set var="isDefaultCredProviderEnabled" value="${intprop:getBoolean(default_creds_provider_prop_name)}" />
 <c:set var="sessionCredentialsEnabled" value="${propertiesBean.properties[use_session_credentials_param]}" />
 <c:set var="featureId" value="${propertiesBean.properties['id']}" />
@@ -34,14 +31,14 @@
 <c:set var="connectionId" value="${oauthConnectionBean.getConnectionId()}" />
 <c:set var="projectId" value="${project.externalId}" />
 <c:set var="displayName" value="${propertiesBean.properties[display_name_param]}" />
-<c:set var="testConnectionUrl" value="/repo/aws-test-connection.html" />
+<c:set var="testConnectionUrl" value="<%=AwsCloudConnectorConstants.TEST_CONNECTION_CONTROLLER_URL%>" />
 <c:set var="supportedProvidersUrl" value="<%=SupportedProvidersController.CONTROLLER_PATH%>" />
-<c:set var="connectionsUrl" value="admin/oauth/connections.html" />
+<c:set var="connectionsUrl" value="<%=AwsCloudConnectorConstants.AWS_CONNECTIONS_URL%>" />
 <c:set var="avail_connections_controller_url" value="${avail_connections_controller_url}" />
 <c:set var="avail_connections_rest_resource_name" value="${avail_connections_rest_resource_name}"/>
 <c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}" />
 <c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}" />
-<c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_request_param]}" />
+<c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}" />
 <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}" />
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
 <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}" />
@@ -112,7 +109,6 @@
 
   const callback = function () {
     renderEditAwsConnection(config);
-    BS.OAuthConnectionDialog.recenterDialog();
   };
 
   loadJS("<bs:forJs>${frontendCode}</bs:forJs>", callback, document.body);

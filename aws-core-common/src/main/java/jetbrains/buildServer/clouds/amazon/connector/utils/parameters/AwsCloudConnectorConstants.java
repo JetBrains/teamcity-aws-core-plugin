@@ -76,4 +76,5 @@ public final class AwsCloudConnectorConstants {
   public static final String ALLOWED_IN_BUILDS_FEATURE_FLAG = "teamcity.internal.aws.connection.allowedForBuildsEnabled";
 
   public static final String REACT_UI_ENABLED = "teamcity.internal.aws.connection.reactUiEnabled";
+  public static final String AWS_CONNECTIONS_URL = "admin/oauth/connections.html";
 }

@@ -1,64 +1,73 @@
 import {React} from '@jetbrains/teamcity-api';
 import {
-    FormSelect, Label, Option,
+    FormSelect, Label,
 } from '@jetbrains-internal/tcci-react-ui-components';
-import {useFormContext} from 'react-hook-form';
+import {UseFormReturn} from 'react-hook-form';
 
 import appStyles from '../../../styles.css';
-import {FormFields, FormFieldsNames} from '../../../../types';
 import useAwsConnections from "../../../../Hooks/useAwsConnections";
-import {useApplicationContext} from "../../../../Contexts/ApplicationContext";
 import styles from '../../../styles.css';
+import {AvailableConnectionsData} from "../../../../types";
 
-export default function AwsConnection() {
-    const ctx = useApplicationContext();
-    const {control, setError, clearErrors, getValues, setValue} = useFormContext<FormFields>();
+export default function AwsConnection(
+    {
+        data,
+        ctx,
+        onConnectionSelected = undefined,
+    }: {
+        data: AvailableConnectionsData,
+        ctx: UseFormReturn,
+        onConnectionSelected?: (connId: string) => void
+    }) {
+
+    const {control, setError, clearErrors, setValue} = ctx;
     const {connectionOptions, error, isLoading, reloadConnectionOptions} =
-        useAwsConnections();
-
-    const [, setCurrentConnectionId] = React.useState(
-        (getValues(FormFieldsNames.AWS_CONNECTION_ID) as Option)?.key
-    );
+        useAwsConnections(data);
 
     const handleSelection = React.useCallback(
         (event: any) => {
-            setCurrentConnectionId(event?.key?.id);
+            const id = event?.key;
+            if (onConnectionSelected) {
+                onConnectionSelected(id);
+            }
             clearErrors();
         },
         [clearErrors]
     );
 
     React.useEffect(() => {
-        if (ctx.config.awsConnectionId && connectionOptions) {
+        if (data.awsConnectionId && connectionOptions) {
             const conn = connectionOptions.find(
-                ({key}) => key === ctx.config.awsConnectionId
+                ({key}) => key === data.awsConnectionId
             );
 
             if (conn) {
-                setValue(FormFieldsNames.AWS_CONNECTION_ID, conn);
+                setValue(data.awsConnectionFormFieldName, conn);
             }
         }
     }, [connectionOptions])
 
     React.useEffect(() => {
         if (error) {
-            setError(FormFieldsNames.AWS_CONNECTION_ID, {
+            setError(data.awsConnectionFormFieldName, {
                 message: error,
                 type: 'custom',
             });
         } else {
-            clearErrors(FormFieldsNames.AWS_CONNECTION_ID);
+            clearErrors(data.awsConnectionFormFieldName);
         }
     }, [clearErrors, error, setError]);
 
+    const style = !!data.awsConnectionsStyle && data.awsConnectionsStyle !== '' ? data.awsConnectionsStyle : styles.rowStyle;
+
     return (
-        <div className={styles.rowStyle}>
+        <div className={style}>
             <Label>
                 {'AWS Connection'}
             </Label>
             <FormSelect
                 control={control}
-                name={FormFieldsNames.AWS_CONNECTION_ID}
+                name={data.awsConnectionFormFieldName}
                 data={connectionOptions}
                 onBeforeOpen={reloadConnectionOptions}
                 onSelect={handleSelection}

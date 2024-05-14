@@ -61,7 +61,7 @@ export enum FormFieldsNames {
   AWS_IAM_ROLE_ARN = 'prop:awsIamRoleArn',
   AWS_CONNECTION_ID = 'prop:awsConnectionId',
   AWS_IAM_ROLE_SESSION_NAME = 'prop:awsIamRoleSessionName',
-  ALLOWED_IN_BUILDS_REQUEST = 'prop:forBuilds',
+  ALLOWED_IN_BUILDS_REQUEST = 'prop:awsAllowedInBuilds',
   ALLOWED_IN_SUBPROJECTS = 'prop:awsAllowedInSubProjects',
 }
 
@@ -116,8 +116,35 @@ const helpUrlPrefix = (window.BS?.helpUrlPrefix ?? '').replace(/\?$/, '');
 export const resolveHelpURL = (page: string): string =>
   `${helpUrlPrefix}${page}`;
 
-export type AwsConnection = string & {
-  displayName: string;
-  id: string;
-  usingSessionCreds: boolean;
-};
+export interface AvailableConnectionsData {
+  awsConnectionId: string | undefined;
+  projectId: string;
+  availableConnectionsResource: string;
+  availableConnectionsControllerUrl: string;
+  awsConnectionFormFieldName: string;
+  awsConnectionsStyle: string | undefined;
+}
+
+export interface AwsConnectionData {
+  key: string;
+  secret: string;
+  allRegionKeys: string;
+  allRegionValues: string;
+  projectId: string;
+  publicKey: string;
+  onSuccess: (connection: Option) => void;
+  defaultProviderChain: boolean;
+  region: string;
+  credentialsType: string;
+  awsAvailableConnectionsResource: string;
+  awsAvailableConnectionsControllerUrl: string;
+  awsConnectionsUrl: string;
+  testConnectionsUrl: string;
+  awsConnectionId: string;
+}
+
+export enum Mode {
+  DEFAULT = 'default',
+  CONVERT = 'convert',
+  EMBEDDED = 'embedded',
+}

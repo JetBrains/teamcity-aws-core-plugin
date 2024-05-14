@@ -5,9 +5,6 @@ declare global {
 
   interface Window {
     BS: {
-      OAuthConnectionDialog: {
-        recenterDialog(): void;
-      };
       helpUrlPrefix?: string;
       Encrypt: {
         encryptData: (value: string, publicKey: string) => string;

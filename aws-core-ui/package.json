@@ -1,13 +1,13 @@
 {
   "name": "@jetbrains-internal/aws-connection-components",
-  "version": "0.1.0",
+  "version": "0.1.45",
   "description": "React UI for AWS Connection configuration",
   "main": "dist/components.js",
   "types": "dist/components.d.ts",
   "author": "andrei.efimov@jetbrains.com",
   "license": "APACHE 2.0",
   "scripts": {
-    "build:ts": "rm -r ./dist && tsc",
+    "build:ts": "rm -rf ./dist && tsc",
     "build:types": "node dts-bundle-script.js",
     "prepub": "yarn build:ts && yarn build:types && yarn build",
     "pub": "yarn publish --registry https://packages.jetbrains.team/npm/p/tc/teamcity-npm/ --auth-type legacy",

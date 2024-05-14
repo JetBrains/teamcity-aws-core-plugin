@@ -14,7 +14,7 @@ import {FormProvider} from 'react-hook-form';
 import {
   Config,
   errorKeyToFieldNameConvertor,
-  FormFields, FormFieldsNames, resolveHelpURL,
+  FormFields, FormFieldsNames, Mode, resolveHelpURL,
 } from '../types';
 import { SupportedProvidersContextProvider } from '../Contexts/SupportedProvidersContext';
 import postConnection from '../Utilities/postConnection';
@@ -44,7 +44,6 @@ export function AppWrapper({ config }: { config: Config }) {
     'div.popupSaveButtonsBlock, div.modalDialogBody > table.runnerFormTable, div.dialogHeader a.closeWindowLink'
   );
   const doClose = React.useCallback(() => {
-    resetContainer();
     redirectToDefaultPage(config.projectId);
   }, [config.projectId, resetContainer]);
 
@@ -64,12 +63,16 @@ export function AppWrapper({ config }: { config: Config }) {
   return <App config={{ ...config, onClose: doClose }} doReset={doReset} />;
 }
 
+const formId = 'AwsConnectionsForm';
+
 export function App({
   config,
   doReset = undefined,
+  mode = Mode.DEFAULT,
 }: {
   config: Config;
   doReset?: (ind: number, label: string) => void;
+  mode?: Mode;
 }) {
   const formMethods = useAwsConnectionForm(config);
   const { handleSubmit, setError } = formMethods;
@@ -100,6 +103,9 @@ export function App({
 
       try {
 
+        //if connectionId is set in config, then connection exists (hence we're not creating a new one)
+        //otherwise put the value from connection id into the id field and nil the connection id field (to be safe)
+        //awsConnectionId value is an entirely different thing, for the IAM connection mode
         if (config.connectionId === null || config.connectionId === "") {
           data[FormFieldsNames.ID] = data[FormFieldsNames.CONNECTION_ID];
           data[FormFieldsNames.CONNECTION_ID] = undefined;
@@ -128,39 +134,48 @@ export function App({
   );
 
   React.useEffect(() => {
-    window.BS.OAuthConnectionDialog.recenterDialog();
+    const dialog = document.getElementById("OAuthConnectionDialog");
+
+    if (dialog) {
+      dialog.style.top = '5%';
+      dialog.style.position = 'fixed';
+    }
   }, []); // fire once
 
+  const providerDisplayed = mode == Mode.DEFAULT;
+
   return (
-    <ApplicationContextProvider config={config}>
-      <SupportedProvidersContextProvider>
-        <ControlsHeightContext.Provider value={ControlsHeight.S}>
-          <FormProvider {...formMethods}>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              autoComplete="off"
-              className={styles.App}
-            >
-              <section className={styles.rowAdjust3}>
-                <SupportedProviders reset={doReset} />
-                <AwsConnectionNote />
-                <AwsDisplayName genericErrorHandler={genericError} />
-                <AwsConnectionId />
-                <AwsRegion />
-                <AwsType />
-              </section>
-              <SwitchTypeContent />
-              <section>
-                <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
-                <ConnectionAvailabilitySettings />
-              </section>
-              <ButtonControlPanel onClose={doClose}
-                                  genericErrorHandler={genericError} />
-            </form>
-          </FormProvider>
-        </ControlsHeightContext.Provider>
-      </SupportedProvidersContextProvider>
-    </ApplicationContextProvider>
+      <ApplicationContextProvider config={config}>
+        <SupportedProvidersContextProvider>
+          <ControlsHeightContext.Provider value={ControlsHeight.S}>
+            <FormProvider {...formMethods}>
+              <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  autoComplete="off"
+                  className={styles.App}
+                  id={formId}
+              >
+                <section>
+                  {providerDisplayed && <SupportedProviders reset={doReset}/>}
+                  <AwsConnectionNote/>
+                  <AwsDisplayName genericErrorHandler={genericError}/>
+                  <AwsConnectionId/>
+                  <AwsRegion/>
+                  <AwsType/>
+                </section>
+                <SwitchTypeContent config={config}/>
+                <section>
+                  <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
+                  <ConnectionAvailabilitySettings/>
+                </section>
+                <ButtonControlPanel onClose={doClose}
+                                    genericErrorHandler={genericError}
+                                    mode={mode}/>
+              </form>
+            </FormProvider>
+          </ControlsHeightContext.Provider>
+        </SupportedProvidersContextProvider>
+      </ApplicationContextProvider>
   );
 }
 

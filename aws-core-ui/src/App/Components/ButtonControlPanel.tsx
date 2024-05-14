@@ -20,7 +20,7 @@ import ButtonSet from "@jetbrains/ring-ui/components/button-set/button-set";
 import Button from "@jetbrains/ring-ui/components/button/button";
 import Icon, {Color} from "@jetbrains/ring-ui/components/icon";
 import styles from "../styles.css"
-import {FormFields} from "../../types";
+import {FormFields, Mode} from "../../types";
 import {useFormContext} from "react-hook-form";
 import {useErrorService} from "@jetbrains-internal/tcci-react-ui-components";
 import {testAwsConnection} from "../../Utilities/testAwsConnection";
@@ -33,9 +33,11 @@ import {useApplicationContext} from "../../Contexts/ApplicationContext";
 export default function ButtonControlPanel({
                                                onClose,
                                                genericErrorHandler,
+                                               mode
                                            }: {
     onClose: () => void;
     genericErrorHandler: (error: unknown) => void;
+    mode: Mode
 }) {
 
     const [showSuccessText, setShowSuccessText] = React.useState(false);
@@ -74,7 +76,7 @@ export default function ButtonControlPanel({
         <Panel className={styles.awsConnectionButtonPanel}>
             <ButtonSet>
                 <Button primary type='submit'>
-                    {ctx.isEditMode ? 'Save' : 'Create'}
+                    {mode == Mode.CONVERT ? 'Convert' : ctx.isEditMode ? 'Save' : 'Create'}
                 </Button>
                 <Button onClick={() => onClose()}>{'Cancel'}</Button>
                 <Button loader={testingConnection} onClick={testConnection}>

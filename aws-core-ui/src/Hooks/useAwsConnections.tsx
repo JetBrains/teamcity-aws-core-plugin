@@ -6,20 +6,19 @@ import {
 } from '@jetbrains-internal/tcci-react-ui-components';
 
 import { post } from '../Utilities/fetchHelper';
-import {useApplicationContext} from "../Contexts/ApplicationContext";
+import {AvailableConnectionsData} from "../types";
 
-export default function useAwsConnections() {
-  const ctx = useApplicationContext();
+export default function useAwsConnections(data: AvailableConnectionsData) {
   const [error, setError] = useState<string | undefined>();
   const [connectionOptions, setConnectionOptions] = useState<
     Option[] | undefined >();
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAwsConnections = useCallback(async () => {
-    const availableAwsConns = ctx.config.availableAwsConnectionsControllerUrl;
+    const availableAwsConns = data.availableConnectionsControllerUrl;
     const parameters = {
-      projectId: ctx.config.projectId,
-      resource: ctx.config.availableAwsConnectionsControllerResource,
+      projectId: data.projectId,
+      resource: data.availableConnectionsResource,
     };
     const queryComponents = new URLSearchParams(parameters).toString();
     const response = await post(
@@ -31,7 +30,7 @@ export default function useAwsConnections() {
     return responseData.map(val => {
       return {key: val[0], label: val[1]} as Option
     });
-  }, [ctx]);
+  }, [data]);
 
   const reloadConnectionOptions = useCallback(() => {
     fetchAwsConnections()

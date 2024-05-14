@@ -2,9 +2,12 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.amazonaws.auth.AWSCredentialsProvider;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
@@ -12,10 +15,18 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAw
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionParameters;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import jetbrains.buildServer.messages.Status;
-import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.BuildRunnerDescriptor;
+import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SBuild;
+import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
+import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.buildLog.MessageAttrs;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
@@ -98,6 +109,13 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
       throw new AwsConnectorException(String.format("Cannot find the linked AWS Connection with id: <%s> in the Project <%s>: ", linkedAwsConnId, project.getExternalId()));
     }
     return awsConnection;
+  }
+
+  @NotNull
+  @Override
+  public AWSCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
+    SProject project = getProjectFromAwsConnectionParameters(awsConnectionParameters);
+    return getAwsCredentialsProvider(project, awsConnectionParameters);
   }
 
   @NotNull
@@ -208,5 +226,35 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
       Status.NORMAL,
       MessageAttrs.fromMessage(DefaultMessagesInfo.createTextMessage(message))
     );
+  }
+
+  @NotNull
+  private AWSCredentialsProvider getAwsCredentialsProvider(@NotNull final SProject project,
+                                                           @NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
+    String connectionId = awsConnectionParameters.getAwsConnectionId();
+
+    ConnectionCredentials connectionCredentials = getConnectionCredentials(project,
+      new HashMap<String, String>(){{
+        put(CHOSEN_AWS_CONN_ID_PARAM, connectionId);
+        put(SESSION_DURATION_PARAM, awsConnectionParameters.getSessionDuration());
+      }});
+
+    if (!(connectionCredentials instanceof AwsConnectionCredentials)) {
+      throw new AwsConnectorException("Invalid linked AWS connection: This connection is not supported, " +
+        "project ID = [" + project.getProjectId() + "], connection ID = [" + connectionId + "]");
+    }
+
+    return ((AwsConnectionCredentials) connectionCredentials).toAWSCredentialsProvider();
+  }
+
+  @NotNull
+  private SProject getProjectFromAwsConnectionParameters(@NotNull AwsConnectionParameters awsConnectionParameters) throws AwsConnectorException {
+    SProject sProject = myProjectManager.findProjectById(awsConnectionParameters.getInternalProjectId());
+
+    if (sProject == null) {
+      throw new AwsConnectorException("Cannot find the Project with ID = [" + awsConnectionParameters.getInternalProjectId() + "]");
+    }
+
+    return sProject;
   }
 }

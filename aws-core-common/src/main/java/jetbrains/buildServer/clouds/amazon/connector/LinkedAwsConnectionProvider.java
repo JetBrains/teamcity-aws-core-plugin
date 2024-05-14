@@ -1,9 +1,16 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
-import jetbrains.buildServer.serverSide.*;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionParameters;
+import jetbrains.buildServer.serverSide.BuildRunnerDescriptor;
+import jetbrains.buildServer.serverSide.SBuild;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -65,4 +72,21 @@ public interface LinkedAwsConnectionProvider {
    */
   @NotNull
   List<ConnectionCredentials> getConnectionCredentialsFromBuild(@NotNull final SBuild build) throws ConnectionCredentialsException;
+
+  /**
+   * Returns {@link AWSCredentialsProvider} by {@link AwsConnectionParameters}. {@link AwsConnectionParameters} should contain
+   * at AWS Connection ID and project ID (external or internal) to establish a connection identity.
+   * @param awsConnectionParameters
+   * Holder containing necessary info to find the connection
+   * @return {@link ConnectionCredentials}
+   * @throws ConnectionCredentialsException
+   * is thrown if required parameters are missing, or otherwise it is impossible to retrieve credentials
+   * @since 2024.07
+   * @see AwsSessionCredentialsParams#SESSION_DURATION_PARAM
+   * @see jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials
+   */
+  @NotNull
+  default AWSCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
+    throw new NotImplementedException();
+  }
 }

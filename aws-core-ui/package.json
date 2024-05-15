@@ -1,6 +1,6 @@
 {
   "name": "@jetbrains-internal/aws-connection-components",
-  "version": "0.1.48",
+  "version": "0.1.49",
   "description": "React UI for AWS Connection configuration",
   "main": "dist/components.js",
   "types": "dist/components.d.ts",
@@ -28,12 +28,12 @@
     "@babel/runtime": "^7.20.13",
     "@hookform/devtools": "^4.3.0",
     "@jetbrains-internal/tcci-react-ui-components": "^0.3.34",
+    "@jetbrains/icons": "^4.2.0",
     "@jetbrains/ring-ui": "^5.0.108",
     "@jetbrains/teamcity-api": "^2022.4.1-v.1",
     "eslint-import-resolver-webpack": "^0.13.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.38.0",
+    "json5": "^2.2.3",
+    "react-hook-form": "^7.43.0",
     "typescript": "^4.9.4"
   },
   "devDependencies": {
@@ -66,6 +66,8 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^2.8.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "stylelint": "^15.0.0",
     "ts-loader": "^9.4.2",
     "webpack": "^5.75.0",

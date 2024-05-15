@@ -33,7 +33,7 @@
     "@jetbrains/teamcity-api": "^2022.4.1-v.1",
     "eslint-import-resolver-webpack": "^0.13.2",
     "json5": "^2.2.3",
-    "react-hook-form": "^7.43.0",
+    "react-hook-form": "^7.43.1",
     "typescript": "^4.9.4"
   },
   "devDependencies": {

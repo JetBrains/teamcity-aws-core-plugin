@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-import styles from "./styles.css";
-import Icon from "@jetbrains/ring-ui/components/icon";
-import Button from "@jetbrains/ring-ui/components/button/button";
-import {React} from "@jetbrains/teamcity-api";
+import Icon from '@jetbrains/ring-ui/components/icon';
+import Button from '@jetbrains/ring-ui/components/button/button';
+import { React } from '@jetbrains/teamcity-api';
 import warningIcon from '@jetbrains/icons/warning';
 
-export function ConversionWarning({handleConversion}: { handleConversion: () => void; }) {
-    return (
-        <div className={styles.convertWarningBox}>
-            <Icon glyph={warningIcon}/>
-            <p className={styles.commentary}>
-                {'We recommend you to'}{' '}
-                <Button text onClick={handleConversion}>
-                    {'Convert to AWS Connection'}
-                </Button>{' '}
-                {
-                    'to follow the best practice. It will take less than 1 minute.'
-                }
-            </p>
-        </div>
+import styles from './styles.css';
 
-    );
+export function ConversionWarning({
+  handleConversion,
+}: {
+  handleConversion: () => void;
+}) {
+  return (
+    <div className={styles.convertWarningBox}>
+      <Icon glyph={warningIcon} />
+      <p className={styles.commentary}>
+        {'We recommend you to'}{' '}
+        <Button text onClick={handleConversion}>
+          {'Convert to AWS Connection'}
+        </Button>{' '}
+        {'to follow the best practice. It will take less than 1 minute.'}
+      </p>
+    </div>
+  );
 }

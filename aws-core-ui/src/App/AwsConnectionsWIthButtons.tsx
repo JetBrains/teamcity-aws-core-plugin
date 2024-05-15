@@ -14,43 +14,57 @@
  * limitations under the License.
  */
 
-import { React } from "@jetbrains/teamcity-api";
-import AwsConnection from "./Components/Type/IamRole/AwsConnection";
-import AwsConnectionsControls from "./AwsConnectionsControls";
-import {UseFormReturn} from "react-hook-form";
-import {AvailableAwsConnectionsData, AwsConnectionData} from "../components";
-import {useState} from "react";
+import { React } from '@jetbrains/teamcity-api';
+
+import { UseFormReturn } from 'react-hook-form';
+
+import { AvailableAwsConnectionsData, AwsConnectionData } from '../components';
+
+import AwsConnection from './Components/Type/IamRole/AwsConnection';
+import AwsConnectionsControls from './AwsConnectionsControls';
+
 import styles from './styles.css';
 
 export default function AwsConnectionsWithButtons({
-                                                      ctx, connectionsData, formFieldName, awsConnectionsStyle = undefined,
-                                                  }: {
-    ctx: UseFormReturn,
-    connectionsData: AwsConnectionData,
-    formFieldName: string,
-    awsConnectionsStyle?: string
+  ctx,
+  connectionsData,
+  formFieldName,
+  awsConnectionsStyle = undefined,
+}: {
+  ctx: UseFormReturn;
+  connectionsData: AwsConnectionData;
+  formFieldName: string;
+  awsConnectionsStyle?: string;
 }) {
+  const [currentConnection, setCurrentConnection] = React.useState(
+    connectionsData.awsConnectionId
+  );
+  const availableConnectionsData = {
+    awsConnectionId: currentConnection,
+    awsConnectionFormFieldName: formFieldName,
+    projectId: connectionsData.projectId,
+    awsConnectionsStyle,
+    availableConnectionsControllerUrl:
+      connectionsData.awsAvailableConnectionsControllerUrl,
+    availableConnectionsResource:
+      connectionsData.awsAvailableConnectionsResource,
+  } as AvailableAwsConnectionsData;
+  const onConnectionSelected = (connectionId: string) =>
+    setCurrentConnection(connectionId);
 
-    const [currentConnection, setCurrentConnection] = useState(connectionsData.awsConnectionId);
-    const availableConnectionsData = {
-        awsConnectionId: currentConnection,
-        awsConnectionFormFieldName: formFieldName,
-        projectId: connectionsData.projectId,
-        awsConnectionsStyle: awsConnectionsStyle,
-        availableConnectionsControllerUrl: connectionsData.awsAvailableConnectionsControllerUrl,
-        availableConnectionsResource: connectionsData.awsAvailableConnectionsResource,
-    } as AvailableAwsConnectionsData;
-    const onConnectionSelected = (connectionId: string) => setCurrentConnection(connectionId);
+  return (
+    <div className={styles.connectionControlPanel}>
+      <AwsConnection
+        data={availableConnectionsData}
+        ctx={ctx}
+        onConnectionSelected={onConnectionSelected}
+      />
 
-    return (
-        <div className={styles.connectionControlPanel}>
-            <AwsConnection data={availableConnectionsData}
-                           ctx={ctx}
-                           onConnectionSelected={onConnectionSelected}/>
-
-            <AwsConnectionsControls currentConnection={currentConnection}
-                                    connectionData={connectionsData}
-                                    onCreated={onConnectionSelected}/>
-        </div>
-    )
+      <AwsConnectionsControls
+        currentConnection={currentConnection}
+        connectionData={connectionsData}
+        onCreated={onConnectionSelected}
+      />
+    </div>
+  );
 }

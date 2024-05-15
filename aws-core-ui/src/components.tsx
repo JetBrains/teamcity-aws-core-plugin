@@ -1,10 +1,16 @@
 import { App } from './App/App';
-import {AvailableConnectionsData, Config, AwsConnectionData, FormFields, FormFieldsNames } from './types';
-import { AwsConnectionsConversionFeature } from "./App/AwsConnectionsConversionFeature";
-import { AwsCredentialsType } from "./App/Components/AwsType";
-import AwsConnection from "./App/Components/Type/IamRole/AwsConnection";
-import useAwsConnections from "./Hooks/useAwsConnections";
-import AwsConnectionsWithButtons from "./App/AwsConnectionsWIthButtons";
+import {
+  AvailableConnectionsData,
+  Config,
+  AwsConnectionData,
+  FormFields,
+  FormFieldsNames,
+} from './types';
+import { AwsConnectionsConversionFeature } from './App/AwsConnectionsConversionFeature';
+import { AwsCredentialsType } from './App/Components/AwsType';
+import AwsConnection from './App/Components/Type/IamRole/AwsConnection';
+import useAwsConnections from './Hooks/useAwsConnections';
+import AwsConnectionsWithButtons from './App/AwsConnectionsWIthButtons';
 
 export {
   App as AwsConnectionComponent,

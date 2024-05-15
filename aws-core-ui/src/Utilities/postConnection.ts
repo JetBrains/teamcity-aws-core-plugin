@@ -1,8 +1,9 @@
-import {FormFields, Config, awsProviderKey, FormFieldsNames} from '../types';
+import { FormFields, Config, awsProviderKey, FormFieldsNames } from '../types';
+
+import { AwsCredentialsType } from '../App/Components/AwsType';
 
 import { post } from './fetchHelper';
-import {encodeSecret} from "./parametersUtil";
-import {AwsCredentialsType} from "../App/Components/AwsType";
+import { encodeSecret } from './parametersUtil';
 
 type FormFieldsKey = keyof FormFields;
 

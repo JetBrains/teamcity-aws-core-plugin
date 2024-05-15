@@ -38,9 +38,9 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
     awsConnectionId: '',
     allRegions: {
       allRegionKeys: '',
-      allRegionValues: ''
+      allRegionValues: '',
     },
-    isDefaultCredProviderEnabled: false
+    isDefaultCredProviderEnabled: false,
   },
   isCreateMode: false,
   isEditMode: false,

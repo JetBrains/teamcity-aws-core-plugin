@@ -14,88 +14,105 @@
  * limitations under the License.
  */
 
-import {React} from "@jetbrains/teamcity-api";
-import ButtonSet from "@jetbrains/ring-ui/components/button-set/button-set";
-import Button from "@jetbrains/ring-ui/components/button/button";
-import styles from './styles.css';
-import {Option, useReadOnlyContext} from "@jetbrains-internal/tcci-react-ui-components";
+import { React } from '@jetbrains/teamcity-api';
+import ButtonSet from '@jetbrains/ring-ui/components/button-set/button-set';
+import Button from '@jetbrains/ring-ui/components/button/button';
+
+import {
+  Option,
+  useReadOnlyContext,
+} from '@jetbrains-internal/tcci-react-ui-components';
 import addIcon from '@jetbrains/icons/add';
 import editIcon from '@jetbrains/icons/pencil';
-import AwsConnectionDialog from "./AwsConnectionDialog";
-import {useState} from "react";
-import {AwsConnectionData, Config, FormFieldsNames, Mode} from "../types";
-import {toConfig} from "../Utilities/parametersUtil";
-import {getConfigForConnection} from "../Utilities/responseParserUtils";
 
-export default function AwsConnectionsControls({currentConnection, connectionData, onCreated}: {
-    currentConnection: string,
-    connectionData: AwsConnectionData,
-    onCreated: (connectionId: string) => void
+import { AwsConnectionData, Config, FormFieldsNames, Mode } from '../types';
+import { toConfig } from '../Utilities/parametersUtil';
+import { getConfigForConnection } from '../Utilities/responseParserUtils';
+
+import AwsConnectionDialog from './AwsConnectionDialog';
+import styles from './styles.css';
+
+export default function AwsConnectionsControls({
+  currentConnection,
+  connectionData,
+  onCreated,
+}: {
+  currentConnection: string;
+  connectionData: AwsConnectionData;
+  onCreated: (connectionId: string) => void;
 }) {
-    const isReadOnly = useReadOnlyContext();
-    const [active, setActive] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [config, setConfig] = useState({} as Config);
+  const isReadOnly = useReadOnlyContext();
+  const [active, setActive] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [config, setConfig] = React.useState({} as Config);
 
-    const deactivateAndReset = () => {
-        setActive(false);
-        setConfig({} as Config);
-    }
+  const deactivateAndReset = () => {
+    setActive(false);
+    setConfig({} as Config);
+  };
 
-    return (
-        <div>
-            <ButtonSet className={styles.iconButtonsSet}>
+  return (
+    <div>
+      <ButtonSet className={styles.iconButtonsSet}>
+        <Button
+          disabled={isReadOnly}
+          icon={addIcon}
+          title={'Create AWS connection'}
+          onClick={() => {
+            setConfig(
+              toConfig(
+                connectionData,
+                () => {
+                  deactivateAndReset();
+                },
+                onCreated
+              )
+            );
+            setActive(true);
+          }}
+          loader={loading}
+        />
 
-                <Button
-                    disabled={isReadOnly}
-                    icon={addIcon}
-                    title={'Create AWS connection'}
-                    onClick={() => {
-                        setConfig(toConfig(
-                            connectionData,
-                            () => {
-                                deactivateAndReset();
-                            },
-                            onCreated));
-                        setActive(true);
-                    }}
-                    loader={loading}
-                />
+        <Button
+          disabled={isReadOnly || !currentConnection}
+          icon={editIcon}
+          title={'Edit AWS connection'}
+          onClick={() => {
+            setLoading(true);
+            getConfigForConnection(connectionData.projectId, currentConnection)
+              .then((c) => {
+                c.onClose = () => {
+                  deactivateAndReset();
+                };
+                c.afterSubmit = (data, isError, _response, _event) => {
+                  if (isError) {
+                    return;
+                  }
 
-                <Button
-                    disabled={isReadOnly || !currentConnection}
-                    icon={editIcon}
-                    title={'Edit AWS connection'}
-                    onClick={() => {
-                        setLoading(true);
-                        getConfigForConnection(connectionData.projectId, currentConnection)
-                            .then(c => {
-                                c.onClose = () => {
-                                    deactivateAndReset();
-                                }
-                                c.afterSubmit = (data, isError, _response, _event) => {
-                                    if (isError) {
-                                        return;
-                                    }
-
-                                    connectionData.onSuccess({key: data[FormFieldsNames.CONNECTION_ID], label: data[FormFieldsNames.DISPLAY_NAME]} as Option);
-                                    deactivateAndReset();
-                                }
-                                setConfig(c);
-                            })
-                            .then(() => setLoading(false))
-                            .then(() => setActive(true))
-                            .catch((err: unknown) => {
-                                console.error("An unexpected error occurred while loading up connection details: " + err);
-                            });
-                    }}
-                    loader={loading}
-                />
-
-            </ButtonSet>
-            <AwsConnectionDialog config={config}
-                                 active={active}
-                                 mode={Mode.EMBEDDED}/>
-        </div>
-    );
+                  connectionData.onSuccess({
+                    key: data[FormFieldsNames.CONNECTION_ID],
+                    label: data[FormFieldsNames.DISPLAY_NAME],
+                  } as Option);
+                  deactivateAndReset();
+                };
+                setConfig(c);
+              })
+              .then(() => setLoading(false))
+              .then(() => setActive(true))
+              .catch((err: unknown) => {
+                console.error(
+                  `An unexpected error occurred while loading up connection details: ${err}`
+                );
+              });
+          }}
+          loader={loading}
+        />
+      </ButtonSet>
+      <AwsConnectionDialog
+        config={config}
+        active={active}
+        mode={Mode.EMBEDDED}
+      />
+    </div>
+  );
 }

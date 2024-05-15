@@ -1,5 +1,8 @@
 import { post } from './fetchHelper';
-import {getErrorsFromResponseIfAny, parseResponse} from './responseParserUtils';
+import {
+  getErrorsFromResponseIfAny,
+  parseResponse,
+} from './responseParserUtils';
 
 const url = '/repo/aws-test-connection.html';
 const BASE_TEST_CONNECTION_PREFIX = 'Running STS get-caller-identity...\n';

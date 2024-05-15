@@ -1,11 +1,12 @@
 import { ResponseErrors } from '@jetbrains-internal/tcci-react-ui-components';
-import {Config} from "../types";
-import {utils} from "@jetbrains/teamcity-api";
+
+import { utils } from '@jetbrains/teamcity-api';
 import json5 from 'json5';
+
+import { Config } from '../types';
 
 const regionsRegex = /const allRegions = (\{.*?});/s;
 const configRegex = /const config = (\{.*?});/s;
-
 
 export function getErrorsFromResponseIfAny(response: Document) {
   const errors = response.querySelectorAll('errors > error');
@@ -27,16 +28,19 @@ export function parseResponse(response: Document, selector: string) {
   return result;
 }
 
-export async function getConfigForConnection(projectId: string, currentConnection: string): Promise<Config> {
+export async function getConfigForConnection(
+  projectId: string,
+  currentConnection: string
+): Promise<Config> {
   const loadHtmlContent = async () => {
     const url = `/admin/oauth/showConnection.html?providerType=AWS&projectId=${projectId}&connectionId=${currentConnection}`;
 
     return await utils.requestText(
-        url,
-        {
-          method: 'POST',
-        },
-        true
+      url,
+      {
+        method: 'POST',
+      },
+      true
     );
   };
 
@@ -57,8 +61,8 @@ function parse(content: string, regex: RegExp): any {
 
     if (match) {
       let preParsed = match[1];
-      preParsed = preParsed.replace(/"false" === "true"/g, "false");
-      preParsed = preParsed.replace(/"true" === "true"/g, "true");
+      preParsed = preParsed.replace(/"false" === "true"/g, 'false');
+      preParsed = preParsed.replace(/"true" === "true"/g, 'true');
       preParsed = preParsed.replace(/allRegions: allRegions,/g, '');
       return json5.parse(preParsed);
     }

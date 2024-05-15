@@ -14,35 +14,40 @@
  * limitations under the License.
  */
 
+import { React } from '@jetbrains/teamcity-api';
 
-import {React} from "@jetbrains/teamcity-api";
-import {ConversionWarning} from "./ConversionWarning";
-import AwsConnectionDialog  from "./AwsConnectionDialog";
-import {AwsConnectionData, Mode} from "../types";
-import {toConfig} from "../Utilities/parametersUtil";
+import { AwsConnectionData, Mode } from '../types';
 
-export function AwsConnectionsConversionFeature({data}: { data: AwsConnectionData }) {
+import { toConfig } from '../Utilities/parametersUtil';
 
-    const [active, setActive] = React.useState(false);
+import { ConversionWarning } from './ConversionWarning';
+import AwsConnectionDialog from './AwsConnectionDialog';
 
-    const handleConversion = () => {
-        setActive(true);
-    };
+export function AwsConnectionsConversionFeature({
+  data,
+}: {
+  data: AwsConnectionData;
+}) {
+  const [active, setActive] = React.useState(false);
 
-    const onClose = () => {
-        setActive(false);
-    }
+  const handleConversion = () => {
+    setActive(true);
+  };
 
-    const config = toConfig(data, onClose);
+  const onClose = () => {
+    setActive(false);
+  };
 
-    return (
-        <>
-            <ConversionWarning handleConversion={handleConversion}/>
-            <AwsConnectionDialog
-                config={config}
-                active={active}
-                mode = {Mode.CONVERT}
-            />
-        </>
-    );
+  const config = toConfig(data, onClose);
+
+  return (
+    <>
+      <ConversionWarning handleConversion={handleConversion} />
+      <AwsConnectionDialog
+        config={config}
+        active={active}
+        mode={Mode.CONVERT}
+      />
+    </>
+  );
 }

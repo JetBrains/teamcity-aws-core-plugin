@@ -1,16 +1,20 @@
-import {FormRow, FormSelect,} from '@jetbrains-internal/tcci-react-ui-components';
-import {React} from '@jetbrains/teamcity-api';
-import {useFormContext} from 'react-hook-form';
+import {
+  FormRow,
+  FormSelect,
+} from '@jetbrains-internal/tcci-react-ui-components';
+import { React } from '@jetbrains/teamcity-api';
+import { useFormContext } from 'react-hook-form';
 
-import {SelectItem} from '@jetbrains/ring-ui/components/select/select';
+import { SelectItem } from '@jetbrains/ring-ui/components/select/select';
 
-import {FormFields, FormFieldsNames} from '../types';
-import {useSupportedProvidersContext} from '../Contexts/SupportedProvidersContext';
+import { Size } from '@jetbrains/ring-ui/components/input/input';
 
-import {useApplicationContext} from '../Contexts/ApplicationContext';
+import { FormFields, FormFieldsNames } from '../types';
+import { useSupportedProvidersContext } from '../Contexts/SupportedProvidersContext';
+
+import { useApplicationContext } from '../Contexts/ApplicationContext';
 
 import styles from './styles.css';
-import {Size} from "@jetbrains/ring-ui/components/input/input";
 
 export function SupportedProviders({
   reset,

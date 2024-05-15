@@ -14,65 +14,71 @@
  * limitations under the License.
  */
 
-import {Config, AwsConnectionData, FormFieldsNames} from "../types";
-import {Option} from "@jetbrains-internal/tcci-react-ui-components";
+import { Option } from '@jetbrains-internal/tcci-react-ui-components';
+
+import { Config, AwsConnectionData, FormFieldsNames } from '../types';
 
 export function encodeSecret(value: string, publicKey: string): string {
-    return window.BS.Encrypt.encryptData(value, publicKey);
+  return window.BS.Encrypt.encryptData(value, publicKey);
 }
 
-export function toConfig(data: AwsConnectionData, onClose: () => void, onCreated?: (connectionId: string) => void): Config {
+export function toConfig(
+  data: AwsConnectionData,
+  onClose: () => void,
+  onCreated?: (connectionId: string) => void
+): Config {
+  return {
+    id: '',
+    connectionId: '',
+    disableTypeSelection: true,
+    projectId: data.projectId,
+    supportedProvidersUrl: '',
+    availableAwsConnectionsControllerResource:
+      data.awsAvailableConnectionsResource,
+    availableAwsConnectionsControllerUrl:
+      data.awsAvailableConnectionsControllerUrl,
+    connectionsUrl: data.awsConnectionsUrl,
+    displayName: '',
+    region: data.region,
+    defaultRegion: '',
+    credentialsType: data.credentialsType,
+    accessKeyId: data.key,
+    secretAccessKey: encodeSecret(data.secret, data.publicKey),
+    sessionCredentialsEnabled: '',
+    stsEndpoint: '',
+    iamRoleArn: '',
+    iamRoleSessionName: '',
+    buildStepsFeatureEnabled: false,
+    subProjectsFeatureEnabled: false,
+    allowedInSubProjectsValue: false,
+    allowedInBuildsValue: false,
+    publicKey: data.publicKey,
+    featureId: '',
+    testConnectionUrl: data.testConnectionsUrl,
+    awsConnectionId: '',
+    allRegions: {
+      allRegionKeys: data.allRegionKeys,
+      allRegionValues: data.allRegionValues,
+    },
+    isDefaultCredProviderEnabled: data.defaultProviderChain,
+    onClose: () => {
+      onClose();
+    },
+    afterSubmit: (formData, isError, _response, _event) => {
+      if (isError) {
+        return;
+      }
 
-    return {
-        id: '',
-        connectionId: '',
-        disableTypeSelection: true,
-        projectId: data.projectId,
-        supportedProvidersUrl: '',
-        availableAwsConnectionsControllerResource: data.awsAvailableConnectionsResource,
-        availableAwsConnectionsControllerUrl: data.awsAvailableConnectionsControllerUrl,
-        connectionsUrl: data.awsConnectionsUrl,
-        displayName: '',
-        region: data.region,
-        defaultRegion: '',
-        credentialsType: data.credentialsType,
-        accessKeyId: data.key,
-        secretAccessKey: encodeSecret(data.secret, data.publicKey),
-        sessionCredentialsEnabled: '',
-        stsEndpoint: '',
-        iamRoleArn: '',
-        iamRoleSessionName: '',
-        buildStepsFeatureEnabled: false,
-        subProjectsFeatureEnabled: false,
-        allowedInSubProjectsValue: false,
-        allowedInBuildsValue: false,
-        publicKey: data.publicKey,
-        featureId: '',
-        testConnectionUrl: data.testConnectionsUrl,
-        awsConnectionId: '',
-        allRegions: {
-            allRegionKeys: data.allRegionKeys,
-            allRegionValues: data.allRegionValues
-        },
-        isDefaultCredProviderEnabled: data.defaultProviderChain,
-        onClose: () => {
-            onClose();
-        },
-        afterSubmit: (formData, isError, _response, _event) => {
-            if (isError) {
-                return;
-            }
+      data.onSuccess({
+        key: formData[FormFieldsNames.ID] as string,
+        label: formData[FormFieldsNames.DISPLAY_NAME],
+      } as Option);
 
-            data.onSuccess({
-                key: formData[FormFieldsNames.ID] as string,
-                label: formData[FormFieldsNames.DISPLAY_NAME]
-            } as Option);
+      if (onCreated) {
+        onCreated(formData[FormFieldsNames.ID] as string);
+      }
 
-            if (onCreated) {
-                onCreated(formData[FormFieldsNames.ID] as string)
-            }
-
-            onClose();
-        },
-    } as Config;
+      onClose();
+    },
+  } as Config;
 }

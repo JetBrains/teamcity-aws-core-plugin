@@ -14,31 +14,37 @@
  * limitations under the License.
  */
 
-import Dialog from "@jetbrains/ring-ui/components/dialog/dialog";
-import styles from "./styles.css";
-import {Header} from "@jetbrains/ring-ui/components/island/island";
-import {App} from "./App";
-import {React} from "@jetbrains/teamcity-api";
-import {Config, Mode} from "../types";
+import Dialog from '@jetbrains/ring-ui/components/dialog/dialog';
 
-export default function AwsConnectionDialog({config, active, mode}: {
-    config: Config,
-    active: boolean,
-    mode: Mode
+import { Header } from '@jetbrains/ring-ui/components/island/island';
+
+import { React } from '@jetbrains/teamcity-api';
+
+import { Config, Mode } from '../types';
+
+import { App } from './App';
+import styles from './styles.css';
+
+export default function AwsConnectionDialog({
+  config,
+  active,
+  mode,
+}: {
+  config: Config;
+  active: boolean;
+  mode: Mode;
 }) {
-    const edit = config.awsConnectionId !== '';
+  const edit = config.awsConnectionId !== '';
 
-    return (
-        <Dialog
-            show={active}
-            trapFocus
-            autoFocusFirst
-            className={styles.connectionsDialog}
-        >
-            <Header> {edit ? 'Edit AWS Connection' : 'Add AWS Connection'} </Header>
-            <App
-                config={config}
-                mode={mode}/>
-        </Dialog>
-    );
+  return (
+    <Dialog
+      show={active}
+      trapFocus
+      autoFocusFirst
+      className={styles.connectionsDialog}
+    >
+      <Header> {edit ? 'Edit AWS Connection' : 'Add AWS Connection'} </Header>
+      <App config={config} mode={mode} />
+    </Dialog>
+  );
 }

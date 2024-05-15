@@ -10,8 +10,7 @@ import {AvailableConnectionsData} from "../types";
 
 export default function useAwsConnections(data: AvailableConnectionsData) {
   const [error, setError] = useState<string | undefined>();
-  const [connectionOptions, setConnectionOptions] = useState<
-    Option[] | undefined >();
+  const [connectionOptions, setConnectionOptions] = useState<Option[] | undefined >();
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAwsConnections = useCallback(async () => {

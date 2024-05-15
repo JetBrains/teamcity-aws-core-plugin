@@ -27,7 +27,7 @@ public final class AwsConnectionParameters {
   private final String myInternalProjectId;
   private final String mySessionDuration;
 
-  public AwsConnectionParameters(@Nullable String awsConnectionId, @Nullable String internalProjectId,
+  private AwsConnectionParameters(@Nullable String awsConnectionId, @Nullable String internalProjectId,
                                  @NotNull String sessionDuration) {
     myAwsConnectionId = awsConnectionId;
     myInternalProjectId = internalProjectId;

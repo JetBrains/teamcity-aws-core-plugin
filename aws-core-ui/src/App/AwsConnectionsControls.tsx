@@ -18,12 +18,12 @@ import {React} from "@jetbrains/teamcity-api";
 import ButtonSet from "@jetbrains/ring-ui/components/button-set/button-set";
 import Button from "@jetbrains/ring-ui/components/button/button";
 import styles from './styles.css';
-import {useReadOnlyContext} from "@jetbrains-internal/tcci-react-ui-components";
+import {Option, useReadOnlyContext} from "@jetbrains-internal/tcci-react-ui-components";
 import addIcon from '@jetbrains/icons/add';
 import editIcon from '@jetbrains/icons/pencil';
 import AwsConnectionDialog from "./AwsConnectionDialog";
 import {useState} from "react";
-import {AwsConnectionData, Config, Mode} from "../types";
+import {AwsConnectionData, Config, FormFieldsNames, Mode} from "../types";
 import {toConfig} from "../Utilities/parametersUtil";
 import {getConfigForConnection} from "../Utilities/responseParserUtils";
 
@@ -37,6 +37,11 @@ export default function AwsConnectionsControls({currentConnection, connectionDat
     const [loading, setLoading] = useState(false);
     const [config, setConfig] = useState({} as Config);
 
+    const deactivateAndReset = () => {
+        setActive(false);
+        setConfig({} as Config);
+    }
+
     return (
         <div>
             <ButtonSet className={styles.iconButtonsSet}>
@@ -49,8 +54,7 @@ export default function AwsConnectionsControls({currentConnection, connectionDat
                         setConfig(toConfig(
                             connectionData,
                             () => {
-                                setActive(false);
-                                setConfig({} as Config);
+                                deactivateAndReset();
                             },
                             onCreated));
                         setActive(true);
@@ -67,13 +71,23 @@ export default function AwsConnectionsControls({currentConnection, connectionDat
                         getConfigForConnection(connectionData.projectId, currentConnection)
                             .then(c => {
                                 c.onClose = () => {
-                                    setActive(false);
-                                    setConfig({} as Config);
+                                    deactivateAndReset();
+                                }
+                                c.afterSubmit = (data, isError, _response, _event) => {
+                                    if (isError) {
+                                        return;
+                                    }
+
+                                    connectionData.onSuccess({key: data[FormFieldsNames.CONNECTION_ID], label: data[FormFieldsNames.DISPLAY_NAME]} as Option);
+                                    deactivateAndReset();
                                 }
                                 setConfig(c);
                             })
                             .then(() => setLoading(false))
-                            .then(() => setActive(true));
+                            .then(() => setActive(true))
+                            .catch((err: unknown) => {
+                                console.error("An unexpected error occurred while loading up connection details: " + err);
+                            });
                     }}
                     loader={loading}
                 />

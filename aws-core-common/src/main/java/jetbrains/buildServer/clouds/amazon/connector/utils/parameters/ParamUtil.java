@@ -10,7 +10,6 @@ import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
-import jetbrains.buildServer.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +36,10 @@ public class ParamUtil {
   public static boolean toBooleanOrTrue(SBuildType buildType, String featureFlag) {
     BuildTypeEx buildTypeEx = (BuildTypeEx) buildType;
     return buildTypeEx.getBooleanInternalParameterOrTrue(featureFlag);
+  }
+
+  public static String getAwsProfileNameOrDefault(@Nullable final String awsProfileName) {
+    return awsProfileName != null ? awsProfileName : "default";
   }
 
   @Deprecated

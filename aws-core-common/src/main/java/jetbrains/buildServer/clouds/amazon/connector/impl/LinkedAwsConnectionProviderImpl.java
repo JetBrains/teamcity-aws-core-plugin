@@ -71,7 +71,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
     Map<String, String> featureParams = featureWithConnectionDescriptor.getParameters();
 
     try {
-      return getConnectionCredentials(project, featureParams);
+      return getAwsConnectionCredentials(project, featureParams);
 
     } catch (ConnectionCredentialsException e) {
       throw new AwsConnectorException(failedMessage + e.getMessage());
@@ -88,7 +88,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
     Map<String, String> parameters = buildRunnerWithChosenConnection.getParameters();
 
     try {
-      return getConnectionCredentials(project, parameters);
+      return getAwsConnectionCredentials(project, parameters);
 
     } catch (ConnectionCredentialsException e) {
       throw new AwsConnectorException(failedMessage + e.getMessage());
@@ -185,28 +185,49 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
     //TODO: TW-75618 Add support for several AWS Connections exposing - add a new property to each ConnectionCredentials with profile information
     for (SBuildFeatureDescriptor awsConnectionBuildFeature : awsConnectionsToInject) {
-      return Collections.singletonList(getConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
+      return Collections.singletonList(getAwsConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
     }
 
     return Collections.emptyList();
   }
 
   @NotNull
-  private ConnectionCredentials getConnectionCredentials(@NotNull final SProject project, @NotNull final Map<String, String> featureProps) throws ConnectionCredentialsException {
+  private AwsConnectionCredentials getAwsConnectionCredentials(@NotNull final SProject project, @NotNull final Map<String, String> featureProps) throws ConnectionCredentialsException {
     validateParamsWithLinkedConnectionId(featureProps);
 
     ConnectionDescriptor linkedAwsConnection = getLinkedConnectionFromParameters(project, featureProps);
 
     String sessionDuration = featureProps.get(SESSION_DURATION_PARAM);
+    Map<String, String> additionalProperties = new HashMap<>();
     if (sessionDuration != null) {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(
+      additionalProperties.put(SESSION_DURATION_PARAM, sessionDuration);
+    }
+
+    ConnectionCredentials connectionCredentials;
+    if (additionalProperties.isEmpty()) {
+      connectionCredentials = myProjectConnectionCredentialsManager.requestConnectionCredentials(
         project,
-        linkedAwsConnection.getId(),
-        Collections.singletonMap(SESSION_DURATION_PARAM, sessionDuration)
+        linkedAwsConnection.getId()
       );
     } else {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(project, linkedAwsConnection.getId());
+      connectionCredentials = myProjectConnectionCredentialsManager.requestConnectionCredentials(
+        project,
+        linkedAwsConnection.getId(),
+        additionalProperties
+      );
     }
+
+    if (!AwsCloudConnectorConstants.CLOUD_TYPE.equals(connectionCredentials.getProviderType())) {
+      throw new AwsConnectorException("Invalid linked AWS connection: This connection is not supported, provider type: " +
+        "project ID = [" + project.getExternalId() + "], connection ID = [" + linkedAwsConnection.getId() + "]");
+    }
+
+    //Add AWS Profile name, also required for multiple AWS Connection injection - TW-75618
+    AwsConnectionCredentials awsConnectionCredentials = new AwsConnectionCredentials(connectionCredentials);
+    awsConnectionCredentials.setAwsProfileName(
+      featureProps.get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM)
+    );
+    return awsConnectionCredentials;
   }
 
   private void validateParamsWithLinkedConnectionId(@NotNull final Map<String, String> featureProperties) throws ConnectionCredentialsException {
@@ -233,18 +254,13 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
                                                            @NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
     String connectionId = awsConnectionParameters.getAwsConnectionId();
 
-    ConnectionCredentials connectionCredentials = getConnectionCredentials(project,
+    AwsConnectionCredentials connectionCredentials = getAwsConnectionCredentials(project,
       new HashMap<String, String>(){{
         put(CHOSEN_AWS_CONN_ID_PARAM, connectionId);
         put(SESSION_DURATION_PARAM, awsConnectionParameters.getSessionDuration());
       }});
 
-    if (!(connectionCredentials instanceof AwsConnectionCredentials)) {
-      throw new AwsConnectorException("Invalid linked AWS connection: This connection is not supported, " +
-        "project ID = [" + project.getProjectId() + "], connection ID = [" + connectionId + "]");
-    }
-
-    return ((AwsConnectionCredentials) connectionCredentials).toAWSCredentialsProvider();
+    return connectionCredentials.toAWSCredentialsProvider();
   }
 
   @NotNull

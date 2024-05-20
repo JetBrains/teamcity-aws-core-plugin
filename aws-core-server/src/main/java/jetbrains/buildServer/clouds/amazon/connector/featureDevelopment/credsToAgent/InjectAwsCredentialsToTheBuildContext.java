@@ -6,6 +6,7 @@ import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildStartContext;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
@@ -43,6 +44,11 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         //TODO: TW-75618 Add support for several AWS Connections exposing
         final ConnectionCredentials firstCredentials = linkedAwsConnectionCredentials.stream().findFirst().get();
         AwsConnectionCredentials credentials = new AwsConnectionCredentials(firstCredentials);
+
+        if(credentials.getAwsProfileName() != null &&
+          !credentials.getAwsProfileName().matches(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_REGEXP)){
+          throw new ConnectionCredentialsException("Invalid AWS profile name, only single word as a name is allowed");
+        }
 
         myAwsCredentialsInjector.injectCredentials(context, credentials);
       } catch (ConnectionCredentialsException e) {

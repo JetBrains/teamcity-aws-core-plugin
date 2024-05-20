@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionParameters;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.*;
 import jetbrains.buildServer.serverSide.BuildTypeEx;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SRunningBuild;
@@ -29,6 +27,7 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionCredentialsConstants.*;
 import static org.assertj.core.api.BDDAssertions.then;
 
 public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
@@ -107,7 +106,7 @@ public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
         @NotNull
         @Override
         public Map<String, String> getProperties() {
-          return new HashMap<>();
+          return getTestAwsConnectionProperties();
         }
 
         @NotNull
@@ -132,6 +131,10 @@ public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
     Mockito.when(connectionDescriptor.getId()).thenReturn(awsConnectionId);
 
     AwsConnectionCredentials connectionCredentials = Mockito.mock(AwsConnectionCredentials.class);
+    Mockito.when(connectionCredentials.getProperties())
+      .thenReturn(getTestAwsConnectionProperties());
+    Mockito.when(connectionCredentials.getProviderType())
+      .thenReturn(AwsCloudConnectorConstants.CLOUD_TYPE);
     Mockito.when(connectionCredentials.toAWSCredentialsProvider()).thenReturn(Mockito.mock(AWSCredentialsProvider.class));
     Mockito.when(myProjectConnectionsManager.findConnectionById(Mockito.any(SProject.class), Mockito.anyString())).thenReturn(connectionDescriptor);
 
@@ -143,5 +146,19 @@ public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
       .build();
 
     Assertions.assertThat(myLinkedAwsConnectionProvider.getAwsCredentialsProvider(awsConnectionParameters)).isNotNull();
+  }
+
+  public static Map<String, String> getTestAwsConnectionProperties() {
+    Map<String, String> properties = new HashMap<>();
+    String TEST_ACCESS_KEY_ID = "TEST_ACCESS_KEY_ID";
+    String TEST_SECRET_ACCESS_KEY = "TEST_SECRET_ACCESS_KEY";
+    String TEST_SESSION_TOKEN = "TEST_SESSION_TOKEN";
+    String TEST_AWS_REGION = "eu-west-1";
+
+    properties.put(ACCESS_KEY_ID, TEST_ACCESS_KEY_ID);
+    properties.put(SECRET_ACCESS_KEY, TEST_SECRET_ACCESS_KEY);
+    properties.put(SESSION_TOKEN, TEST_SESSION_TOKEN);
+    properties.put(REGION, TEST_AWS_REGION);
+    return properties;
   }
 }

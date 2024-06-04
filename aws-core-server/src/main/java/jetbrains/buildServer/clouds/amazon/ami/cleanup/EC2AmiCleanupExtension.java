@@ -3,7 +3,6 @@ package jetbrains.buildServer.clouds.amazon.ami.cleanup;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.*;
-import com.intellij.openapi.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.ami.AmiArtifact;
@@ -31,9 +30,9 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
   public static final String SNAPSHOT_ERROR = "Cannot not delete snapshot '%s' for AMI '%s'";
   public static final String CONNECTION_ERROR = "Cannot find connection with id '%s'";
   public static final String EC2_CLIENT_ERROR = "Cannot use AWS EC2: %s";
+  private static final String BUILD_AMI_INFO_KEY = EC2AmiCleanupExtension.class.getName() + ".BUILD_AMI_INFO";
 
   private final EC2ClientCreator myClientCreator;
-  private volatile Map<Long, List<AmiArtifact>> myBuildAmiInfo;
   private final AwsConnectionsManager myConnectionsManager;
 
   public EC2AmiCleanupExtension(@NotNull AwsConnectionsManager connectionsManager, @NotNull EC2ClientCreator clientCreator) {
@@ -46,13 +45,17 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
     if (!TeamCityProperties.getBoolean(AMI_CLEANUP_FEATURE_ENABLED)) {
       return;
     }
-    myBuildAmiInfo = cleanupContext.getBuilds().stream().map(build -> {
-      final List<AmiArtifact> artifacts = build.getRemoteArtifactsByType(ARTIFACT_TYPE).getArtifacts()
-                                               .stream()
-                                               .map(r -> new AmiArtifact(r.getAttributes()))
-                                               .collect(Collectors.toList());
-      return Pair.create(build.getBuildId(), artifacts);
-    }).collect(Collectors.toMap(p -> p.getFirst(), p -> p.getSecond()));
+    Map<Long, List<AmiArtifact>> buildAmiInfo = new HashMap<Long, List<AmiArtifact>>();
+    if (cleanupContext.getCleanupLevel().isCleanHistoryEntry()) {
+      for (SFinishedBuild build : cleanupContext.getBuilds()) {
+        final List<AmiArtifact> artifacts = build.getRemoteArtifactsByType(ARTIFACT_TYPE).getArtifacts()
+                                                 .stream()
+                                                 .map(r -> new AmiArtifact(r.getAttributes()))
+                                                 .collect(Collectors.toList());
+        buildAmiInfo.put(build.getBuildId(), artifacts);
+      }
+    }
+    cleanupContext.setExtensionData(BUILD_AMI_INFO_KEY, buildAmiInfo);
   }
 
   @Override
@@ -60,10 +63,21 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
     if (!TeamCityProperties.getBoolean(AMI_CLEANUP_FEATURE_ENABLED)) {
       return;
     }
+    if (!cleanupContext.getCleanupLevel().isCleanHistoryEntry()) {
+      return;
+    }
+    //noinspection unchecked
+    Map<Long, List<AmiArtifact>> buildAmiInfo = (Map<Long, List<AmiArtifact>>)cleanupContext.getExtensionData(BUILD_AMI_INFO_KEY);
+    if (buildAmiInfo == null) {
+      throw new IllegalStateException("Extension data should have been initialized during `prepareBuildsData` stage.");
+    }
+    if (buildAmiInfo.isEmpty()) {
+      return;
+    }
     for (SFinishedBuild build : cleanupContext.getBuilds()) {
       final SBuildType buildType = build.getBuildType();
       if (buildType != null) {
-        final List<AmiArtifact> remoteArtifacts = myBuildAmiInfo.get(build.getBuildId());
+        final List<AmiArtifact> remoteArtifacts = buildAmiInfo.get(build.getBuildId());
 
         final HashMap<String, AmazonEC2> clientsCache = new HashMap<>();
 

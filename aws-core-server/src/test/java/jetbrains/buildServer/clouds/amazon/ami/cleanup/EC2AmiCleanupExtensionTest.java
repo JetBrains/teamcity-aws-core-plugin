@@ -4,10 +4,13 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.*;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import jetbrains.buildServer.clouds.amazon.ami.AmiArtifact;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.EC2ClientCreator;
+import jetbrains.buildServer.serverSide.CleanupLevel;
 import jetbrains.buildServer.serverSide.RunningBuildEx;
 import jetbrains.buildServer.serverSide.SFinishedBuild;
 import jetbrains.buildServer.serverSide.cleanup.BuildCleanupContext;
@@ -20,8 +23,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
@@ -58,8 +60,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2AmiCleanupExtension EC2AmiCleanupExtension = new EC2AmiCleanupExtension(connectionsManager, clientCreator);
 
-    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
-    when(cleanupContext.getBuilds()).thenReturn(Collections.singletonList(finishedBuild));
+    final BuildCleanupContext cleanupContext = getContextMock(Collections.singletonList(finishedBuild));
 
     EC2AmiCleanupExtension.prepareBuildsData(cleanupContext);
     EC2AmiCleanupExtension.cleanupBuildsData(cleanupContext);
@@ -86,8 +87,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2AmiCleanupExtension EC2AmiCleanupExtension = new EC2AmiCleanupExtension(connectionsManager, clientCreator);
 
-    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
-    when(cleanupContext.getBuilds()).thenReturn(Collections.singletonList(finishedBuild));
+    final BuildCleanupContext cleanupContext = getContextMock(Collections.singletonList(finishedBuild));
 
     EC2AmiCleanupExtension.prepareBuildsData(cleanupContext);
     EC2AmiCleanupExtension.cleanupBuildsData(cleanupContext);
@@ -118,8 +118,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2AmiCleanupExtension EC2AmiCleanupExtension = new EC2AmiCleanupExtension(connectionsManager, clientCreator);
 
-    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
-    when(cleanupContext.getBuilds()).thenReturn(Collections.singletonList(finishedBuild));
+    final BuildCleanupContext cleanupContext = getContextMock(Collections.singletonList(finishedBuild));
 
     EC2AmiCleanupExtension.prepareBuildsData(cleanupContext);
     EC2AmiCleanupExtension.cleanupBuildsData(cleanupContext);
@@ -156,8 +155,7 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2AmiCleanupExtension EC2AmiCleanupExtension = new EC2AmiCleanupExtension(connectionsManager, clientCreator);
 
-    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
-    when(cleanupContext.getBuilds()).thenReturn(Collections.singletonList(finishedBuild));
+    final BuildCleanupContext cleanupContext = getContextMock(Collections.singletonList(finishedBuild));
 
     EC2AmiCleanupExtension.prepareBuildsData(cleanupContext);
     EC2AmiCleanupExtension.cleanupBuildsData(cleanupContext);
@@ -194,12 +192,29 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2AmiCleanupExtension cleanupExtension = new EC2AmiCleanupExtension(connectionsManager, clientCreator);
 
-    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
-    when(cleanupContext.getBuilds()).thenReturn(Collections.singletonList(finishedBuild));
+    final BuildCleanupContext cleanupContext = getContextMock(Collections.singletonList(finishedBuild));
 
     cleanupExtension.prepareBuildsData(cleanupContext);
     cleanupExtension.cleanupBuildsData(cleanupContext);
 
     Mockito.verify(cleanupContext, times(1)).onBuildCleanupError(any(), any(), any());
+  }
+
+  private BuildCleanupContext getContextMock(List<SFinishedBuild> builds) {
+    final ConcurrentHashMap<String, Object> extensionDataMap = new ConcurrentHashMap<>();
+    final BuildCleanupContext cleanupContext = Mockito.mock(BuildCleanupContext.class);
+    doReturn(CleanupLevel.HISTORY_ENTRY).when(cleanupContext).getCleanupLevel();
+    doReturn(builds).when(cleanupContext).getBuilds();
+    doAnswer(invocation -> {
+      String key = invocation.getArgument(0);
+      return extensionDataMap.get(key);
+    }).when(cleanupContext).getExtensionData(any());
+    doAnswer(invocation -> {
+      String key = invocation.getArgument(0);
+      Object data = invocation.getArgument(1);
+      extensionDataMap.put(key, data);
+      return null;
+    }).when(cleanupContext).setExtensionData(any(), any());
+    return cleanupContext;
   }
 }

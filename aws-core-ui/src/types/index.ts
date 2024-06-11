@@ -112,7 +112,7 @@ export function errorKeyToFieldNameConvertor(key: string): string | null {
   return formFieldsKeys.find((it) => it.endsWith(key)) ?? null;
 }
 
-const helpUrlPrefix = (window.BS?.helpUrlPrefix ?? '').replace(/\?$/, '');
+const helpUrlPrefix = window.BS?.helpUrlPrefix ?? '';
 export const resolveHelpURL = (page: string): string =>
   `${helpUrlPrefix}${page}`;
 

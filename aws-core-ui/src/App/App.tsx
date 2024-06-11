@@ -190,7 +190,7 @@ function AwsConnectionNote() {
         {'Connection that allows TeamCity to store and manage AWS Credentials.'}
       </span>
       <HelpButton
-        href={resolveHelpURL('configuring-connections#AmazonWebServices')}
+        href={resolveHelpURL('?configuring-connections#AmazonWebServices')}
       />
     </div>
   );

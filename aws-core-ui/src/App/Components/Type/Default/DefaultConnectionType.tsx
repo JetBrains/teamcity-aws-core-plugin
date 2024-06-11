@@ -5,7 +5,7 @@ import { resolveHelpURL } from '../../../../types';
 
 import styles from './styles.css';
 
-const docUrl = resolveHelpURL('configuring-connections#AmazonWebServices');
+const docUrl = resolveHelpURL('?configuring-connections#AmazonWebServices');
 export default function DefaultConnectionType() {
   const { config } = useApplicationContext();
 

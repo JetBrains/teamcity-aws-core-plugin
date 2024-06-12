@@ -3,7 +3,6 @@ import { SectionHeader } from '@jetbrains-internal/tcci-react-ui-components';
 
 import { useFormContext } from 'react-hook-form';
 
-import OptionalSectionHeader from '../../OptionalSectionHeader';
 import StsEndpoint from '../StsEndpoint';
 
 import {
@@ -36,7 +35,7 @@ export default function IamRoleConnectionType({ config }: { config: Config }) {
         <RoleArn />
       </section>
       <section>
-        <OptionalSectionHeader>{'Session settings'}</OptionalSectionHeader>
+        <SectionHeader>{'Session settings'}</SectionHeader>
         <SessionTag />
         <StsEndpoint />
       </section>

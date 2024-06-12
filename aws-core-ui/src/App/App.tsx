@@ -11,6 +11,8 @@ import {
 } from '@jetbrains/ring-ui/components/global/controls-height';
 import { FormProvider } from 'react-hook-form';
 
+import { SelectItem } from '@jetbrains/ring-ui/components/select/select';
+
 import {
   Config,
   errorKeyToFieldNameConvertor,
@@ -78,7 +80,7 @@ export function App({
   mode?: Mode;
 }) {
   const formMethods = useAwsConnectionForm(config);
-  const { handleSubmit, setError } = formMethods;
+  const { handleSubmit, setError, setValue } = formMethods;
   const { showErrorsOnForm, showErrorAlert } = useErrorService({
     setError,
     errorKeyToFieldNameConvertor,
@@ -146,6 +148,17 @@ export function App({
 
   const providerDisplayed = mode === Mode.DEFAULT;
 
+  const handleRegionChange = React.useCallback(
+    (selected: SelectItem | null) => {
+      if (selected!) {
+        setValue(
+          FormFieldsNames.AWS_STS_ENDPOINT,
+          `https://sts.${selected?.key}.amazonaws.com`
+        );
+      }
+    },
+    [setValue]
+  );
   return (
     <ApplicationContextProvider config={config}>
       <SupportedProvidersContextProvider>
@@ -162,7 +175,7 @@ export function App({
                 <AwsConnectionNote />
                 <AwsDisplayName genericErrorHandler={genericError} />
                 <AwsConnectionId />
-                <AwsRegion />
+                <AwsRegion onChangeCallback={handleRegionChange} />
                 <AwsType />
               </section>
               <SwitchTypeContent config={config} />

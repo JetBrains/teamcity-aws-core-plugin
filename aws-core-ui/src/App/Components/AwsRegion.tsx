@@ -7,6 +7,10 @@ import {
 
 import { useFormContext } from 'react-hook-form';
 
+import { SyntheticEvent } from 'react';
+
+import { SelectItem } from '@jetbrains/ring-ui/components/select/select';
+
 import { Config, FormFields, FormFieldsNames } from '../../types';
 import { useApplicationContext } from '../../Contexts/ApplicationContext';
 
@@ -14,7 +18,14 @@ import useDefaultSplitter from '../../Hooks/useDefaultSplitter';
 
 import appStyles from '../styles.css';
 
-export default function AwsRegion() {
+export default function AwsRegion({
+  onChangeCallback,
+}: {
+  onChangeCallback: (
+    selected: SelectItem | null,
+    event?: Event | SyntheticEvent
+  ) => void;
+}) {
   const { config } = useApplicationContext();
   const { control } = useFormContext<FormFields>();
   const regionOptions = useRegionOptions(config);
@@ -28,6 +39,9 @@ export default function AwsRegion() {
         details={'Select the region where this connection will be used'}
         data={regionOptions}
         popupClassName={appStyles.dropDownPopup}
+        onSelect={(event, newValue) => {
+          onChangeCallback(event, newValue);
+        }}
       />
     </div>
   );

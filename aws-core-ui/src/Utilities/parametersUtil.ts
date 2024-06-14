@@ -80,5 +80,6 @@ export function toConfig(
 
       onClose();
     },
+    awsConnectionTypesFilter: data.awsConnectionTypesFilter,
   } as Config;
 }

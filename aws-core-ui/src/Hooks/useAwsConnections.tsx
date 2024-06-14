@@ -25,9 +25,13 @@ export default function useAwsConnections(data: AvailableConnectionsData) {
 
     const responseData: Array<string[]> = JSON.parse(response);
 
-    return responseData.map(
-      (val) => ({ key: val[0], label: val[1] } as Option)
-    );
+    return responseData
+      .filter(
+        (val) =>
+          !data.awsConnectionTypesFilter ||
+          data.awsConnectionTypesFilter(val[3])
+      )
+      .map((val) => ({ key: val[0], label: val[1] } as Option));
   }, [data]);
 
   const reloadConnectionOptions = React.useCallback(() => {

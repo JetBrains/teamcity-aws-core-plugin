@@ -44,6 +44,7 @@ export interface Config {
     response?: Document,
     event?: React.BaseSyntheticEvent
   ) => void;
+  awsConnectionTypesFilter?: (type: string) => boolean;
 }
 
 export enum FormFieldsNames {
@@ -123,6 +124,7 @@ export interface AvailableConnectionsData {
   availableConnectionsControllerUrl: string;
   awsConnectionFormFieldName: string;
   awsConnectionsStyle: string | undefined;
+  awsConnectionTypesFilter?: (type: string) => boolean;
 }
 
 export interface AwsConnectionData {
@@ -141,6 +143,7 @@ export interface AwsConnectionData {
   awsConnectionsUrl: string;
   testConnectionsUrl: string;
   awsConnectionId: string;
+  awsConnectionTypesFilter?: (type: string) => boolean;
 }
 
 export enum Mode {

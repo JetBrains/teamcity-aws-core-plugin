@@ -25,6 +25,7 @@ export default function IamRoleConnectionType({ config }: { config: Config }) {
       config.availableAwsConnectionsControllerResource,
     availableConnectionsControllerUrl:
       config.availableAwsConnectionsControllerUrl,
+    awsConnectionTypesFilter: config.awsConnectionTypesFilter,
   } as AvailableConnectionsData;
 
   return (

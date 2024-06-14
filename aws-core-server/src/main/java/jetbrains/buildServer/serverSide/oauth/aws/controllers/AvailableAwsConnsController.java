@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
@@ -56,6 +57,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       props.add(awsConnection.getId());
       props.add(awsConnection.getDisplayName());
       props.add(Boolean.toString(isSessionDurationConfigVisible(awsConnection.getParameters())));
+      props.add(awsConnection.getParameters().get(CREDENTIALS_TYPE_PARAM));
       res.add(props);
     }
     return res;

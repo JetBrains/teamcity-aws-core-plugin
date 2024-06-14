@@ -48,6 +48,7 @@ export default function AwsConnectionsWithButtons({
       connectionsData.awsAvailableConnectionsControllerUrl,
     availableConnectionsResource:
       connectionsData.awsAvailableConnectionsResource,
+    awsConnectionTypesFilter: connectionsData.awsConnectionTypesFilter,
   } as AvailableAwsConnectionsData;
   const onConnectionSelected = (connectionId: string) =>
     setCurrentConnection(connectionId);

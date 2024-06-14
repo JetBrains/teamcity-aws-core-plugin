@@ -211,8 +211,8 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
     List<ConnectionDescriptor> availableAwsConnections = Arrays.asList(mockedAwsConnection1, mockedAwsConnection2);
 
     String expectedResult = Arrays.asList(
-      Arrays.asList(mockedAwsConnection1.getId(), "", "false"),
-      Arrays.asList(mockedAwsConnection2.getId(), "", "true")
+      Arrays.asList(mockedAwsConnection1.getId(), "", "false", DEFAULT_PROVIDER_CREDENTIALS_TYPE),
+      Arrays.asList(mockedAwsConnection2.getId(), "", "true", STATIC_CREDENTIALS_TYPE)
     ).toString();
 
     assertEquals(

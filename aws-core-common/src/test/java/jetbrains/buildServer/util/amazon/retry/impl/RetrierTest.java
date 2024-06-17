@@ -8,12 +8,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-
 import jetbrains.buildServer.BaseTestCase;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.util.amazon.retry.*;
+import jetbrains.buildServer.util.amazon.retry.AmazonRetrier;
+import jetbrains.buildServer.util.retry.AbortRetriesException;
+import jetbrains.buildServer.util.retry.RecoverableException;
+import jetbrains.buildServer.util.retry.Retrier;
+import jetbrains.buildServer.util.retry.RetrierEventListener;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,57 +33,9 @@ public class RetrierTest extends BaseTestCase {
   }
 
   @Test
-  void testNumberOfRetriesIsCorrect() {
-    final CounterListener counter = new CounterListener();
-    try {
-      new RetrierImpl(5)
-        .registerListener(counter)
-        .execute((Callable<Integer>)() -> {
-          throw new DummyRuntimeException("Oops!");
-        });
-    } catch (Exception ignored) {
-    }
-    Assert.assertEquals(counter.getNumberOfFailures(), 6);
-    Assert.assertEquals(counter.getNumberOfRetries(), 5);
-  }
-
-  @Test
-  void testNumberOfRetriesIsWhenAbortingListenerIsRegisteredForExceptionClass() {
-    final CounterListener counter = new CounterListener();
-    try {
-      new RetrierImpl(5)
-        .registerListener(new AbortingListener(RuntimeException.class))
-        .registerListener(counter)
-        .execute((Callable<Integer>)() -> {
-          throw new DummyRuntimeException("Oops!");
-        });
-    } catch (Exception ignored) {
-    }
-    Assert.assertEquals(counter.getNumberOfFailures(), 6);
-    Assert.assertEquals(counter.getNumberOfRetries(), 5);
-  }
-
-  @Test
-  void testInterruptedExceptionKeepsInterruptedStatus() {
-    final CounterListener counter = new CounterListener();
-    BaseTestCase.assertExceptionThrown(() -> {
-      new RetrierImpl(5)
-        .registerListener(new AbortingListener())
-        .registerListener(counter)
-        .execute(() -> {
-          Thread.currentThread().interrupt();
-          throw new InterruptedException();
-        });
-    }, AbortRetriesException.class);
-    Assert.assertTrue(Thread.currentThread().isInterrupted());
-    Assert.assertEquals(counter.getNumberOfFailures(), 1);
-    Assert.assertEquals(counter.getNumberOfRetries(), 0);
-  }
-
-  @Test
   void testDefaultRetrierKeepsInterruptedStatus() {
     BaseTestCase.assertExceptionThrown(() -> {
-      Retrier.defaultRetrier(5, 1000, Loggers.TEST).execute(() -> {
+      AmazonRetrier.defaultAwsRetrier(5, 1000, Loggers.TEST).execute(() -> {
         Thread.currentThread().interrupt();
         throw new InterruptedException();
       });
@@ -90,70 +44,8 @@ public class RetrierTest extends BaseTestCase {
   }
 
   @Test
-  void testNumberOfRetriesIsWhenAbortingListenerIsRegisteredForDifferentClass() {
-    final CounterListener counter = new CounterListener();
-    try {
-      new RetrierImpl(5)
-        .registerListener(new AbortingListener(ClassNotFoundException.class))
-        .registerListener(counter)
-        .execute((Callable<Integer>)() -> {
-          throw new DummyRuntimeException("Oops!");
-        });
-    } catch (Exception ignored) {
-    }
-    Assert.assertEquals(counter.getNumberOfFailures(), 1);
-    Assert.assertEquals(counter.getNumberOfRetries(), 0);
-  }
-
-  @Test
-  void testRuntimeExceptionThrownUnchanged() {
-    final DummyRuntimeException expected = new DummyRuntimeException("Oops!");
-    try {
-      new RetrierImpl(1).execute((Callable<Integer>)() -> {
-        throw expected;
-      });
-    } catch (Exception actual) {
-      Assert.assertEquals(actual, expected);
-    }
-  }
-
-  @Test
-  void testCheckedExceptionThrownAsRuntimeWithSameMessage() {
-    try {
-      new RetrierImpl(2).execute((Callable<Integer>)() -> {
-        throw new DummyCheckedException("Oops!");
-      });
-    } catch (Exception e) {
-      Assert.assertEquals(e.getClass(), RuntimeException.class);
-      Assert.assertEquals(e.getMessage(), "Oops!");
-      Assert.assertEquals(e.getCause().getClass(), DummyCheckedException.class);
-      Assert.assertEquals(e.getCause().getMessage(), "Oops!");
-    }
-    try {
-      new RetrierImpl(2).execute((Callable<Integer>)() -> {
-        throw new DummyCheckedException(null);
-      });
-    } catch (Exception e) {
-      Assert.assertEquals(e.getClass(), RuntimeException.class);
-      Assert.assertNull(e.getMessage());
-      Assert.assertEquals(e.getCause().getClass(), DummyCheckedException.class);
-      Assert.assertNull(e.getCause().getMessage());
-    }
-  }
-
-  @Test
-  void testRetrierReturnsCorrectResultWhenFailedLessTimesThanNumberOfRetries() {
-    final String result = new RetrierImpl(10)
-      .registerListener(myCounterListener)
-      .execute(failingNTimes(1, "expected"));
-    Assert.assertEquals(result, "expected");
-    Assert.assertEquals(myCounterListener.getNumberOfFailures(), 1);
-    Assert.assertEquals(myCounterListener.getNumberOfRetries(), 1);
-  }
-
-  @Test
   void testDefaultRetrierRetriesExpectedExceptions() {
-    final Retrier retrier = Retrier.defaultRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
+    final Retrier retrier = AmazonRetrier.defaultAwsRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
     final AtomicInteger counter = new AtomicInteger();
     retrier.execute(() -> {
       if (counter.getAndIncrement() < 4) {
@@ -171,7 +63,7 @@ public class RetrierTest extends BaseTestCase {
 
   @Test
   void testDefaultRetrierRetriesExpectedExceptionsFromMapper() {
-    final Retrier retrier = Retrier.defaultRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
+    final Retrier retrier = AmazonRetrier.defaultAwsRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
     final AtomicInteger counter = new AtomicInteger();
 
     List<Object> someObjects = Collections.singletonList(new Object());
@@ -196,35 +88,11 @@ public class RetrierTest extends BaseTestCase {
     Assert.assertEquals(myCounterListener.getNumberOfFailures(), 4);
   }
 
-  @SuppressWarnings("SameParameterValue")
-  @NotNull
-  private <T> Callable<T> failingNTimes(final int nTimesToFail, final T retVal) {
-    return () -> {
-      if (myCounterListener.getNumberOfFailures() < nTimesToFail) {
-        throw new DummyRuntimeException("Oops!");
-      } else {
-        return retVal;
-      }
-    };
-  }
-
-  private static final class DummyRuntimeException extends RuntimeException {
-    public DummyRuntimeException(final String message) {
-      super(message);
-    }
-  }
-
-  private static final class DummyCheckedException extends Exception {
-    public DummyCheckedException(@Nullable final String message) {
-      super(message);
-    }
-  }
-
 
   /**
    * @author Dmitrii Bogdanov
    */
-  public static class CounterListener extends AbstractRetrierEventListener implements ExecuteForAborted {
+  public static class CounterListener implements RetrierEventListener {
     private final AtomicInteger myNumberOfRetries = new AtomicInteger();
     private final AtomicInteger myNumberOfFailures = new AtomicInteger(0);
     private final AtomicLong myExecutionTimeMs = new AtomicLong();

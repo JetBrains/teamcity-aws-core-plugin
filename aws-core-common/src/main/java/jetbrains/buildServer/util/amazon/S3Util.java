@@ -24,7 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
-import jetbrains.buildServer.util.amazon.retry.Retrier;
+import jetbrains.buildServer.util.amazon.retry.AmazonRetrier;
+import jetbrains.buildServer.util.retry.Retrier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +65,7 @@ public final class S3Util {
                                                           .build();
     LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
-    final Retrier retrier = Retrier.defaultRetrier(advancedConfiguration.getRetriesNum(), advancedConfiguration.getRetryDelay(), LOG);
+    final Retrier retrier = AmazonRetrier.defaultAwsRetrier(advancedConfiguration.getRetriesNum(), advancedConfiguration.getRetryDelay(), LOG);
 
     try {
       final List<T> transfers = new ArrayList<>(runnable.run(manager));

@@ -12,6 +12,8 @@ import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
+import java.util.HashMap;
+import java.util.Map;
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.clouds.amazon.connector.errors.KeyRotationException;
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.RotateKeyApi;
@@ -27,12 +29,8 @@ import jetbrains.buildServer.serverSide.auth.AuthorityHolder;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.users.SUser;
-import jetbrains.buildServer.util.amazon.retry.impl.DelayListener;
-import jetbrains.buildServer.util.amazon.retry.impl.RetrierImpl;
+import jetbrains.buildServer.util.retry.Retrier;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AwsRotateKeyApi implements RotateKeyApi {
 
@@ -108,8 +106,7 @@ public class AwsRotateKeyApi implements RotateKeyApi {
     GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest()
       .withRequestCredentialsProvider(myNewCredentials);
     try {
-      new RetrierImpl(myRotateTimeoutSec)
-        .registerListener(new DelayListener(1000))
+      Retrier.withRetries(myRotateTimeoutSec, Retrier.DelayStrategy.constantBackOff(1000))
         .execute(() -> mySts.getCallerIdentity(getCallerIdentityRequest));
 
     } catch (RuntimeException e) {

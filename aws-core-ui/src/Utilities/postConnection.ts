@@ -3,7 +3,7 @@ import { FormFields, Config, awsProviderKey, FormFieldsNames } from '../types';
 import { AwsCredentialsType } from '../App/Components/AwsType';
 
 import { post } from './fetchHelper';
-import { encodeSecret } from './parametersUtil';
+import { encodeSecret, PASSWORD_STUB } from './parametersUtil';
 
 type FormFieldsKey = keyof FormFields;
 
@@ -18,10 +18,11 @@ export function toRequestData(config: Config, data: FormFields) {
         switch (key) {
           case FormFieldsNames.AWS_SECRET_ACCESSKEY:
             const val = value.toString();
-            if (/^[\x00-\x7F]*$/.test(val)) {
-              acc[key] = encodeSecret(val, config.publicKey);
-            } else {
+            //haven't changed, just pass what we got earlier back
+            if (val === PASSWORD_STUB) {
               acc[key] = config.secretAccessKey;
+            } else {
+              acc[key] = encodeSecret(val, config.publicKey);
             }
             break;
           default:

@@ -2,6 +2,7 @@ import { React } from '@jetbrains/teamcity-api';
 import {
   FormSelect,
   Label,
+  Option,
 } from '@jetbrains-internal/tcci-react-ui-components';
 import { UseFormReturn } from 'react-hook-form';
 
@@ -41,6 +42,11 @@ export default function AwsConnection({
 
       if (conn) {
         setValue(data.awsConnectionFormFieldName, conn);
+      } else {
+        setValue(data.awsConnectionFormFieldName, {
+          key: '',
+          label: '',
+        } as Option);
       }
     }
   }, [

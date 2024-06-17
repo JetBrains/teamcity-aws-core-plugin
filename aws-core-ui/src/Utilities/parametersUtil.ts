@@ -22,6 +22,8 @@ export function encodeSecret(value: string, publicKey: string): string {
   return window.BS.Encrypt.encryptData(value, publicKey);
 }
 
+export const PASSWORD_STUB = '\u2022'.repeat(40);
+
 export function toConfig(
   data: AwsConnectionData,
   onClose: () => void,

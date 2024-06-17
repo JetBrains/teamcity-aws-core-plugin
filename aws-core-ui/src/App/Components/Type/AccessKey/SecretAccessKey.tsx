@@ -13,6 +13,9 @@ export default function SecretAccessKey() {
 
       <FormInput
         control={control}
+        onFocus={(e: any) => {
+          e.target.select();
+        }}
         type={'password'}
         name={FormFieldsNames.AWS_SECRET_ACCESSKEY}
         details={'AWS account secret access key'}

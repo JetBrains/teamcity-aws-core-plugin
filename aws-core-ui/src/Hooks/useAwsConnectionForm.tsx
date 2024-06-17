@@ -10,6 +10,7 @@ import {
 import { useSupportedProvidersContext } from '../Contexts/SupportedProvidersContext';
 import { credentialsTypeOptions } from '../App/Components/AwsType';
 import { useRegionOptions } from '../App/Components/AwsRegion';
+import { PASSWORD_STUB } from '../Utilities/parametersUtil';
 
 export default function useAwsConnectionForm(
   config: Config
@@ -39,9 +40,7 @@ export default function useAwsConnectionForm(
     ? config.sessionCredentialsEnabled === 'true'
     : true;
 
-  const passPlaceholder = config.secretAccessKey
-    ? '\u2022'.repeat(40)
-    : undefined;
+  const passPlaceholder = config.secretAccessKey ? PASSWORD_STUB : undefined;
 
   return useForm<FormFields>({
     defaultValues: {

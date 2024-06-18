@@ -74,14 +74,16 @@ export default function AwsConnection({
 
   return (
     <div className={style}>
-      <Label>{'AWS Connection'}</Label>
+      <Label>{'Primary AWS Connection'}</Label>
       <FormSelect
         control={control}
         name={data.awsConnectionFormFieldName}
         data={connectionOptions}
         onBeforeOpen={reloadConnectionOptions}
         onSelect={handleSelection}
-        details={' '}
+        details={
+          'IAM role connections require underlying Access Keys connections to operate'
+        }
         popupClassName={styles.dropDownPopup}
         loading={isLoading}
       />

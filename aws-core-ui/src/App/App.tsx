@@ -200,7 +200,7 @@ function AwsConnectionNote() {
   return (
     <div className={styles.note}>
       <span className={styles.commentary}>
-        {'Connection that allows TeamCity to store and manage AWS Credentials.'}
+        {'Connection that allows TeamCity to store and manage AWS Credentials'}
       </span>
       <HelpButton
         href={resolveHelpURL('?configuring-connections#AmazonWebServices')}

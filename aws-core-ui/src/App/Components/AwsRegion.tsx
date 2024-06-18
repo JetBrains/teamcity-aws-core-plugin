@@ -32,7 +32,7 @@ export default function AwsRegion({
 
   return (
     <div className={appStyles.rowStyle}>
-      <Label>{'Aws region'}</Label>
+      <Label>{'AWS region'}</Label>
       <FormSelect
         name={FormFieldsNames.AWS_REGION}
         control={control}

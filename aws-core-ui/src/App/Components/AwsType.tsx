@@ -19,7 +19,7 @@ export enum AwsCredentialsType {
 
 export const credentialsTypeOptions: Option[] = [
   { key: AwsCredentialsType.ACCESS_KEYS, label: 'Access keys' },
-  { key: AwsCredentialsType.IAM_ROLE, label: 'IAM role' },
+  { key: AwsCredentialsType.IAM_ROLE, label: 'IAM Role' },
   {
     key: AwsCredentialsType.DEFAULT_PROVIDER,
     label: 'Default Credential Provider Chain',

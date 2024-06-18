@@ -14,7 +14,7 @@ export default function RoleArn() {
       <FormInput
         control={control}
         name={FormFieldsNames.AWS_IAM_ROLE_ARN}
-        details={'Pre-configured IAM role with necessary permissions'}
+        details={'Pre-configured IAM Role with necessary permissions'}
       />
     </div>
   );

@@ -21,7 +21,7 @@ export default function AwsConnectionId() {
         disabled={!isCreateMode}
         rules={{ required: 'Connection ID is mandatory' }}
         details={
-          'This ID is used in URLs, REST API, HTTP requests to the server and configuration settings in the TeamCity Data Directory.'
+          'This ID is used in URLs, REST API, HTTP requests to the server and configuration settings in the TeamCity Data Directory'
         }
       />
     </div>

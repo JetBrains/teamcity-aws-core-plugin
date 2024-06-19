@@ -24,6 +24,7 @@ import { Config, Mode } from '../types';
 
 import { App } from './App';
 import styles from './styles.css';
+import {ApplicationContextProvider} from "../Contexts/ApplicationContext";
 
 export default function AwsConnectionDialog({
   config,
@@ -44,7 +45,9 @@ export default function AwsConnectionDialog({
       className={styles.connectionsDialog}
     >
       <Header> {edit ? 'Edit AWS Connection' : 'Add AWS Connection'} </Header>
-      <App config={config} mode={mode} />
+      <ApplicationContextProvider config={config} >
+        <App mode={mode} />
+      </ApplicationContextProvider>
     </Dialog>
   );
 }

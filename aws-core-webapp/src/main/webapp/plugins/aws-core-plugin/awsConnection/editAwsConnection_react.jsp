@@ -98,6 +98,7 @@
     availableAwsConnectionsControllerResource: "<bs:forJs>${avail_connections_rest_resource_name}</bs:forJs>",
     availableAwsConnectionsControllerUrl: "<bs:forJs>${avail_connections_controller_url}</bs:forJs>",
     awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
+    rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
   };
 
   const loadJS = function (url, implementationCode, location) {

@@ -7,6 +7,7 @@ import StsEndpoint from '../StsEndpoint';
 import UseSessionCredentials from './UseSessionCredentials';
 import AccessKeyId from './AccessKeyId';
 import SecretAccessKey from './SecretAccessKey';
+import RotateKeysComponent from './RotateKeysComponent';
 
 export default function AccessKeysConnectionType() {
   return (
@@ -15,6 +16,7 @@ export default function AccessKeysConnectionType() {
         <SectionHeader>{'Access keys'}</SectionHeader>
         <AccessKeyId />
         <SecretAccessKey />
+        <RotateKeysComponent />
       </section>
       <section>
         <OptionalSectionHeader>{'Session settings'}</OptionalSectionHeader>

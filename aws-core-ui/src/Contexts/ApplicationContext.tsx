@@ -1,11 +1,14 @@
 import { React } from '@jetbrains/teamcity-api';
 
+import { useState } from 'react';
+
 import { Config } from '../types';
 
 type ApplicationContextType = {
   config: Config;
   isCreateMode: boolean;
   isEditMode: boolean;
+  setConfig: (newConfig: Config) => void;
 };
 
 const ApplicationContext = React.createContext<ApplicationContextType>({
@@ -41,9 +44,11 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
       allRegionValues: '',
     },
     isDefaultCredProviderEnabled: false,
+    rotateKeyControllerUrl: '',
   },
   isCreateMode: false,
   isEditMode: false,
+  setConfig: (_newConfig) => {},
 });
 
 const { Provider } = ApplicationContext;
@@ -55,12 +60,14 @@ function ApplicationContextProvider({
   config: Config;
   children: React.ReactNode;
 }) {
+  const [newConfig, setNewConfig] = useState(config);
   return (
     <Provider
       value={{
-        config,
+        config: newConfig,
         isCreateMode: !config.connectionId,
         isEditMode: !!config.connectionId,
+        setConfig: (newConfig) => setNewConfig(newConfig),
       }}
     >
       {children}

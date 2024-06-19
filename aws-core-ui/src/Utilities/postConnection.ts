@@ -18,7 +18,7 @@ export function toRequestData(config: Config, data: FormFields) {
         switch (key) {
           case FormFieldsNames.AWS_SECRET_ACCESSKEY:
             const val = value.toString();
-            //haven't changed, just pass what we got earlier back
+            //hasn't changed, just pass what we got earlier back
             if (val === PASSWORD_STUB) {
               acc[key] = config.secretAccessKey;
             } else {

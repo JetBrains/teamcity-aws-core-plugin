@@ -25,7 +25,10 @@ import { SupportedProvidersContextProvider } from '../Contexts/SupportedProvider
 import postConnection from '../Utilities/postConnection';
 import { getErrorsFromResponseIfAny } from '../Utilities/responseParserUtils';
 import useAwsConnectionForm from '../Hooks/useAwsConnectionForm';
-import { ApplicationContextProvider } from '../Contexts/ApplicationContext';
+import {
+  ApplicationContextProvider,
+  useApplicationContext,
+} from '../Contexts/ApplicationContext';
 
 import styles from './styles.css';
 import { SupportedProviders } from './SupportedProviders';
@@ -65,20 +68,24 @@ export function AppWrapper({ config }: { config: Config }) {
     [resetContainer]
   );
 
-  return <App config={{ ...config, onClose: doClose }} doReset={doReset} />;
+  const newConf = { ...config, onClose: doClose };
+  return (
+    <ApplicationContextProvider config={newConf}>
+      <App doReset={doReset} />
+    </ApplicationContextProvider>
+  );
 }
 
 const formId = 'AwsConnectionsForm';
 
 export function App({
-  config,
   doReset = undefined,
   mode = Mode.DEFAULT,
 }: {
-  config: Config;
   doReset?: (ind: number, label: string) => void;
   mode?: Mode;
 }) {
+  const { config } = useApplicationContext();
   const formMethods = useAwsConnectionForm(config);
   const { handleSubmit, setError, setValue } = formMethods;
   const { showErrorsOnForm, showErrorAlert } = useErrorService({
@@ -160,39 +167,37 @@ export function App({
     [setValue]
   );
   return (
-    <ApplicationContextProvider config={config}>
-      <SupportedProvidersContextProvider>
-        <ControlsHeightContext.Provider value={ControlsHeight.S}>
-          <FormProvider {...formMethods}>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              autoComplete="off"
-              className={styles.App}
-              id={formId}
-            >
-              <section>
-                {providerDisplayed && <SupportedProviders reset={doReset} />}
-                <AwsConnectionNote />
-                <AwsDisplayName genericErrorHandler={genericError} />
-                <AwsConnectionId />
-                <AwsRegion onChangeCallback={handleRegionChange} />
-                <AwsType />
-              </section>
-              <SwitchTypeContent config={config} />
-              <section>
-                <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
-                <ConnectionAvailabilitySettings />
-              </section>
-              <ButtonControlPanel
-                onClose={doClose}
-                genericErrorHandler={genericError}
-                mode={mode}
-              />
-            </form>
-          </FormProvider>
-        </ControlsHeightContext.Provider>
-      </SupportedProvidersContextProvider>
-    </ApplicationContextProvider>
+    <SupportedProvidersContextProvider>
+      <ControlsHeightContext.Provider value={ControlsHeight.S}>
+        <FormProvider {...formMethods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            autoComplete="off"
+            className={styles.App}
+            id={formId}
+          >
+            <section>
+              {providerDisplayed && <SupportedProviders reset={doReset} />}
+              <AwsConnectionNote />
+              <AwsDisplayName genericErrorHandler={genericError} />
+              <AwsConnectionId />
+              <AwsRegion onChangeCallback={handleRegionChange} />
+              <AwsType />
+            </section>
+            <SwitchTypeContent config={config} />
+            <section>
+              <OptionalSectionHeader>{'Security'}</OptionalSectionHeader>
+              <ConnectionAvailabilitySettings />
+            </section>
+            <ButtonControlPanel
+              onClose={doClose}
+              genericErrorHandler={genericError}
+              mode={mode}
+            />
+          </form>
+        </FormProvider>
+      </ControlsHeightContext.Provider>
+    </SupportedProvidersContextProvider>
   );
 }
 

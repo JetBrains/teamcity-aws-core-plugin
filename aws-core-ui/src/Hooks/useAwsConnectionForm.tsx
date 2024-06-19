@@ -43,7 +43,7 @@ export default function useAwsConnectionForm(
   const passPlaceholder = config.secretAccessKey ? PASSWORD_STUB : undefined;
 
   return useForm<FormFields>({
-    defaultValues: {
+    values: {
       [FormFieldsNames.PROVIDER_TYPE]: providerType,
       [FormFieldsNames.DISPLAY_NAME]: displayNameValue,
       [FormFieldsNames.CONNECTION_ID]: connectionIdValue,

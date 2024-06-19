@@ -149,3 +149,22 @@
 .connectionControlPanel {
   display: flex;
 }
+
+.rotateKeyMessage {
+  max-width: 67%;
+}
+
+.error {
+  color: var(--ring-icon-error-color);
+}
+
+.successSimple {
+  padding-top: 3px;
+  display: flex;
+  padding-right: 208px;
+  color: var(--ring-icon-success-color);
+}
+
+.successIcon {
+  padding-right: 0.5rem;
+}

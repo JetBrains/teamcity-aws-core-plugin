@@ -45,6 +45,7 @@ export interface Config {
     event?: React.BaseSyntheticEvent
   ) => void;
   awsConnectionTypesFilter?: (type: string) => boolean;
+  rotateKeyControllerUrl: string;
 }
 
 export enum FormFieldsNames {

@@ -45,7 +45,7 @@ export function toConfig(
     defaultRegion: '',
     credentialsType: data.credentialsType,
     accessKeyId: data.key,
-    secretAccessKey: encodeSecret(data.secret, data.publicKey),
+    secretAccessKey: data.secret,
     sessionCredentialsEnabled: '',
     stsEndpoint: '',
     iamRoleArn: '',

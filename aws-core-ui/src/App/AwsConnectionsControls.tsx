@@ -81,6 +81,7 @@ export default function AwsConnectionsControls({
             setLoading(true);
             getConfigForConnection(connectionData.projectId, currentConnection)
               .then((c) => {
+                c.awsConnectionTypesFilter = connectionData.awsConnectionTypesFilter;
                 c.onClose = () => {
                   deactivateAndReset();
                 };

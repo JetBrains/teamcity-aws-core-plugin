@@ -14,6 +14,7 @@ import {
 import SessionTag from './SessionTag';
 import RoleArn from './RoleArn';
 import AwsConnection from './AwsConnection';
+import ExternalID from './ExternalID';
 
 export default function IamRoleConnectionType({ config }: { config: Config }) {
   const ctx = useFormContext();
@@ -34,6 +35,7 @@ export default function IamRoleConnectionType({ config }: { config: Config }) {
         <SectionHeader>{'IAM role'}</SectionHeader>
         <AwsConnection data={data} ctx={ctx} />
         <RoleArn />
+        {data.awsConnectionId && <ExternalID config={config} />}
       </section>
       <section>
         <SectionHeader>{'Session settings'}</SectionHeader>

@@ -20,6 +20,8 @@ export interface Config {
   sessionCredentialsEnabled: string;
   stsEndpoint: string;
   iamRoleArn: string;
+  externalIdsControllerUrl: string;
+  externalIdsConnectionParam: string;
   iamRoleSessionName: string;
   buildStepsFeatureEnabled: boolean;
   subProjectsFeatureEnabled: boolean;
@@ -61,6 +63,7 @@ export enum FormFieldsNames {
   AWS_SESSION_CREDENTIALS = 'prop:awsSessionCredentials',
   AWS_STS_ENDPOINT = 'prop:awsStsEndpoint',
   AWS_IAM_ROLE_ARN = 'prop:awsIamRoleArn',
+  AWS_IAM_ROLE_EXTERNAL_ID = 'awsIamRoleExternalId',
   AWS_CONNECTION_ID = 'prop:awsConnectionId',
   AWS_IAM_ROLE_SESSION_NAME = 'prop:awsIamRoleSessionName',
   ALLOWED_IN_BUILDS_REQUEST = 'prop:awsAllowedInBuilds',

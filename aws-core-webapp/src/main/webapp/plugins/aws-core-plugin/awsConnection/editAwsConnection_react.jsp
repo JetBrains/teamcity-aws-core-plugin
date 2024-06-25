@@ -34,8 +34,10 @@
 <c:set var="testConnectionUrl" value="<%=AwsCloudConnectorConstants.TEST_CONNECTION_CONTROLLER_URL%>" />
 <c:set var="supportedProvidersUrl" value="<%=SupportedProvidersController.CONTROLLER_PATH%>" />
 <c:set var="connectionsUrl" value="<%=AwsCloudConnectorConstants.AWS_CONNECTIONS_URL%>" />
+<c:set var="externalIdsUrl" value="<%=AwsAssumeIamRoleParams.EXTERNAL_IDS_CONTROLLER_URL%>"/>
 <c:set var="avail_connections_controller_url" value="${avail_connections_controller_url}" />
 <c:set var="avail_connections_rest_resource_name" value="${avail_connections_rest_resource_name}"/>
+<c:set var="awsConnIdRestParamForExternalIds" value="${aws_conn_id_rest_param}"/>
 <c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}" />
 <c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}" />
 <c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}" />
@@ -97,6 +99,8 @@
     isDefaultCredProviderEnabled: "<bs:forJs>${isDefaultCredProviderEnabled}</bs:forJs>" === "true",
     availableAwsConnectionsControllerResource: "<bs:forJs>${avail_connections_rest_resource_name}</bs:forJs>",
     availableAwsConnectionsControllerUrl: "<bs:forJs>${avail_connections_controller_url}</bs:forJs>",
+    externalIdsControllerUrl: "<bs:forJs>${externalIdsUrl}</bs:forJs>",
+    externalIdsConnectionParam: "<bs:forJs>${awsConnIdRestParamForExternalIds}</bs:forJs>",
     awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
     rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
   };

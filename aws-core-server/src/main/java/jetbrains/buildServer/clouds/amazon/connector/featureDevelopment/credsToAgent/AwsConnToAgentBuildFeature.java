@@ -7,6 +7,7 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAw
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,10 +81,14 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
       featureDescriptionBuilder.append("\"");
     }
     featureDescriptionBuilder.append(" to the build");
+
     String sessionDurationParam = params.get(SESSION_DURATION_PARAM);
     if (sessionDurationParam != null && ParamUtil.isValidSessionDuration(sessionDurationParam)) {
       featureDescriptionBuilder.append(String.format(", credentials will be valid for %s minutes", sessionDurationParam));
     }
+
+    String awsProfileName = params.get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM);
+    featureDescriptionBuilder.append(String.format(", with [%s] AWS Profile Name", StringUtil.notEmpty(awsProfileName, "default")));
 
     return featureDescriptionBuilder.toString();
   }

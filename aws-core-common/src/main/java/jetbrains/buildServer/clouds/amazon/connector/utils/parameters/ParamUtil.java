@@ -10,7 +10,6 @@ import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
-import jetbrains.buildServer.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import static com.intellij.openapi.util.text.StringUtil.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME;
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams.AWS_PROFILE_NAME_REGEXP;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.*;
 
 public class ParamUtil {
@@ -37,6 +37,17 @@ public class ParamUtil {
   public static boolean toBooleanOrTrue(SBuildType buildType, String featureFlag) {
     BuildTypeEx buildTypeEx = (BuildTypeEx) buildType;
     return buildTypeEx.getBooleanInternalParameterOrTrue(featureFlag);
+  }
+
+  public static String getAwsProfileNameOrDefault(@Nullable final String awsProfileName) {
+    return awsProfileName != null ? awsProfileName : "default";
+  }
+
+  public static boolean isValidAwsProfileName(@Nullable final String awsProfileName) {
+    if(awsProfileName == null){
+      return true;
+    }
+    return awsProfileName.matches(AWS_PROFILE_NAME_REGEXP);
   }
 
   @Deprecated

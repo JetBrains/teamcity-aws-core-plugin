@@ -6,6 +6,7 @@ import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.BuildStartContext;
 import jetbrains.buildServer.serverSide.BuildStartContextProcessor;
@@ -15,6 +16,8 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams.*;
 
 public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextProcessor {
   private final AwsCredentialsInjector myAwsCredentialsInjector;
@@ -32,10 +35,11 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
     Collection<SBuildFeatureDescriptor> awsConnectionsToExpose = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(context.getBuild());
     if (!awsConnectionsToExpose.isEmpty()) {
       Loggers.CLOUD.debug(String.format("Build with id: <%s> has AWS Connection to inject, looking for AWS Connection...", context.getBuild().getBuildId()));
+      final SBuildFeatureDescriptor awsCredentialsBuildFeature = awsConnectionsToExpose.stream().findFirst().get();
       try {
         List<ConnectionCredentials> linkedAwsConnectionCredentials = myLinkedAwsConnectionProvider.getConnectionCredentialsFromBuild(context.getBuild());
         if (linkedAwsConnectionCredentials.isEmpty()) {
-          final String errorMessage = getUnavailableConnectionErrorMessage(awsConnectionsToExpose);
+          final String errorMessage = getUnavailableConnectionErrorMessage(awsCredentialsBuildFeature);
           finishBuildWithProblem(context, errorMessage);
           return;
         }
@@ -44,7 +48,12 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
         final ConnectionCredentials firstCredentials = linkedAwsConnectionCredentials.stream().findFirst().get();
         AwsConnectionCredentials credentials = new AwsConnectionCredentials(firstCredentials);
 
-        myAwsCredentialsInjector.injectCredentials(context, credentials);
+        String awsProfileName = awsCredentialsBuildFeature.getParameters().get(AWS_PROFILE_NAME_PARAM);
+        if(!ParamUtil.isValidAwsProfileName(awsProfileName)){
+          throw new ConnectionCredentialsException(AWS_PROFILE_ERROR);
+        }
+
+        myAwsCredentialsInjector.injectCredentials(context, credentials, awsProfileName);
       } catch (ConnectionCredentialsException e) {
         String warningMessage = "Failed to inject AWS Connection to a build: " + e.getMessage();
         Loggers.CLOUD.warnAndDebugDetails(warningMessage, e);
@@ -53,9 +62,8 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
     }
   }
 
-  private static String getUnavailableConnectionErrorMessage(Collection<SBuildFeatureDescriptor> awsConnectionsToExpose) {
-    final SBuildFeatureDescriptor awsConnection = awsConnectionsToExpose.stream().findFirst().get();
-    final String awsConnectionName = awsConnection.getParameters().get(AwsCloudConnectorConstants.AWS_CONN_DISPLAY_NAME_PARAM);
+  private static String getUnavailableConnectionErrorMessage(SBuildFeatureDescriptor awsCredentialsBuildFeature) {
+    final String awsConnectionName = awsCredentialsBuildFeature.getParameters().get(AwsCloudConnectorConstants.AWS_CONN_DISPLAY_NAME_PARAM);
 
     final String errorMessage;
     if (!StringUtil.isEmpty(awsConnectionName)){

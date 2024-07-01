@@ -11,4 +11,10 @@ public final class AwsConnBuildFeatureParams {
 
   public static final String AWS_SHARED_CREDENTIALS_FILE_ENV = "AWS_SHARED_CREDENTIALS_FILE";
   public static final String AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT = "__internal_aws_credentials";
+
+  public static final String AWS_PROFILE_NAME_PARAM = "awsProfile";
+  public static final String AWS_PROFILE_NAME_LABEL = "AWS Profile Name";
+  public static final String AWS_PROFILE_NAME_ENV = "AWS_PROFILE";
+  public static final String AWS_PROFILE_NAME_REGEXP = "^[^\\s]+$";
+  public static final String AWS_PROFILE_ERROR = "Invalid AWS profile name, only single word as a name is allowed";
 }

@@ -57,8 +57,12 @@
       sessionCredentialsMuted = false;
     }
 
+
+    const projectId = '<bs:escapeForJs text="${param.projectId}"/>';
+    const forBuildStep = '<bs:escapeForJs text="${param.forBuildStep}"/>';
+    const principalAwsConnId = '<bs:escapeForJs text="${param.principalAwsConnId}"/>';
     BS.ajaxRequest('${availableAwsConnectionsControllerUrl}', {
-      parameters: '&projectId=${param.projectId}&resource=${avail_connections_rest_resource_name}&${allowed_in_builds_request_param}=${param.forBuildStep}&${principal_aws_conn_id}=${param.principalAwsConnId}',
+      parameters: '&projectId=' + projectId + '&resource=${avail_connections_rest_resource_name}&${allowed_in_builds_request_param}='+ forBuildStep +'&${principal_aws_conn_id}=' + principalAwsConnId,
 
       onComplete: function(response) {
 

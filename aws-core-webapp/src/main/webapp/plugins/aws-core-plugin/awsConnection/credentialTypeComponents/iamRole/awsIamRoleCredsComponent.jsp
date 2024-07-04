@@ -79,9 +79,11 @@
 
 <script type="text/javascript">
     $j(document).ready(function () {
+        const projectId = '<bs:escapeForJs text="${param.projectId}"/>';
+        const connectionId = '<bs:escapeForJs text="${param.connectionId}"/>';
         if("${not empty param.connectionId}" === "true" && "${credsType == credentials_type_iam_role_option}" === "true"){
             BS.ajaxRequest('${externalIdsControllerUrl}', {
-                parameters: '&projectId=${param.projectId}&${aws_conn_id_rest_param}=${param.connectionId}',
+                parameters: '&projectId='+ projectId +'&${aws_conn_id_rest_param}=' + connectionId,
 
                 onComplete: function(response) {
                     const json = response.responseJSON;

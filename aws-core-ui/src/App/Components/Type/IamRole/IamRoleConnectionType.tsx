@@ -32,7 +32,7 @@ export default function IamRoleConnectionType({ config }: { config: Config }) {
   return (
     <>
       <section>
-        <SectionHeader>{'IAM role'}</SectionHeader>
+        <SectionHeader>{'IAM Role'}</SectionHeader>
         <AwsConnection data={data} ctx={ctx} />
         <RoleArn />
         {data.awsConnectionId && <ExternalID config={config} />}

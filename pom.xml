@@ -12,7 +12,7 @@
         <revision>${PluginVersion}</revision>
         <PluginVersion>${teamcity.version}</PluginVersion>
         <teamcity.version>${MAJOR_VERSION}-SNAPSHOT</teamcity.version>
-        <MAJOR_VERSION>2024.07</MAJOR_VERSION>
+        <MAJOR_VERSION>2024.11</MAJOR_VERSION>
         <local.repo.path>local-repo</local.repo.path>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>

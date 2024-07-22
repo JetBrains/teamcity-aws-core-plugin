@@ -81,25 +81,6 @@
     </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>deploy-to-local-aws-repo</id>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                        <configuration>
-                            <altDeploymentRepository>local-repo::file://local-aws-repo</altDeploymentRepository>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>

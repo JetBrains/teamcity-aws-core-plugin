@@ -1543,8 +1543,8 @@
 
 "@jetbrains-internal/tcci-react-ui-components@^0.3.41":
   version "0.3.41"
-  resolved "https://packages.jetbrains.team/npm/p/tc/teamcity-npm/@jetbrains-internal/tcci-react-ui-components/-/tcci-react-ui-components-0.3.41.tgz#6a54c0812338c327893268d4bb5461eb7325a470"
-  integrity sha512-0LUjXiFkHFRSMSiP/rZsnmlETSC8XflrcGckBFMsJ9VNN9KxufjJ03HRv3Rpt8P2Eoh9CELIUbsrYd/5Cg0y6Q==
+  resolved "https://packages.jetbrains.team/npm/p/tc/teamcity-npm/@jetbrains-internal/tcci-react-ui-components/-/tcci-react-ui-components-0.3.41.tgz#d9fb206232f72bc1c7871138d0fd611b3e88b0df"
+  integrity sha512-5bj9OPgIhaaKOBU2NlmkkZ1iOjrjJrFJUpgas7+FsavOHoH6LcTetSsQSn4On4mQ4FqRg4R6EO7RHPQbMEC9kA==
   dependencies:
     classnames "^2.3.2"
 

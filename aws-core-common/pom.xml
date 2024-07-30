@@ -12,7 +12,7 @@
     <artifactId>aws-core-common</artifactId>
 
     <properties>
-        <aws-sdk.version>1.12.589</aws-sdk.version>
+        <aws-sdk.version>1.12.763</aws-sdk.version>
     </properties>
 
     <dependencies>

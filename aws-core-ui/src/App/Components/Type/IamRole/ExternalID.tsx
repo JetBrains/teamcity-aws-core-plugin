@@ -53,8 +53,9 @@ export default function ExternalID({ config }: { config: Config }) {
       clearErrors(FormFieldsNames.AWS_IAM_ROLE_EXTERNAL_ID);
     }
   }, [error, clearErrors, setError]);
+  const composedStyles = [styles.rowStyle, styles.externalId].join(' ');
   return (
-    <div className={styles.rowStyle}>
+    <div className={composedStyles}>
       <Label>{'External ID'}</Label>
       <FormButton
         control={control}

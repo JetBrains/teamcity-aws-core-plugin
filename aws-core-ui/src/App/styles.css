@@ -71,6 +71,7 @@
 
 .successText > p {
   color: var(--ring-icon-success-color);
+  font-size: var(--ring-font-size);
 }
 
 .fixDialog {

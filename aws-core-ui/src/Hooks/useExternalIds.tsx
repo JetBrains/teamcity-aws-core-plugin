@@ -49,7 +49,7 @@ export default function useExternalIds(config: Config) {
       .then((newId) => setExternalId(newId))
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setIsLoading(false));
-    }, [fetchExternalId]);
+  }, [fetchExternalId]);
 
   return {
     externalId,

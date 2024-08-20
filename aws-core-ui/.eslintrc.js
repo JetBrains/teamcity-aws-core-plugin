@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-const {error, ignore} = require('@jetbrains/eslint-config/consts');
+const { error, ignore } = require('@jetbrains/eslint-config/consts');
 
 module.exports = {
   parser: '@babel/eslint-parser',
@@ -10,7 +10,7 @@ module.exports = {
     '@jetbrains/eslint-config/react',
     '@jetbrains/eslint-config/test',
     'plugin:import/typescript',
-    'prettier'
+    'prettier',
   ],
   plugins: ['prettier'],
   rules: {
@@ -19,74 +19,82 @@ module.exports = {
     'import/extensions': 'off',
     'valid-jsdoc': ignore,
     'import/no-commonjs': ignore,
-    'import/no-extraneous-dependencies': [error, {
-      devDependencies: [
-        'webpack-test.config.js',
-        'wallaby.config.js',
-        'rollup.config.js',
-        '*webpack.config.js',
-        'karma-*.conf.js',
-        '**/*.test.js',
-        '**/*.test.ts',
-        '**/*.test.tsx',
-        '**/*.examples.js',
-        '**/*.examples.ts',
-        '**/*.examples.tsx',
-        '**/.eslintrc.js',
-        '.storybook/**',
-        'packages/hermione/**',
-        '**/.hermione.conf.js',
-        'report-metadata.js',
-        'security-audit-ci.js',
-        'tsc-teamcity.js'
-      ],
-      peerDependencies: true
-    }],
-    camelcase: [error, {
-      allow: ['^UNSAFE_']
-    }],
+    'import/no-extraneous-dependencies': [
+      error,
+      {
+        devDependencies: [
+          'webpack-test.config.js',
+          'wallaby.config.js',
+          'rollup.config.js',
+          '*webpack.config.js',
+          'karma-*.conf.js',
+          '**/*.test.js',
+          '**/*.test.ts',
+          '**/*.test.tsx',
+          '**/*.examples.js',
+          '**/*.examples.ts',
+          '**/*.examples.tsx',
+          '**/.eslintrc.js',
+          '.storybook/**',
+          'packages/hermione/**',
+          '**/.hermione.conf.js',
+          'report-metadata.js',
+          'security-audit-ci.js',
+          'tsc-teamcity.js',
+        ],
+        peerDependencies: true,
+      },
+    ],
+    camelcase: [
+      error,
+      {
+        allow: ['^UNSAFE_'],
+      },
+    ],
     // TODO move to @jetbrains/eslint-config
-    'require-await': error
+    'require-await': error,
   },
   env: {
-    node: true
+    node: true,
   },
   overrides: [
     {
-      files: [
-        'src/**/*'
-      ],
+      files: ['src/**/*'],
       env: {
         browser: true,
         mocha: false,
-        node: false
+        node: false,
       },
       rules: {
         // Best Practices
         complexity: [ignore, 5],
-        'no-magic-numbers': [error, {ignore: [-1, 0, 1, 2]}],
+        'no-magic-numbers': [error, { ignore: [-1, 0, 1, 2] }],
 
         // Stylistic Issues
-        'max-len': [error, 120, {
-          ignoreComments: true,
-          ignoreTemplateLiterals: true,
-          ignoreRegExpLiterals: true,
-          // Strings longer than 40 symbols (half of standard max-len)
-          ignorePattern: '"(?=([^"]|"){40,}")|\'(?=([^\']|\'){40,}\')'
-        }],
-        quotes: [error, 'single', {avoidEscape: true}],
+        'max-len': [
+          error,
+          120,
+          {
+            ignoreComments: true,
+            ignoreTemplateLiterals: true,
+            ignoreRegExpLiterals: true,
+            // Strings longer than 40 symbols (half of standard max-len)
+            ignorePattern: '"(?=([^"]|"){40,}")|\'(?=([^\']|\'){40,}\')',
+          },
+        ],
+        quotes: [error, 'single', { avoidEscape: true }],
 
         // Imports
         'import/no-commonjs': error,
-        'import/no-unused-modules': ignore
+        'import/no-unused-modules': ignore,
       },
       settings: {
         'import/resolver': {
           webpack: {
-            config: './webpack.config.js'
-          }
-        }
-      }
+            config: './webpack.config.js',
+          },
+        },
+      },
     },
     {
       files: ['**/*.ts', '**/*.tsx'],
@@ -102,50 +110,58 @@ module.exports = {
         '@typescript-eslint/no-use-before-define': [error, 'nofunc'],
         'no-shadow': ignore,
         '@typescript-eslint/no-shadow': error,
-        '@typescript-eslint/no-unused-vars': [error, {
-          ignoreRestSiblings: true
-        }],
-        '@typescript-eslint/ban-types': [error, {
-          extendDefaults: true,
-          types: {object: false, '{}': false}
-        }],
+        '@typescript-eslint/no-unused-vars': [
+          error,
+          {
+            ignoreRestSiblings: true,
+          },
+        ],
+        '@typescript-eslint/ban-types': [
+          error,
+          {
+            extendDefaults: true,
+            types: { object: false, '{}': false },
+          },
+        ],
         'no-magic-numbers': ignore,
-        '@typescript-eslint/no-magic-numbers': [error, {
-          ignore: [-1, 0, 1, 2],
-          ignoreEnums: true,
-          ignoreTypeIndexes: true
-        }],
-        'react/prop-types': ignore
-      }
+        '@typescript-eslint/no-magic-numbers': [
+          error,
+          {
+            ignore: [-1, 0, 1, 2],
+            ignoreEnums: true,
+            ignoreTypeIndexes: true,
+          },
+        ],
+        'react/prop-types': ignore,
+      },
     },
     {
-      files: [
-        '**/*.test.*'
-      ],
+      files: ['**/*.test.*'],
       env: {
         mocha: true,
-        jest: true
+        jest: true,
       },
       globals: {
-        sandbox: false
+        sandbox: false,
       },
       rules: {
-        'new-cap': [error, {
-          capIsNewExceptionPattern: '^.*\.UNSAFE_'
-        }],
-        '@typescript-eslint/no-non-null-assertion': ignore
-      }
+        'new-cap': [
+          error,
+          {
+            capIsNewExceptionPattern: '^.*.UNSAFE_',
+          },
+        ],
+        '@typescript-eslint/no-non-null-assertion': ignore,
+      },
     },
     {
-      files: [
-        '**/*.examples.*'
-      ],
+      files: ['**/*.examples.*'],
       env: {
         browser: true,
-        node: true
+        node: true,
       },
       globals: {
-        sandbox: false
+        sandbox: false,
       },
       rules: {
         'react/no-multi-comp': ignore,
@@ -154,12 +170,12 @@ module.exports = {
         'react/no-this-in-sfc': ignore,
         'react/prop-types': ignore,
         'no-magic-numbers': ignore,
-        '@typescript-eslint/no-magic-numbers': ignore
-      }
-    }
+        '@typescript-eslint/no-magic-numbers': ignore,
+      },
+    },
   ],
   reportUnusedDisableDirectives: true,
   settings: {
-    'import/core-modules': ['./metadata-messages.json']
-  }
+    'import/core-modules': ['./metadata-messages.json'],
+  },
 };

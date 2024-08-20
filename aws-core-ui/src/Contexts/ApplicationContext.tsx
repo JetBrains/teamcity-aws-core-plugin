@@ -28,6 +28,8 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
     accessKeyId: '',
     secretAccessKey: '',
     sessionCredentialsEnabled: '',
+    externalIdsControllerUrl: '',
+    externalIdsConnectionParam: '',
     stsEndpoint: '',
     iamRoleArn: '',
     iamRoleSessionName: '',

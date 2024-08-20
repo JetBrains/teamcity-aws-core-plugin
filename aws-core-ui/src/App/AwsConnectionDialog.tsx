@@ -22,9 +22,10 @@ import { React } from '@jetbrains/teamcity-api';
 
 import { Config, Mode } from '../types';
 
+import { ApplicationContextProvider } from '../Contexts/ApplicationContext';
+
 import { App } from './App';
 import styles from './styles.css';
-import {ApplicationContextProvider} from "../Contexts/ApplicationContext";
 
 export default function AwsConnectionDialog({
   config,
@@ -45,7 +46,7 @@ export default function AwsConnectionDialog({
       className={styles.connectionsDialog}
     >
       <Header> {edit ? 'Edit AWS Connection' : 'Add AWS Connection'} </Header>
-      <ApplicationContextProvider config={config} >
+      <ApplicationContextProvider config={config}>
         <App mode={mode} />
       </ApplicationContextProvider>
     </Dialog>

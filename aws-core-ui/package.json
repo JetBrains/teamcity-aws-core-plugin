@@ -1,6 +1,6 @@
 {
   "name": "@jetbrains-internal/aws-connection-components",
-  "version": "0.1.56",
+  "version": "0.1.61",
   "description": "React UI for AWS Connection configuration",
   "main": "dist/components.js",
   "types": "dist/components.d.ts",

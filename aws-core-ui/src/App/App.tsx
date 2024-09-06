@@ -49,10 +49,12 @@ function redirectToDefaultPage(projectId: string) {
 
 export function AppWrapper({ config }: { config: Config }) {
   const resetContainer = useJspContainer(
-    'div.popupSaveButtonsBlock, div.modalDialogBody > table.runnerFormTable, div.dialogHeader a.closeWindowLink'
+    'div.popupSaveButtonsBlock, div.modalDialogBody > table.runnerFormTable'
   );
   const doClose = React.useCallback(() => {
-    redirectToDefaultPage(config.projectId);
+    resetContainer();
+    // @ts-ignore
+    BS.OAuthConnectionDialog.close();
   }, [config.projectId]);
 
   const doReset = React.useCallback(
@@ -67,6 +69,16 @@ export function AppWrapper({ config }: { config: Config }) {
     },
     [resetContainer]
   );
+
+  const closeLink = document.querySelector("div.OAuthConnectionDialog a.closeWindowLink") as HTMLLinkElement;
+
+  if (closeLink !== null) {
+    const oldOnClick = closeLink.onclick;
+    closeLink.onclick = (e) => {
+      resetContainer();
+      oldOnClick?.call(closeLink, e);
+    }
+  }
 
   const newConf = { ...config, onClose: doClose };
   return (

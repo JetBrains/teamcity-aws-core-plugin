@@ -67,6 +67,7 @@ export default function ExternalID({ config }: { config: Config }) {
         label={externalId}
         loader={isLoading}
         text
+        // @ts-ignore
         onClick={copyData}
       />
     </div>

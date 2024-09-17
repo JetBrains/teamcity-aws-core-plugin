@@ -10,10 +10,7 @@ import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider
 import jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImpl;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
-import jetbrains.buildServer.serverSide.BuildStartContext;
-import jetbrains.buildServer.serverSide.BuildTypeEx;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SRunningBuild;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
@@ -87,7 +84,7 @@ public class InjectAwsCredentialsToTheBuildContextTest {
       TEST_AWS_CONNECTION_ID,
       Collections.emptyMap()
     );
-    when(mockedConnectionsManager.findConnectionById(any(), any()))
+    when(mockedConnectionsManager.findConnectionById((SProject)any(), any()))
       .thenReturn(mockedConnectionDescriptor);
 
     when(mockedConnectionCredentialsManager.requestConnectionCredentials(any(), eq(TEST_AWS_CONNECTION_ID)))

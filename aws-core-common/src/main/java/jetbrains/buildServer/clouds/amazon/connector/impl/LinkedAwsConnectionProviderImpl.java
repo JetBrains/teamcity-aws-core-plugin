@@ -1,10 +1,6 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -183,12 +179,12 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
         .collect(Collectors.toList());
     }
 
-    //TODO: TW-75618 Add support for several AWS Connections exposing - add a new property to each ConnectionCredentials with profile information
+    List<ConnectionCredentials> credentialsToInject = new ArrayList<>();
     for (SBuildFeatureDescriptor awsConnectionBuildFeature : awsConnectionsToInject) {
-      return Collections.singletonList(getConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
+      credentialsToInject.add(getConnectionCredentials(project, awsConnectionBuildFeature.getParameters()));
     }
 
-    return Collections.emptyList();
+    return credentialsToInject;
   }
 
   @NotNull
@@ -198,15 +194,22 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
     ConnectionDescriptor linkedAwsConnection = getLinkedConnectionFromParameters(project, featureProps);
 
     String sessionDuration = featureProps.get(SESSION_DURATION_PARAM);
+    Map<String, String> additionalProperties = new HashMap<>();
     if (sessionDuration != null) {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(
-        project,
-        linkedAwsConnection.getId(),
-        Collections.singletonMap(SESSION_DURATION_PARAM, sessionDuration)
-      );
-    } else {
-      return myProjectConnectionCredentialsManager.requestConnectionCredentials(project, linkedAwsConnection.getId());
+      additionalProperties.put(SESSION_DURATION_PARAM, sessionDuration);
     }
+    ConnectionCredentials connectionCredentials = myProjectConnectionCredentialsManager.requestConnectionCredentials(
+      project,
+      linkedAwsConnection.getId(),
+      additionalProperties
+    );
+
+    //TW-77603 Add AWS Profile name for multiple AWS Connection injection
+    String awsProfileName = featureProps.get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM);
+    if (awsProfileName != null) {
+      return createCredentialsWithAwsProfileName(connectionCredentials, awsProfileName);
+    }
+    return connectionCredentials;
   }
 
   private void validateParamsWithLinkedConnectionId(@NotNull final Map<String, String> featureProperties) throws ConnectionCredentialsException {
@@ -256,5 +259,24 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
     }
 
     return sProject;
+  }
+
+  private ConnectionCredentials createCredentialsWithAwsProfileName(@NotNull final ConnectionCredentials connectionCredentials, @NotNull final String awsProfileName) {
+    Map<String, String> propsWithAwsProfileName = new HashMap<>(connectionCredentials.getProperties());
+    propsWithAwsProfileName.put(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM, awsProfileName);
+
+    return new ConnectionCredentials() {
+      @NotNull
+      @Override
+      public Map<String, String> getProperties() {
+        return propsWithAwsProfileName;
+      }
+
+      @NotNull
+      @Override
+      public String getProviderType() {
+        return connectionCredentials.getProviderType();
+      }
+    };
   }
 }

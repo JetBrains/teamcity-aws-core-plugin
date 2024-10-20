@@ -20,7 +20,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
   public static final String AWS_CREDENTIALS_FILE_NAME = "aws.credentials";
   public static final String EMPTY_STRING = "";
 
-  private String myAwsProfileName;
+  private String myAwsProfileNames;
   private byte[] myCredentialsData;
 
   public AwsCredentialsHandler(@NotNull EventDispatcher<AgentLifeCycleListener> agentDispatcher) {
@@ -32,17 +32,17 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
     String encodedCredentials = runningBuild.getSharedConfigParameters()
       .get(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT);
 
-    String awsAccessKey = runningBuild.getSharedConfigParameters()
-      .get(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM);
+    String awsAccessKeys = runningBuild.getSharedConfigParameters()
+      .get(AwsConnBuildFeatureParams.INJECTED_AWS_ACCESS_KEYS);
 
-    myAwsProfileName = getAwsProfileNameOrDefault(runningBuild.getSharedConfigParameters()
-      .get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM));
+    myAwsProfileNames = runningBuild.getSharedConfigParameters()
+      .get(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM);
 
     if (Strings.isBlank(encodedCredentials)) {
       return;
     }
     LOG.debug(String.format("Encoded AWS credentials were provided in build with id <%s>", runningBuild.getBuildId()));
-    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(String.format("Found AWS Credentials with Access Key ID: %s and AWS Profile name: %s", awsAccessKey, myAwsProfileName)));
+    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(String.format("Found AWS Credentials with Access Key ID(s): %s and AWS Profile name(s): %s", awsAccessKeys, myAwsProfileNames)));
 
     try {
       myCredentialsData = Base64.getDecoder().decode(encodedCredentials);
@@ -70,11 +70,8 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
       }
       runner.getBuild().getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage("Created the AWS Credentials file"));
 
-      //TODO: TW-75618 If multiple AWS Connections are injected - we should not add this env variable, instead, user should manage the named profiles in scripts or etc
-      runner.addEnvironmentVariable(
-        AwsConnBuildFeatureParams.AWS_PROFILE_NAME_ENV,
-        myAwsProfileName
-      );
+      setAwsProfileNameEnvVarForSingleConnectionOnly(runner);
+
       runner.addEnvironmentVariable(
         AwsConnBuildFeatureParams.AWS_SHARED_CREDENTIALS_FILE_ENV,
         awsCredentialsFile.getAbsolutePath()
@@ -91,7 +88,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
   @Override
   public void buildFinished(@NotNull AgentRunningBuild build, @NotNull BuildFinishedStatus buildStatus) {
     myCredentialsData = null;
-    myAwsProfileName = null;
+    myAwsProfileNames = null;
   }
 
   private File createFileInTempDirectory(@NotNull AgentBuildSettings build) throws IOException {
@@ -122,5 +119,16 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
         initCause(e);
       }};
     }
+  }
+
+  /**
+   * TW-77603 If multiple AWS Connections are injected - user should manage the named profiles in scripts or etc, we should not enforce any env var for it
+   */
+  private void setAwsProfileNameEnvVarForSingleConnectionOnly(@NotNull BuildRunnerContext runner) {
+    if (myAwsProfileNames.contains(", "))
+      runner.addEnvironmentVariable(
+        AwsConnBuildFeatureParams.AWS_PROFILE_NAME_ENV,
+        getAwsProfileNameOrDefault(myAwsProfileNames)
+      );
   }
 }

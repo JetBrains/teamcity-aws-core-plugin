@@ -1,10 +1,12 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
 import com.intellij.openapi.diagnostic.Logger;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
@@ -125,7 +127,7 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
    * TW-77603 If multiple AWS Connections are injected - user should manage the named profiles in scripts or etc, we should not enforce any env var for it
    */
   private void setAwsProfileNameEnvVarForSingleConnectionOnly(@NotNull BuildRunnerContext runner) {
-    if (myAwsProfileNames.contains(", "))
+    if (!myAwsProfileNames.contains(", "))
       runner.addEnvironmentVariable(
         AwsConnBuildFeatureParams.AWS_PROFILE_NAME_ENV,
         getAwsProfileNameOrDefault(myAwsProfileNames)

@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;

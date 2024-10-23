@@ -12,6 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentia
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
+import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +66,6 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
     int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
     getSessionTokenRequest.withDurationSeconds(sessionDurationMinutes * 60);
 
-    return sts.getSessionToken(getSessionTokenRequest);
+    return IOGuard.allowNetworkCall(() -> sts.getSessionToken(getSessionTokenRequest));
   }
 }

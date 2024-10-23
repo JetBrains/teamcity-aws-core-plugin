@@ -78,7 +78,7 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
       .thenReturn(testConnectionDescriptor);
 
     ProjectConnectionCredentialsManager projectConnectionCredentialsManager = Mockito.mock(ProjectConnectionCredentialsManager.class);
-    when(projectConnectionCredentialsManager.requestConnectionCredentials(myProject, TEST_PRINCIPAL_AWS_CONN_ID))
+    when(projectConnectionCredentialsManager.requestConnectionCredentials(Mockito.eq(myProject), Mockito.eq(TEST_PRINCIPAL_AWS_CONN_ID), Mockito.any()))
       .thenReturn(new AwsConnectionCredentials(new AwsCredentialsData() {
         @NotNull
         @Override

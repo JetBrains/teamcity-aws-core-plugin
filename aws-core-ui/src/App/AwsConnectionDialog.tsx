@@ -36,7 +36,7 @@ export default function AwsConnectionDialog({
   active: boolean;
   mode: Mode;
 }) {
-  const edit = config.awsConnectionId !== '';
+  const edit = config.connectionId !== '';
 
   return (
     <Dialog

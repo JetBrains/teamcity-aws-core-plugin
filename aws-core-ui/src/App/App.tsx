@@ -52,9 +52,7 @@ export function AppWrapper({ config }: { config: Config }) {
     'div.popupSaveButtonsBlock, div.modalDialogBody > table.runnerFormTable'
   );
   const doClose = React.useCallback(() => {
-    resetContainer();
-    // @ts-ignore
-    BS.OAuthConnectionDialog.close();
+    redirectToDefaultPage(config.projectId);
   }, [config.projectId]);
 
   const doReset = React.useCallback(

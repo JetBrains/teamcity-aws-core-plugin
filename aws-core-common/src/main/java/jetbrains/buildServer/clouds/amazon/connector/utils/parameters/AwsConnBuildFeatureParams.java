@@ -11,6 +11,7 @@ public final class AwsConnBuildFeatureParams {
 
   public static final String AWS_SHARED_CREDENTIALS_FILE_ENV = "AWS_SHARED_CREDENTIALS_FILE";
   public static final String AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT = "__internal_aws_credentials";
+  public static final String INJECTED_AWS_ACCESS_KEYS = "injectedAwsAccessKeys";
 
   public static final String AWS_PROFILE_NAME_PARAM = "awsProfile";
   public static final String AWS_PROFILE_NAME_LABEL = "AWS Profile Name";

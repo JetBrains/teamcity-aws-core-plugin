@@ -93,11 +93,6 @@ public class AwsConnToAgentBuildFeature extends BuildFeature implements Properti
     return featureDescriptionBuilder.toString();
   }
 
-  @Override
-  public boolean isMultipleFeaturesPerBuildTypeAllowed() {
-    return false;
-  }
-
   public String getAvailAwsConnsUrl() {
     return AVAIL_AWS_CONNS_URL;
   }

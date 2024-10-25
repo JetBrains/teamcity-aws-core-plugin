@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent;
 
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
@@ -19,43 +17,56 @@ public class AwsCredentialsInjector {
   /**
    * Adds specific AWS Credentials to the Build Context via corresponding properties.
    * Use this method when there is one AWS Connection and its credentials should be available when running a build.
+   * Can be used repeatedly for multiple connection credentials injection.
    *
    * @param context     A Build Context where to inject AWS credentials.
    * @param credentials AWS credentials to be injected.
    */
   public void injectCredentials(@NotNull final BuildStartContext context, @NotNull final AwsConnectionCredentials credentials, @Nullable final String awsProfileName) {
-    //TODO: TW-75618 return collection with multiple AWS Connection injection and work with several AWS Profile names
-    String encodedCredentials = credentialsToEncodedString(Collections.singletonList(credentials), awsProfileName);
+    appendContextParam(context, AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM, getAwsProfileNameOrDefault(awsProfileName));
 
     if (credentials.getAccessKeyId() != null) {
-      context.addSharedParameter(AwsConnBuildFeatureParams.AWS_ACCESS_KEY_CONFIG_FILE_PARAM, credentials.getAccessKeyId());
+      appendContextParam(context, AwsConnBuildFeatureParams.INJECTED_AWS_ACCESS_KEYS, credentials.getAccessKeyId());
     }
 
-    context.addSharedParameter(AwsConnBuildFeatureParams.AWS_PROFILE_NAME_PARAM, getAwsProfileNameOrDefault(awsProfileName));
-    context.addSharedParameter(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT, encodedCredentials);
+    appendEncodedCredsContent(context, credentialsToConfigString(credentials, awsProfileName));
+  }
+
+  private void appendContextParam(@NotNull final BuildStartContext context, @NotNull final String paramKey, @NotNull final String paramValue) {
+    String currentValue = context.getSharedParameters().get(paramKey);
+    String newValue = paramValue;
+    if (currentValue != null && !currentValue.isEmpty()) {
+      newValue = currentValue + ", " + newValue;
+    }
+
+    context.addSharedParameter(paramKey, newValue);
+  }
+
+  private void appendEncodedCredsContent(@NotNull final BuildStartContext context, @NotNull final String credsContent) {
+    String currentEncodedValue = context.getSharedParameters().get(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT);
+    String newValue = credsContent;
+    if (currentEncodedValue != null && !currentEncodedValue.isEmpty()) {
+      newValue = new String(Base64.getDecoder().decode(currentEncodedValue), StandardCharsets.UTF_8) +
+        newValue;
+    }
+
+    context.addSharedParameter(
+      AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT,
+      Base64.getEncoder().encodeToString(newValue.getBytes(StandardCharsets.UTF_8))
+    );
   }
 
 
   @NotNull
-  private String credentialsToEncodedString(@NotNull final List<AwsConnectionCredentials> awsConnectionCredentials, @Nullable final String awsProfileName) {
-    StringBuilder stringBuilder = new StringBuilder();
-    for (AwsConnectionCredentials credentials : awsConnectionCredentials) {
-      Map<String, String> parameters = getConnectionParametersToInject(credentials);
+  private String credentialsToConfigString(@NotNull final AwsConnectionCredentials awsConnectionCredentials, @Nullable final String awsProfileName) {
+    Map<String, String> parameters = getConnectionParametersToInject(awsConnectionCredentials);
 
-      String profileName = getAwsProfileNameOrDefault(awsProfileName);
-      String prefix = "[" + profileName + "]" + "\n";
-      String awsCredentialsFileEntry = parameters
-        .entrySet()
-        .stream()
-        .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
-        .collect(Collectors.joining("\n", prefix, "\n"));
-
-      stringBuilder.append(awsCredentialsFileEntry);
-    }
-
-    return Base64.getEncoder().encodeToString(
-      stringBuilder.toString().getBytes(StandardCharsets.UTF_8)
-    );
+    String prefix = "[" + getAwsProfileNameOrDefault(awsProfileName) + "]" + "\n";
+    return parameters
+      .entrySet()
+      .stream()
+      .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
+      .collect(Collectors.joining("\n", prefix, "\n"));
   }
 
   @NotNull

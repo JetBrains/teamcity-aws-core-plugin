@@ -52,10 +52,13 @@
             Whether to use temporary credentials provided by STS service
           </description>
         </param>
-        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
+        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string" deprecated="true">
           <description>
             Endpoint from where to obtain session credentials
           </description>
+          <deprecated>
+            Deprecated. Use the identical property on the feature level instead.
+          </deprecated>
         </param>
       </option>
       <option name="iamRole" value="awsAssumeIamRole">
@@ -77,10 +80,13 @@
             Principal AWS Connection ID (Who will assume the IAM Role)
           </description>
         </param>
-        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
+        <param name="awsStsEndpoint" dslName="stsEndpoint" type="string" deprecated="true">
           <description>
             Endpoint from where to obtain session credentials of the assumed IAM Role
           </description>
+          <deprecated>
+            Deprecated. Use the identical property on the feature level instead.
+          </deprecated>
         </param>
       </option>
       <option name="default" value="defaultProvider">
@@ -106,6 +112,11 @@
         Whether build steps can utilize the connection or not
       </description>
     </param>
+    <param name="awsStsEndpoint" dslName="stsEndpoint" type="string">
+      <description>
+        Endpoint from where to obtain session credentials
+      </description>
+    </param>
   </params>
 
   <examples>
@@ -123,8 +134,8 @@
             accessKeyId = "keyId"
             secretAccessKey = "Link to credentialsJSON property containing AWS secret access key"
             useSessionCredentials = true
-            stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
           }
+          stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
         }
       </code>
     </example>
@@ -177,8 +188,8 @@
             roleArn = "arn:aws:iam::account:role/role-name-with-path"
             sessionName = "TeamCity-session-identifier"
             awsConnectionId = "AwsIamUser"
-            stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
           }
+          stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
         }
       </code>
     </example>
@@ -192,6 +203,7 @@
           id = "AwsDefaultCredsProviderChain"
           name = "AWS Default Creds Provider Chain"
           regionName = "eu-central-1"
+          stsEndpoint = "https://sts.eu-central-1.amazonaws.com"
           credentialsType = default()
         }
       </code>

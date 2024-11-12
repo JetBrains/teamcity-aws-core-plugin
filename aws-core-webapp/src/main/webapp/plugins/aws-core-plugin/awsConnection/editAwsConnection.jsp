@@ -4,7 +4,7 @@
 
 <jsp:useBean id="project" type="jetbrains.buildServer.serverSide.SProject" scope="request"/>
 
-<c:set var="awsConnectionReactUiEnabledGlobal" value="${intprop:getBoolean(react_ui_enabled)}"/>
+<c:set var="awsConnectionReactUiEnabledGlobal" value="${intprop:getBooleanOrTrue(react_ui_enabled)}"/>
 <c:set var="awsConnectionReactUiEnabled" value="${project.parameters.getOrDefault(react_ui_enabled, awsConnectionReactUiEnabledGlobal)}"/>
 
 <c:choose>

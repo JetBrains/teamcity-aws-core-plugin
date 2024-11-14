@@ -43,10 +43,10 @@ export default function ButtonControlPanel({
   genericErrorHandler: (error: unknown) => void;
   mode: Mode;
 }) {
-  const [showSuccessText, setShowSuccessText] = React.useState(false);
+  const [testDialogActive, setTestDialogActive] = React.useState(false);
   const [testingConnection, setTestingConnection] = React.useState(false);
-  const [showErrorDialog, setShowErrorDialog] = React.useState(false);
-  const [errorMessages, setErrorMessages] = React.useState('');
+  const [connectionSuccessful, setConnectionSuccessful] = React.useState(false);
+  const [testResultMessage, setTestResultMessage] = React.useState('');
   const ctx = useApplicationContext();
   const { clearAlerts } = useErrorService();
 
@@ -55,20 +55,17 @@ export default function ButtonControlPanel({
   const testConnection = React.useCallback(async () => {
     const formData = getValues();
     clearAlerts();
-    setShowSuccessText(false);
-    setShowErrorDialog(false);
+    setConnectionSuccessful(false);
+    setTestDialogActive(false);
     setTestingConnection(true);
     try {
       const result = await testAwsConnection(
         toRequestData(ctx.config, formData)
       );
 
-      if (result.success) {
-        setShowSuccessText(true);
-      } else {
-        setShowErrorDialog(true);
-        setErrorMessages(result.message);
-      }
+      setConnectionSuccessful(result.success);
+      setTestResultMessage(result.message);
+      setTestDialogActive(true);
     } catch (e) {
       genericErrorHandler(e);
     } finally {
@@ -91,18 +88,12 @@ export default function ButtonControlPanel({
           {'Test Connection'}
         </Button>
       </ButtonSet>
-      {showSuccessText && (
-        <div className={styles.successText}>
-          <Icon glyph={okIcon} color={Color.GREEN} />
-          <p className={styles.commentary}>{'Connection is successful'}</p>
-        </div>
-      )}
 
       <TestAwsConnectionDialog
-        active={showErrorDialog}
-        status={'failed'}
-        testConnectionInfo={errorMessages}
-        onClose={() => setShowErrorDialog(false)}
+        active={testDialogActive}
+        success={connectionSuccessful}
+        testConnectionInfo={testResultMessage}
+        onClose={() => setTestDialogActive(false)}
       />
     </Panel>
   );

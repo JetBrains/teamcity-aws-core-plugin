@@ -60,26 +60,16 @@
   margin-top: 1rem !important;
 }
 
-.successText {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  align-items: baseline;
-  margin: auto;
-  padding-right: 3rem;
-}
-
-.successText > p {
-  color: var(--ring-icon-success-color);
-  font-size: var(--ring-font-size);
-}
-
 .fixDialog {
   z-index: 100 !important;
 }
 
 .fixDialog div[data-test='ring-island-content'] {
   padding: 0 0 1rem 0;
+}
+
+.fixDialog div[data-test='ring-island ring-dialog'] {
+  width: 31.25rem;
 }
 
 .rowStyle {

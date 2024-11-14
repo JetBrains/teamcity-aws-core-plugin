@@ -13,7 +13,7 @@ function TestConnectionContent({
   testConnectionInfo,
 }: {
   loading?: boolean;
-  success?: boolean;
+  success: boolean;
   testConnectionInfo: string;
 }) {
   if (loading) {
@@ -44,11 +44,11 @@ function TestConnectionContent({
 export default function TestAwsConnectionDialog({
   active,
   testConnectionInfo,
-  status,
+  success,
   onClose,
 }: {
   active: boolean;
-  status: 'success' | 'failed';
+  success: boolean;
   testConnectionInfo: string;
   onClose: () => void;
 }) {
@@ -64,7 +64,7 @@ export default function TestAwsConnectionDialog({
       <Header>{'Test Connection'}</Header>
       <Content>
         <TestConnectionContent
-          success={status === 'success'}
+          success={success}
           testConnectionInfo={testConnectionInfo}
         />
       </Content>

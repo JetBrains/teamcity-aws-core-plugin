@@ -8,6 +8,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="util" uri="/WEB-INF/functions/util" %>
+<%@ taglib prefix="afn" uri="/WEB-INF/functions/authz" %>
 
 <%@ page import="jetbrains.buildServer.util.StringUtil" %>
 <%@ page import="jetbrains.buildServer.serverSide.crypt.RSACipher" %>
@@ -45,6 +46,8 @@
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
 <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}" />
 <c:set var="awsConnectionId" value="${propertiesBean.properties[principal_aws_connection_param]}" />
+<c:set var="canEditProject" value="${afn:permissionGrantedForProject(project, 'EDIT_PROJECT')}"/>
+<c:set var="projectIsReadOnly" value="${project.readOnly}"/>
 
 <%--All Regions--%>
 <c:set var="allRegionKeys"
@@ -103,6 +106,7 @@
     externalIdsConnectionParam: "<bs:forJs>${awsConnIdRestParamForExternalIds}</bs:forJs>",
     awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
     rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
+    readOnly: "<bs:forJs>${projectIsReadOnly || !canEditProject}</bs:forJs>" === "true",
   };
 
   const loadJS = function (url, implementationCode, location) {

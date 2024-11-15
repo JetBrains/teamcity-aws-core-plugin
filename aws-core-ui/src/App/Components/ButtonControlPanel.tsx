@@ -21,7 +21,10 @@ import Button from '@jetbrains/ring-ui/components/button/button';
 import Icon, { Color } from '@jetbrains/ring-ui/components/icon';
 
 import { useFormContext } from 'react-hook-form';
-import { useErrorService } from '@jetbrains-internal/tcci-react-ui-components';
+import {
+  useErrorService,
+  useReadOnlyContext,
+} from '@jetbrains-internal/tcci-react-ui-components';
 
 import okIcon from '@jetbrains/icons/ok';
 
@@ -51,6 +54,7 @@ export default function ButtonControlPanel({
   const { clearAlerts } = useErrorService();
 
   const { getValues } = useFormContext<FormFields>();
+  const isReadOnly = useReadOnlyContext();
 
   const testConnection = React.useCallback(async () => {
     const formData = getValues();
@@ -76,7 +80,7 @@ export default function ButtonControlPanel({
   return (
     <Panel className={styles.awsConnectionButtonPanel}>
       <ButtonSet>
-        <Button primary type="submit">
+        <Button disabled={isReadOnly} primary type="submit">
           {mode === Mode.CONVERT
             ? 'Convert'
             : ctx.isEditMode

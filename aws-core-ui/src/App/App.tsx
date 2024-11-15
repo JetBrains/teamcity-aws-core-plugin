@@ -4,6 +4,7 @@ import {
   HelpButton,
   useErrorService,
   useJspContainer,
+  ReadOnlyContextProvider,
 } from '@jetbrains-internal/tcci-react-ui-components';
 import {
   ControlsHeight,
@@ -81,7 +82,9 @@ export function AppWrapper({ config }: { config: Config }) {
   const newConf = { ...config, onClose: doClose };
   return (
     <ApplicationContextProvider config={newConf}>
-      <App doReset={doReset} />
+      <ReadOnlyContextProvider value={config.readOnly}>
+        <App doReset={doReset} />
+      </ReadOnlyContextProvider>
     </ApplicationContextProvider>
   );
 }

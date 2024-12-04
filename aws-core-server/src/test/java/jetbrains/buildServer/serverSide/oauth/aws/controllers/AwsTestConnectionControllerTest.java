@@ -16,6 +16,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessK
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
+import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -71,6 +72,7 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
       Mockito.mock(SBuildServer.class),
       Mockito.mock(WebControllerManager.class),
       createTester(),
+      Mockito.mock(AuthorizationInterceptor.class),
       Mockito.mock(ProjectManager.class)
     );
   }

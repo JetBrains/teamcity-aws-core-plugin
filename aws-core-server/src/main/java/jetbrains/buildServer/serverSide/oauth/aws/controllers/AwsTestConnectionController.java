@@ -9,11 +9,14 @@ import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnec
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.controllers.ActionErrors;
+import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
+import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -35,6 +38,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   public AwsTestConnectionController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final AwsConnectionTester awsConnectionTester,
+                                     @NotNull final AuthorizationInterceptor authInterceptor,
                                      @NotNull final ProjectManager projectManager) {
     super(server);
     myAwsConnectionTester = awsConnectionTester;
@@ -42,6 +46,17 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     if (TeamCityProperties.getBooleanOrTrue(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
     }
+
+    authInterceptor.addPathBasedPermissionsChecker(PATH, (holder, request) -> {
+      String projectId = request.getParameter("projectId");
+      if (projectId == null) {
+        projectId = SProject.ROOT_PROJECT_ID;
+      }
+      final boolean hasAccess = holder.isPermissionGrantedForProject(projectId, Permission.EDIT_PROJECT);
+      if (!hasAccess) {
+        throw new AccessDeniedException(holder, "Authorised user lacks permissions for project " + projectId);
+      }
+    });
   }
 
   @Override

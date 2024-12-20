@@ -1,6 +1,7 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -46,7 +47,12 @@ public enum RegionSortPriority {
     return myName;
   }
 
+  public static int getPriority(@NotNull final String prefix){
+    return PREFIX_TO_REGION_SORT_PRIORITY.getOrDefault(prefix, RegionSortPriority.DEFAULT).getPriority();
+  }
+
+  @Nullable
   public static RegionSortPriority getFromPrefix(@NotNull final String prefix) {
-    return PREFIX_TO_REGION_SORT_PRIORITY.getOrDefault(prefix, RegionSortPriority.DEFAULT);
+    return PREFIX_TO_REGION_SORT_PRIORITY.get(prefix);
   }
 }

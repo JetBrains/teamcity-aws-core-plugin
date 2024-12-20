@@ -40,7 +40,7 @@ public final class AWSRegions {
       prefix = region.substring(0, region.indexOf(REGION_SEPARATOR));
     }
 
-    return RegionSortPriority.getFromPrefix(prefix).getPriority();
+    return RegionSortPriority.getPriority(prefix);
   }
 
   @SuppressWarnings("FieldCanBeLocal")
@@ -104,7 +104,7 @@ public final class AWSRegions {
    * @return - Map of region codes to region descriptions for a specific service or not tied to a specific service
    */
   @NotNull
-  public static TreeMap<String, String> getRegionsForService(@Nullable String servicePrefix) {
+  private static TreeMap<String, String> getRegionsForService(@Nullable String servicePrefix) {
     Map<String, String> allRegionsMap = Arrays.stream(Regions.values())
       .collect(Collectors.toMap(Regions::getName, Regions::getDescription));
 
@@ -127,25 +127,33 @@ public final class AWSRegions {
       return ADDITIONAL_DESCRIPTIONS.get(code);
     }
 
-    String[] split = code.split("\\-");
-    if (split.length != 3 && split.length != 4) {
-      return code;
-    }
+    String[] split = code.split("-");
     StringBuilder result = new StringBuilder();
-    String regionCode;
-    int restIndex;
-    if (split.length == 4) {
-      regionCode = split[0] + "-" + split[1];
-      restIndex = 2;
-    } else {
-      regionCode = split[0];
-      restIndex = 1;
+    int restIndex = 0;
+    String regionCode = "";
+    String regionName = null;
+    for (int i = 0; i < split.length; i++) {
+      regionCode = regionCode.isEmpty() ? split[i] : regionCode + "-" + split[i];
+      restIndex = i + 1;
+      final RegionSortPriority sortPriority = RegionSortPriority.getFromPrefix(regionCode);
+      if (sortPriority != null) {
+        regionName = sortPriority.getName();
+        break;
+      }
     }
-    final String name = RegionSortPriority.getFromPrefix(regionCode).getName();
-    result.append(name != null ? name : regionCode);
-    result.append(" ");
-    result.append(StringUtil.capitalize(split[restIndex])).append(" ").append(split[restIndex + 1]);
-    return result.toString();
+    if (regionName != null) {
+      result.append(regionName);
+    } else {
+      restIndex = 0;
+    }
+
+    if (restIndex < split.length) {
+      for (int i = restIndex; i < split.length; i++) {
+        result.append(" ").append(StringUtil.capitalize(split[i]));
+      }
+    }
+
+    return result.toString().trim();
   }
 
   @NotNull
@@ -158,7 +166,11 @@ public final class AWSRegions {
     if (service == null) {
       return getAllRegions();
     }
-    final Map<String, String> regionsForService = REGIONS_DATA_BY_SERVICE.get(service);
+    Map<String, String> regionsForService = REGIONS_DATA_BY_SERVICE.get(service);
+    if (regionsForService == null) {
+      regionsForService = getRegionsForService(service);
+      REGIONS_DATA_BY_SERVICE.put(service, regionsForService);
+    }
     return Collections.unmodifiableMap(regionsForService);
   }
 
@@ -172,10 +184,12 @@ public final class AWSRegions {
     throw new IllegalArgumentException("Unsupported region name " + regionName);
   }
 
+  @SuppressWarnings("unused")
   public static String getSerializedRegionCodes() {
     return SERIALIZED_REGION_CODES;
   }
 
+  @SuppressWarnings("unused")
   public static String getSerializedRegionDescriptions() {
     return SERIALIZED_REGION_DESCRIPTIONS;
   }

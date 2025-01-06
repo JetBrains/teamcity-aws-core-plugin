@@ -17,12 +17,15 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudCo
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.controllers.AuthorizationInterceptor;
+import jetbrains.buildServer.controllers.RequestPermissionsChecker;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
+import jetbrains.buildServer.serverSide.identifiers.ProjectIdentifiersManager;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
+import jetbrains.buildServer.serverSide.oauth.aws.controllers.auth.AwsConnectionsRequestPermissionChecker;
 import jetbrains.buildServer.testUtils.AbstractControllerTest;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Element;
@@ -73,7 +76,8 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
       Mockito.mock(WebControllerManager.class),
       createTester(),
       Mockito.mock(AuthorizationInterceptor.class),
-      Mockito.mock(ProjectManager.class)
+      Mockito.mock(ProjectManager.class),
+      Mockito.mock(AwsConnectionsRequestPermissionChecker.class)
     );
   }
 

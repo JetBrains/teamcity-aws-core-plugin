@@ -40,7 +40,7 @@ export async function testAwsConnection(formData: {
     };
   } else {
     return {
-      success: true,
+      success: false,
       message: `${BASE_TEST_CONNECTION_PREFIX}Could not get the Caller Identity information from the response.`,
     };
   }

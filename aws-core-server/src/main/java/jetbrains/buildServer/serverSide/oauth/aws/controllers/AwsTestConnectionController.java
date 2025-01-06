@@ -14,12 +14,15 @@ import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.*;
-import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
-import jetbrains.buildServer.serverSide.auth.Permission;
+import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
+import jetbrains.buildServer.serverSide.oauth.aws.controllers.auth.AwsConnectionsRequestPermissionChecker;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jdom.Content;
@@ -39,7 +42,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final AwsConnectionTester awsConnectionTester,
                                      @NotNull final AuthorizationInterceptor authInterceptor,
-                                     @NotNull final ProjectManager projectManager) {
+                                     @NotNull final ProjectManager projectManager,
+                                     @NotNull final AwsConnectionsRequestPermissionChecker permissionChecker) {
     super(server);
     myAwsConnectionTester = awsConnectionTester;
     myProjectManager = projectManager;
@@ -47,16 +51,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
       webControllerManager.registerController(PATH, this);
     }
 
-    authInterceptor.addPathBasedPermissionsChecker(PATH, (holder, request) -> {
-      String projectId = request.getParameter("projectId");
-      if (projectId == null) {
-        projectId = SProject.ROOT_PROJECT_ID;
-      }
-      final boolean hasAccess = holder.isPermissionGrantedForProject(projectId, Permission.EDIT_PROJECT);
-      if (!hasAccess) {
-        throw new AccessDeniedException(holder, "Authorised user lacks permissions for project " + projectId);
-      }
-    });
+    authInterceptor.addPathBasedPermissionsChecker(PATH, permissionChecker);
   }
 
   @Override

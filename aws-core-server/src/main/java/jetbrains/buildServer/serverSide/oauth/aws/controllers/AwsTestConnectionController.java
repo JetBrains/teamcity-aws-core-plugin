@@ -37,6 +37,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
 
   private final AwsConnectionTester myAwsConnectionTester;
   private final ProjectManager myProjectManager;
+  private final AwsConnectionsRequestPermissionChecker myPermissionChecker;
 
   public AwsTestConnectionController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
@@ -50,8 +51,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     if (TeamCityProperties.getBooleanOrTrue(FEATURE_PROPERTY_NAME)) {
       webControllerManager.registerController(PATH, this);
     }
-
-    authInterceptor.addPathBasedPermissionsChecker(PATH, permissionChecker);
+    myPermissionChecker = permissionChecker;
   }
 
   @Override
@@ -64,6 +64,9 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     if (project != null) {
       internalProjectId = project.getProjectId();
     }
+
+    myPermissionChecker.checkUserPermission(internalProjectId, externalProjectId, request);
+
     ActionErrors errors = new ActionErrors();
 
     BasePropertiesBean basePropertiesBean = new BasePropertiesBean(null);

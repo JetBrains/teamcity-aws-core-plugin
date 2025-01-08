@@ -16,81 +16,70 @@
 
 package jetbrains.buildServer.serverSide.oauth.aws.controllers.auth;
 
-import jetbrains.buildServer.controllers.RequestPermissionsChecker;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
-import jetbrains.buildServer.serverSide.auth.AuthorityHolder;
-import jetbrains.buildServer.serverSide.auth.Permission;
-import jetbrains.buildServer.serverSide.identifiers.ProjectIdentifiersManager;
+import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnectionTester;
+import jetbrains.buildServer.controllers.BaseControllerTestCase;
+import jetbrains.buildServer.serverSide.auth.*;
+import jetbrains.buildServer.serverSide.impl.ProjectEx;
+import jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsTestConnectionController;
+import jetbrains.buildServer.users.SUser;
+import org.assertj.core.api.Assertions;
 import org.mockito.Mockito;
-import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-public class AwsConnectionsTestConnectionRequestPermissionsCheckerTest {
+public class AwsConnectionsTestConnectionRequestPermissionsCheckerTest extends BaseControllerTestCase<AwsTestConnectionController> {
 
-  private RequestPermissionsChecker myPermissionsChecker;
-  private ProjectIdentifiersManager myProjectIdentifiersManager;
-  private AuthorityHolder myAuthorityHolder;
-  private HttpServletRequest myRequest;
+  private SUser myUser;
+  private ProjectEx myProject;
 
   @BeforeMethod
-  void setUp() throws IOException {
-    myProjectIdentifiersManager = Mockito.mock(ProjectIdentifiersManager.class);
-    myPermissionsChecker = new AwsConnectionsRequestPermissionChecker(myProjectIdentifiersManager);
-    myAuthorityHolder = Mockito.mock(AuthorityHolder.class);
-    myRequest = Mockito.mock(HttpServletRequest.class);
+  protected void setUp() throws Exception {
+    super.setUp();
+    myProject = createProject("my_project");
+    myUser = createUser("my_user");
+  }
+
+  @Override
+  protected AwsTestConnectionController createController() throws IOException {
+    return new AwsTestConnectionController(
+      myServer,
+      myWebManager,
+      Mockito.mock(AwsConnectionTester.class),
+      getWebFixture().getAuthorizationInterceptor(),
+      myProjectManager,
+      new AwsConnectionsRequestPermissionChecker()
+      );
   }
 
   @Test
-  void shouldThrowIfProjectIdIsNull() {
-    Mockito.when(myAuthorityHolder.isPermissionGrantedForProject(SProject.ROOT_PROJECT_ID, Permission.EDIT_PROJECT))
-      .thenReturn(false);
+  void shouldThrowIfNoPermissions() throws Exception {
+    makeLoggedIn(myUser);
 
-    Assert.assertThrows(AccessDeniedException.class, () -> myPermissionsChecker.checkPermissions(myAuthorityHolder, myRequest));
+    doPost("projectId", myProject.getExternalId());
+
+    Assertions.assertThat(myResponse.getReturnedContent())
+      .contains("Authorised user lacks permissions for the project: " + myProject.getExternalId());
   }
 
   @Test
-  void shouldThrowIfInternalProjectIdIsNull() {
-    String externalProjectId = "123";
-    Mockito.when(myAuthorityHolder.isPermissionGrantedForProject(SProject.ROOT_PROJECT_ID, Permission.EDIT_PROJECT))
-      .thenReturn(false);
-    Mockito.when(myProjectIdentifiersManager.externalToInternal(externalProjectId))
-      .thenReturn(null);
-    Mockito.when(myRequest.getParameter("projectId"))
-      .thenReturn(externalProjectId);
+  void shouldThrowIfNoProjectId() throws Exception {
+    makeLoggedIn(myUser);
 
-    Assert.assertThrows(AccessDeniedException.class, () -> myPermissionsChecker.checkPermissions(myAuthorityHolder, myRequest));
+    doPost();
+
+    Assertions.assertThat(myResponse.getReturnedContent())
+      .contains("Authorised user lacks permissions for the project: unable to get from request");
   }
 
   @Test
-  void shouldThrowIfNoPermissionsGranted() {
-    String internalProjectId = "321";
-    String externalProjectId = "123";
-    Mockito.when(myAuthorityHolder.isPermissionGrantedForProject(internalProjectId, Permission.EDIT_PROJECT))
-      .thenReturn(false);
-    Mockito.when(myProjectIdentifiersManager.externalToInternal(externalProjectId))
-      .thenReturn(internalProjectId);
-    Mockito.when(myRequest.getParameter("projectId"))
-      .thenReturn(externalProjectId);
+  void shouldNotThrowForHappyPath() throws Exception {
+    myUser.addRole(RoleScope.projectScope(myProject.getProjectId()), getTestRoles().createRole(Permission.EDIT_PROJECT));
+    makeLoggedIn(myUser);
 
-    Assert.assertThrows(AccessDeniedException.class, () -> myPermissionsChecker.checkPermissions(myAuthorityHolder, myRequest));
-  }
-
-  @Test
-  void shouldNotThrowForHappyPath() {
-    String internalProjectId = "321";
-    String externalProjectId = "123";
-    Mockito.when(myAuthorityHolder.isPermissionGrantedForProject(internalProjectId, Permission.EDIT_PROJECT))
-      .thenReturn(true);
-    Mockito.when(myProjectIdentifiersManager.externalToInternal(externalProjectId))
-      .thenReturn(internalProjectId);
-    Mockito.when(myRequest.getParameter("projectId"))
-      .thenReturn(externalProjectId);
-
-    myPermissionsChecker.checkPermissions(myAuthorityHolder, myRequest);
+    doPost("projectId", myProject.getExternalId());
+    Assertions.assertThat(myResponse.getReturnedContent())
+      .doesNotContain("Authorised user lacks permissions for the project");
   }
 }

@@ -17,44 +17,46 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers.auth;
 
 import com.intellij.openapi.diagnostic.Logger;
-import jetbrains.buildServer.controllers.RequestPermissionsChecker;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.auth.AccessDeniedException;
-import jetbrains.buildServer.serverSide.auth.AuthorityHolder;
 import jetbrains.buildServer.serverSide.auth.Permission;
-import jetbrains.buildServer.serverSide.identifiers.ProjectIdentifiersManager;
+import jetbrains.buildServer.users.SUser;
+import jetbrains.buildServer.web.util.SessionUser;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class AwsConnectionsRequestPermissionChecker implements RequestPermissionsChecker {
+public class AwsConnectionsRequestPermissionChecker {
 
   private static final Logger LOG = Logger.getInstance(AwsConnectionsRequestPermissionChecker.class);
 
-  private final ProjectIdentifiersManager myProjectIdentifiersManager;
+  public void checkUserPermission(@Nullable String internalProjectId,
+                                  @Nullable String externalProjectId,
+                                  @NotNull HttpServletRequest request) {
+    internalProjectId = getProjectId(internalProjectId);
+    externalProjectId = StringUtils.isEmpty(externalProjectId) ? "unable to get from request" : externalProjectId;
+    SUser user = getUserFromRequest(request);
 
-  public AwsConnectionsRequestPermissionChecker(@NotNull final ProjectIdentifiersManager projectIdentifiersManager) {
-    myProjectIdentifiersManager = projectIdentifiersManager;
+    boolean hasAccess = user.isPermissionGrantedForProject(internalProjectId, Permission.EDIT_PROJECT);
+
+    if (!hasAccess) {
+      throw new AccessDeniedException(user, "Authorised user lacks permissions for the project: " + externalProjectId);
+    }
   }
 
-  @Override
-  public void checkPermissions(@NotNull AuthorityHolder holder, @NotNull HttpServletRequest request) throws AccessDeniedException {
+  private SUser getUserFromRequest(@NotNull HttpServletRequest request) {
+    return SessionUser.getUser(request);
+  }
 
-    String projectId = request.getParameter("projectId");
-
-    if (projectId != null) {
-      projectId = myProjectIdentifiersManager.externalToInternal(projectId);
-    }
-
-    if (projectId == null) {
-      LOG.debug("Resulting project ID is calculated as null while checking permissions");
+  @NotNull
+  private String getProjectId(@Nullable String projectId) {
+    if (StringUtils.isEmpty(projectId)) {
+      LOG.debug("Project ID is not set, resolving project ID to a Root Project ID");
       projectId = SProject.ROOT_PROJECT_ID;
     }
 
-    final boolean hasAccess = holder.isPermissionGrantedForProject(projectId, Permission.EDIT_PROJECT);
-
-    if (!hasAccess) {
-      throw new AccessDeniedException(holder, "Authorised user lacks permissions for project " + projectId);
-    }
+    return projectId;
   }
 }

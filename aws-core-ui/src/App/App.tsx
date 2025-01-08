@@ -69,14 +69,16 @@ export function AppWrapper({ config }: { config: Config }) {
     [resetContainer]
   );
 
-  const closeLink = document.querySelector("div.OAuthConnectionDialog a.closeWindowLink") as HTMLLinkElement;
+  const closeLink = document.querySelector(
+    'div.OAuthConnectionDialog a.closeWindowLink'
+  ) as HTMLLinkElement;
 
   if (closeLink !== null) {
     const oldOnClick = closeLink.onclick;
     closeLink.onclick = (e) => {
       resetContainer();
       oldOnClick?.call(closeLink, e);
-    }
+    };
   }
 
   const newConf = { ...config, onClose: doClose };
@@ -171,10 +173,14 @@ export function App({
   const handleRegionChange = React.useCallback(
     (selected: SelectItem | null) => {
       if (selected!) {
-        setValue(
-          FormFieldsNames.AWS_STS_ENDPOINT,
-          `https://sts.${selected?.key}.amazonaws.com`
-        );
+        const key = selected?.key;
+        let newValue;
+        if (key.toString().startsWith('cn')) {
+          newValue = `https://sts.${key}.amazonaws.com.cn`;
+        } else {
+          newValue = `https://sts.${key}.amazonaws.com`;
+        }
+        setValue(FormFieldsNames.AWS_STS_ENDPOINT, newValue);
       }
     },
     [setValue]

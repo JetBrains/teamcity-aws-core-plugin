@@ -10,8 +10,6 @@ import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions.AWSRegions.isChinaRegion;
-
 public class StsEndpointParamValidator {
   public static final String STS_ENDPOINTS_ALLOWLIST_PROPERTY_NAME = "teamcity.aws.connection.stsEndpointsAllowlist";
   public static final String REGION_TO_STS_ENDPOINT_FORMAT = "https://sts.%s.amazonaws.com";
@@ -50,7 +48,7 @@ public class StsEndpointParamValidator {
 
   private static void addAllDefaultAwsStsEndpoints(@NotNull List<String> res) {
     for (String regionName : AWSRegions.getAllRegions().keySet()) {
-      if (isChinaRegion(regionName)) {
+      if (AWSRegions.isChinaRegion(regionName)) {
         res.add(String.format(CHINA_REGION_TO_STS_ENDPOINT_FORMAT, regionName));
       } else {
         res.add(String.format(REGION_TO_STS_ENDPOINT_FORMAT, regionName));

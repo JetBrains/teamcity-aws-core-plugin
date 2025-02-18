@@ -2,6 +2,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="jetbrains.buildServer.util.amazon.AWSCommonParams" %>
 <%@ page import="jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions.AWSRegions" %>
+<%@ page import="jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
@@ -96,3 +97,4 @@
 
 <c:set var="default_cred_chain_disabled" value="<%= AWSCommonParams.DEFAULT_CREDENTIALS_PROVIDER_CHAIN_DISABLED_PARAM %>"/>
 <c:set var="default_cred_chain_hidden" value="<%= AWSCommonParams.DEFAULT_CREDENTIALS_PROVIDER_CHAIN_HIDDEN_PARAM %>"/>
+<c:set var="default_cred_chain_enabled" value="<%= AwsCloudConnectorConstants.DEFAULT_CREDS_PROVIDER_FEATURE_PROPERTY_NAME %>"/>

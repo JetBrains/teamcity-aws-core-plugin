@@ -169,11 +169,13 @@
     return false;
   };
 
-  const afterClose = BS.OAuthConnectionDialog.afterClose;
-  BS.OAuthConnectionDialog.afterClose = function () {
-    $j('#awsTestConnectionButton').remove();
-    afterClose();
-  };
+  {
+    const afterClose = BS.OAuthConnectionDialog.afterClose;
+    BS.OAuthConnectionDialog.afterClose = function () {
+      $j('#awsTestConnectionButton').remove();
+      afterClose();
+    };
+  }
 
   BS.OAuthConnectionDialog.addError = function (errorHTML, errorId){
     const target = document.getElementById('error_' + errorId);

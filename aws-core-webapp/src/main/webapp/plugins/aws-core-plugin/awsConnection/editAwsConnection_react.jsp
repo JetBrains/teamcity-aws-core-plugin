@@ -71,54 +71,56 @@
 </c:set>
 
 <script type="text/javascript">
-  const allRegions = {
-    allRegionKeys: "<bs:forJs>${allRegionKeys}</bs:forJs>",
-    allRegionValues: "<bs:forJs>${allRegionValues}</bs:forJs>",
-  };
+  {
+    const allRegions = {
+      allRegionKeys: "<bs:forJs>${allRegionKeys}</bs:forJs>",
+      allRegionValues: "<bs:forJs>${allRegionValues}</bs:forJs>",
+    };
 
-  const config = {
-    projectId: "<bs:forJs>${projectId}</bs:forJs>",
-    connectionId: "<bs:forJs>${connectionId}</bs:forJs>",
-    supportedProvidersUrl: "<bs:forJs>${supportedProvidersUrl}</bs:forJs>",
-    connectionsUrl: "<bs:forJs>${connectionsUrl}</bs:forJs>",
-    displayName: "<bs:forJs>${displayName}</bs:forJs>",
-    region: "<bs:forJs>${region}</bs:forJs>",
-    defaultRegion: "<bs:forJs>${region_name_default}</bs:forJs>",
-    credentialsType: "<bs:forJs>${credentialsType}</bs:forJs>",
-    accessKeyId: "<bs:forJs>${accessKeyId}</bs:forJs>",
-    secretAccessKey: "<bs:forJs>${secretAccessKey}</bs:forJs>",
-    sessionCredentialsEnabled: "<bs:forJs>${sessionCredentialsEnabled}</bs:forJs>",
-    stsEndpoint: "<bs:forJs>${stsEndpoint}</bs:forJs>",
-    iamRoleArn: "<bs:forJs>${iamRoleArn}</bs:forJs>",
-    iamRoleSessionName: "<bs:forJs>${iamRoleSessionName}</bs:forJs>",
-    buildStepsFeatureEnabled: "<bs:forJs>${buildStepsFeatureEnabled}</bs:forJs>" === "true",
-    subProjectsFeatureEnabled: "<bs:forJs>${subProjectsFeatureEnabled}</bs:forJs>" === "true",
-    allowedInBuildsValue: "<bs:forJs>${allowedInBuildsValue}</bs:forJs>" === "true",
-    allowedInSubProjectsValue: "<bs:forJs>${allowedInSubProjectsValue}</bs:forJs>" === "true",
-    publicKey: "<bs:forJs>${publicKey}</bs:forJs>",
-    featureId: "<bs:forJs>${featureId}</bs:forJs>",
-    testConnectionUrl: "<bs:forJs>${testConnectionUrl}</bs:forJs>",
-    allRegions: allRegions,
-    isDefaultCredProviderEnabled: "<bs:forJs>${isDefaultCredProviderEnabled}</bs:forJs>" === "true",
-    availableAwsConnectionsControllerResource: "<bs:forJs>${avail_connections_rest_resource_name}</bs:forJs>",
-    availableAwsConnectionsControllerUrl: "<bs:forJs>${avail_connections_controller_url}</bs:forJs>",
-    externalIdsControllerUrl: "<bs:forJs>${externalIdsUrl}</bs:forJs>",
-    externalIdsConnectionParam: "<bs:forJs>${awsConnIdRestParamForExternalIds}</bs:forJs>",
-    awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
-    rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
-    readOnly: "<bs:forJs>${projectIsReadOnly || !canEditProject}</bs:forJs>" === "true",
-  };
+    const config = {
+      projectId: "<bs:forJs>${projectId}</bs:forJs>",
+      connectionId: "<bs:forJs>${connectionId}</bs:forJs>",
+      supportedProvidersUrl: "<bs:forJs>${supportedProvidersUrl}</bs:forJs>",
+      connectionsUrl: "<bs:forJs>${connectionsUrl}</bs:forJs>",
+      displayName: "<bs:forJs>${displayName}</bs:forJs>",
+      region: "<bs:forJs>${region}</bs:forJs>",
+      defaultRegion: "<bs:forJs>${region_name_default}</bs:forJs>",
+      credentialsType: "<bs:forJs>${credentialsType}</bs:forJs>",
+      accessKeyId: "<bs:forJs>${accessKeyId}</bs:forJs>",
+      secretAccessKey: "<bs:forJs>${secretAccessKey}</bs:forJs>",
+      sessionCredentialsEnabled: "<bs:forJs>${sessionCredentialsEnabled}</bs:forJs>",
+      stsEndpoint: "<bs:forJs>${stsEndpoint}</bs:forJs>",
+      iamRoleArn: "<bs:forJs>${iamRoleArn}</bs:forJs>",
+      iamRoleSessionName: "<bs:forJs>${iamRoleSessionName}</bs:forJs>",
+      buildStepsFeatureEnabled: "<bs:forJs>${buildStepsFeatureEnabled}</bs:forJs>" === "true",
+      subProjectsFeatureEnabled: "<bs:forJs>${subProjectsFeatureEnabled}</bs:forJs>" === "true",
+      allowedInBuildsValue: "<bs:forJs>${allowedInBuildsValue}</bs:forJs>" === "true",
+      allowedInSubProjectsValue: "<bs:forJs>${allowedInSubProjectsValue}</bs:forJs>" === "true",
+      publicKey: "<bs:forJs>${publicKey}</bs:forJs>",
+      featureId: "<bs:forJs>${featureId}</bs:forJs>",
+      testConnectionUrl: "<bs:forJs>${testConnectionUrl}</bs:forJs>",
+      allRegions: allRegions,
+      isDefaultCredProviderEnabled: "<bs:forJs>${isDefaultCredProviderEnabled}</bs:forJs>" === "true",
+      availableAwsConnectionsControllerResource: "<bs:forJs>${avail_connections_rest_resource_name}</bs:forJs>",
+      availableAwsConnectionsControllerUrl: "<bs:forJs>${avail_connections_controller_url}</bs:forJs>",
+      externalIdsControllerUrl: "<bs:forJs>${externalIdsUrl}</bs:forJs>",
+      externalIdsConnectionParam: "<bs:forJs>${awsConnIdRestParamForExternalIds}</bs:forJs>",
+      awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
+      rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
+      readOnly: "<bs:forJs>${projectIsReadOnly || !canEditProject}</bs:forJs>" === "true",
+    };
 
-  const loadJS = function (url, implementationCode, location) {
-    const scriptTag = document.createElement('script');
-    scriptTag.src = url;
-    scriptTag.onload = implementationCode;
-    location.appendChild(scriptTag);
-  };
+    const loadJS = function (url, implementationCode, location) {
+      const scriptTag = document.createElement('script');
+      scriptTag.src = url;
+      scriptTag.onload = implementationCode;
+      location.appendChild(scriptTag);
+    };
 
-  const callback = function () {
-    renderEditAwsConnection(config);
-  };
+    const callback = function () {
+      renderEditAwsConnection(config);
+    };
 
-  loadJS("<bs:forJs>${frontendCode}</bs:forJs>", callback, document.body);
+    loadJS("<bs:forJs>${frontendCode}</bs:forJs>", callback, document.body);
+  }
 </script>

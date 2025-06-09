@@ -17,6 +17,7 @@
         <TC_LOCAL_REPO>local-repo</TC_LOCAL_REPO>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <jackson.version>2.19.0</jackson.version>
     </properties>
 
     <url>https://github.com/JetBrains/teamcity-aws-core-plugin</url>
@@ -76,6 +77,13 @@
                 <groupId>org.jetbrains.teamcity.plugins</groupId>
                 <artifactId>aws-core-common</artifactId>
                 <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.teamcity</groupId>
+                <artifactId>bom</artifactId>
+                <version>${teamcity.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>

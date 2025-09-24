@@ -17,11 +17,13 @@
 <c:set var="previouslyChosenAwsConnId" value="${propertiesBean.properties[chosen_aws_conn_id]}"/>
 <c:set var="isUsingSessionCredentials" value="${(empty propertiesBean.properties[use_session_credentials_param]) ? 'true' : propertiesBean.properties[use_session_credentials_param]}"/>
 <c:set var="awsCredsType" value="${propertiesBean.properties[aws_creds_type_param]}"/>
+<c:set var="enableFilter" value="${not empty param.enableFilter ? param.enableFilter : 'true'}"/>
+<c:set var="unselectedMessage" value="${not empty param.unselectedMessage ? param.unselectedMessage : '-- Choose the Principal AWS Connection --'}"/>
 
 <tr class="noBorder">
   <th><label for="${chosen_aws_conn_id}">${chosen_aws_conn_label}: <l:star/></label></th>
   <td>
-    <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="true" disabled="true" className="${avail_connections_select_id}"/>
+    <props:selectProperty id="${avail_connections_select_id}" name="${chosen_aws_conn_id}" enableFilter="${enableFilter}" disabled="true" className="${avail_connections_select_id}"/>
     <span class="error error_${avail_connections_select_id} hidden"></span>
     <span class="error" id="error_${chosen_aws_conn_id}" style="word-break: break-all;"></span>
   </td>
@@ -77,7 +79,7 @@
               availConnsSelector.append(
                 $j("<option></option>")
                 .attr("value", "${unselected_principal_aws_connection_value}")
-                .text(`-- Choose the Principal AWS Connection --`)
+                .text('${unselectedMessage}')
               );
 
               json.forEach(
@@ -103,7 +105,9 @@
                 newSelector.selectedIndex = previouslySelectedOptionIndex;
               }
 
-              BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
+              if ('${enableFilter}' === 'true'){
+                  BS.jQueryDropdown(availConnsSelector).ufd("changeOptions");
+              }
               toggleErrors(false);
               toggleSessionDurationField();
 
@@ -122,8 +126,9 @@
           }
         }
       });
-
-      BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
+      if ('${enableFilter}' === 'true') {
+          BS.enableJQueryDropDownFilter(availConnsSelector.attr('id'), {});
+      }
     });
 
     let toggleSessionDurationField = function () {

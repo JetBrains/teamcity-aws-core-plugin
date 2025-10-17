@@ -1,18 +1,7 @@
-
-
 package jetbrains.buildServer.util.amazon;
 
-import com.amazonaws.client.builder.ExecutorFactory;
-import com.amazonaws.services.cloudfront.AmazonCloudFront;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.transfer.AbortableTransfer;
-import com.amazonaws.services.s3.transfer.Transfer;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.intellij.openapi.diagnostic.Logger;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,13 +10,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.serverSide.TeamCityProperties;
-import jetbrains.buildServer.util.CollectionsUtil;
-import jetbrains.buildServer.util.amazon.retry.AmazonRetrier;
-import jetbrains.buildServer.util.retry.Retrier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.awscore.AwsClient;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.CompletedTransfer;
+import software.amazon.awssdk.transfer.s3.model.Transfer;
 
 /**
  * @author vbedrosova
@@ -46,26 +39,22 @@ public final class S3Util {
 
   @Used("codedeploy,codebuild,codepipeline")
   @NotNull
-  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull AmazonS3 s3Client, @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
+  public static <T extends Transfer> Collection<CompletedTransfer> withTransferManager(@NotNull S3AsyncClient s3Client, @NotNull final WithTransferManager<T> withTransferManager) throws Throwable {
     return withTransferManager(s3Client, withTransferManager, S3AdvancedConfiguration.defaultConfiguration());
   }
 
   @NotNull
-  public static <T extends Transfer> Collection<T> withTransferManager(@NotNull final AmazonS3 s3Client,
+  public static <T extends Transfer> Collection<CompletedTransfer> withTransferManager(@NotNull final S3AsyncClient s3Client,
                                                                        @NotNull final WithTransferManager<T> runnable,
                                                                        @NotNull final S3AdvancedConfiguration advancedConfiguration) throws Throwable {
 
-    final TransferManager manager = TransferManagerBuilder.standard()
-                                                          .withS3Client(s3Client)
-                                                          .withShutDownThreadPools(true)
-                                                          .withMinimumUploadPartSize(advancedConfiguration.getMinimumUploadPartSize())
-                                                          .withMultipartUploadThreshold(advancedConfiguration.getMultipartUploadThreshold())
-                                                          .withMultipartCopyThreshold(advancedConfiguration.getMultipartUploadThreshold())
-                                                          .withExecutorFactory(createExecutorFactory(createDefaultExecutorService(advancedConfiguration.getNThreads())))
-                                                          .build();
-    LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
-    final Retrier retrier = AmazonRetrier.defaultAwsRetrier(advancedConfiguration.getRetriesNum(), advancedConfiguration.getRetryDelay(), LOG);
+    ExecutorService defaultExecutorService = createDefaultExecutorService(advancedConfiguration.getNThreads());
+    final S3TransferManager manager = S3TransferManager.builder()
+      .s3Client(s3Client)
+      .executor(defaultExecutorService)
+      .build();
+    LOG.debug(() -> "Processing with s3Client " + advancedConfiguration);
 
     try {
       final List<T> transfers = new ArrayList<>(runnable.run(manager));
@@ -77,30 +66,21 @@ public final class S3Util {
           isInterrupted.set(true);
 
           for (T transfer : transfers) {
-            boolean aborted = false;
-            if (transfer instanceof AbortableTransfer) {
-              ((AbortableTransfer)transfer).abort();
-              aborted = true;
-            } else {
-              try {
-                final Method abort = transfer.getClass().getDeclaredMethod("abort");
-                abort.invoke(transfer);
-                aborted = true;
-              } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ignored) {
-              }
-            }
-            if (!aborted) {
-              LOG.warn("Transfer type " + transfer.getClass().getName() + " does not support interrupt");
+            if (transfer != null) {
+              transfer.completionFuture().cancel(true);
             }
           }
         };
         ((InterruptAwareWithTransferManager<T>)runnable).setInterruptHook(hook);
       }
 
+      Collection<CompletedTransfer> completedTransfers = new ArrayList<>();
       Throwable exception = null;
       for (T transfer : transfers) {
         try {
-          retrier.execute(transfer::waitForCompletion);
+          if (transfer != null) {
+            completedTransfers.add(transfer.completionFuture().join());
+          }
         } catch (Throwable t) {
           if (!isInterrupted.get()) {
             if (exception != null) {
@@ -115,34 +95,22 @@ public final class S3Util {
         throw exception;
       }
 
-      return CollectionsUtil.filterCollection(transfers, data -> Transfer.TransferState.Completed == data.getState());
+      return completedTransfers;
+
     } finally {
-      manager.shutdownNow(advancedConfiguration.shouldShutdownClient());
+      defaultExecutorService.shutdownNow();
       if (advancedConfiguration.shouldShutdownClient()) {
         shutdownClient(s3Client);
       }
     }
   }
 
-  public static void shutdownClient(@NotNull final AmazonS3 s3Client) {
+  public static void shutdownClient(@NotNull final AwsClient awsClient) {
     try {
-      s3Client.shutdown();
+      awsClient.close();
     } catch (Exception e) {
-      LOG.warnAndDebugDetails("Shutting down s3 client " + s3Client + " failed.", e);
+      LOG.warnAndDebugDetails("Failed to close the AWS client", e);
     }
-  }
-
-  public static void shutdownClient(@NotNull final AmazonCloudFront client) {
-    try {
-      client.shutdown();
-    } catch (Exception e) {
-      LOG.warnAndDebugDetails("Shutting down CloudFront client " + client + " failed.", e);
-    }
-  }
-
-  @NotNull
-  private static ExecutorFactory createExecutorFactory(@NotNull final ExecutorService executorService) {
-    return () -> executorService;
   }
 
   @Used("code-deploy-plugin")
@@ -162,7 +130,7 @@ public final class S3Util {
 
   public interface WithTransferManager<T extends Transfer> {
     @NotNull
-    Collection<T> run(@NotNull TransferManager manager) throws Throwable;
+    Collection<T> run(@NotNull S3TransferManager manager) throws Throwable;
   }
 
   public interface TransferManagerInterruptHook {
@@ -171,7 +139,7 @@ public final class S3Util {
 
   public interface InterruptAwareWithTransferManager<T extends Transfer> extends WithTransferManager<T> {
     /**
-     * This method is executed after {@link WithTransferManager#run(TransferManager)} is completed,
+     * This method is executed after {@link WithTransferManager#run(S3TransferManager)} is completed,
      * aiming to stop current execution
      *
      * @param hook a callback to interrupt
@@ -195,7 +163,7 @@ public final class S3Util {
     private boolean myAllowPlainHttpUpload = false;
 
     @NotNull
-    private CannedAccessControlList myAcl = CannedAccessControlList.BucketOwnerFullControl;
+    private ObjectCannedACL myAcl = ObjectCannedACL.BUCKET_OWNER_FULL_CONTROL;
 
     @NotNull
     public static S3AdvancedConfiguration defaultConfiguration() {
@@ -281,7 +249,7 @@ public final class S3Util {
     }
 
     @NotNull
-    public S3AdvancedConfiguration withAcl(@Nullable final CannedAccessControlList acl) {
+    public S3AdvancedConfiguration withAcl(@Nullable final ObjectCannedACL acl) {
       if (acl != null) {
         myAcl = acl;
       }
@@ -342,7 +310,7 @@ public final class S3Util {
     }
 
     @NotNull
-    public CannedAccessControlList getAcl() {
+    public ObjectCannedACL getAcl() {
       return myAcl;
     }
 

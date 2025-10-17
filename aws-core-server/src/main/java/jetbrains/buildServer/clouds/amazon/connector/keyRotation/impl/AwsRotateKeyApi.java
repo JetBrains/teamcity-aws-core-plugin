@@ -2,16 +2,6 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
-import com.amazonaws.services.identitymanagement.model.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
 import java.util.HashMap;
 import java.util.Map;
 import jetbrains.buildServer.Used;
@@ -31,6 +21,16 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.util.retry.Retrier;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.awscore.defaultsmode.DefaultsMode;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.iam.IamClient;
+import software.amazon.awssdk.services.iam.model.*;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.GetCallerIdentityRequest;
 
 public class AwsRotateKeyApi implements RotateKeyApi {
 
@@ -40,10 +40,10 @@ public class AwsRotateKeyApi implements RotateKeyApi {
   private final OAuthConnectionDescriptor myAwsConnectionDescriptor;
   private final SProject myProject;
   private final int myRotateTimeoutSec;
-  private final AmazonIdentityManagement myIam;
-  private final AWSSecurityTokenService mySts;
-  private final AWSCredentialsProvider myPreviousCredentials;
-  private AWSCredentialsProvider myNewCredentials;
+  private final IamClient myIam;
+  private final StsClient mySts;
+  private final AwsCredentialsProvider myPreviousCredentials;
+  private AwsCredentialsProvider myNewCredentials;
 
   public AwsRotateKeyApi(@NotNull final OAuthConnectionsManager oAuthConnectionsManager,
                          @NotNull final SecurityContextEx securityContext,
@@ -58,22 +58,31 @@ public class AwsRotateKeyApi implements RotateKeyApi {
     myProject = project;
     myRotateTimeoutSec = rotateTimeoutSec;
 
-    String connectionRegion = awsConnectionDescriptor.getParameters().get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
+    String connectionRegion = awsConnectionDescriptor.getParameters()
+      .get(AwsCloudConnectorConstants.REGION_NAME_PARAM);
+    Region region = Region.of(connectionRegion);
 
-    myIam = AmazonIdentityManagementClientBuilder
-      .standard()
-      .withRegion(Regions.fromName(connectionRegion))
-      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("iam"))
+    myIam = IamClient.builder()
+      .region(region)
+      .defaultsMode(DefaultsMode.STANDARD)
+      .httpClientBuilder(ClientConfigurationBuilder.createClientBuilder("iam"))
+      .overrideConfiguration(
+        ClientConfigurationBuilder.clientOverrideConfigurationBuilder()
+          .build())
       .build();
 
-    mySts = AWSSecurityTokenServiceClientBuilder
-      .standard()
-      .withRegion(Regions.fromName(connectionRegion))
-      .withClientConfiguration(ClientConfigurationBuilder.createClientConfigurationEx("sts"))
+    mySts = StsClient.builder()
+      .defaultsMode(DefaultsMode.STANDARD)
+      .region(region)
+      .httpClientBuilder(ClientConfigurationBuilder.createClientBuilder("sts"))
+      .overrideConfiguration(
+        ClientConfigurationBuilder.clientOverrideConfigurationBuilder()
+          .build()
+      )
       .build();
 
-    myPreviousCredentials = new AWSStaticCredentialsProvider(
-      new BasicAWSCredentials(
+    myPreviousCredentials = StaticCredentialsProvider.create(
+      AwsBasicCredentials.create(
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
       )
@@ -93,18 +102,20 @@ public class AwsRotateKeyApi implements RotateKeyApi {
   }
 
   private void createNewKey() throws KeyRotationException {
-    CreateAccessKeyResult createAccessKeyResult = createAccessKey(myPreviousCredentials);
-    myNewCredentials = new AWSStaticCredentialsProvider(
-      new BasicAWSCredentials(
-        createAccessKeyResult.getAccessKey().getAccessKeyId(),
-        createAccessKeyResult.getAccessKey().getSecretAccessKey()
+    CreateAccessKeyResponse createAccessKeyResult = createAccessKey(myPreviousCredentials);
+    myNewCredentials = StaticCredentialsProvider.create(
+      AwsBasicCredentials.create(
+        createAccessKeyResult.accessKey().accessKeyId(),
+        createAccessKeyResult.accessKey().secretAccessKey()
       )
     );
   }
 
   private void waitUntilRotatedKeyIsAvailable() throws KeyRotationException {
-    GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest()
-      .withRequestCredentialsProvider(myNewCredentials);
+    GetCallerIdentityRequest getCallerIdentityRequest = GetCallerIdentityRequest.builder()
+      .overrideConfiguration(c -> c.credentialsProvider(myNewCredentials))
+      .build();
+
     try {
       Retrier.withRetries(myRotateTimeoutSec, Retrier.DelayStrategy.constantBackOff(1000))
         .execute(() -> mySts.getCallerIdentity(getCallerIdentityRequest));
@@ -121,8 +132,9 @@ public class AwsRotateKeyApi implements RotateKeyApi {
     }
 
     Map<String, String> newParameters = new HashMap<>(currentConnection.getParameters());
-    newParameters.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, myNewCredentials.getCredentials().getAWSAccessKeyId());
-    newParameters.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, myNewCredentials.getCredentials().getAWSSecretKey());
+    AwsCredentials awsCredentials = myNewCredentials.resolveCredentials();
+    newParameters.put(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM, awsCredentials.accessKeyId());
+    newParameters.put(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM, awsCredentials.secretAccessKey());
 
     myOAuthConnectionsManager.updateConnection(myProject, currentConnection.getId(), currentConnection.getOauthProvider().getType(), newParameters);
     persist(myProject);
@@ -138,12 +150,14 @@ public class AwsRotateKeyApi implements RotateKeyApi {
   }
 
   @NotNull
-  private CreateAccessKeyResult createAccessKey(@NotNull final AWSCredentialsProvider previousCredentials)
+  private CreateAccessKeyResponse createAccessKey(@NotNull final AwsCredentialsProvider previousCredentials)
     throws KeyRotationException {
     String iamUserName = getIamUserName(previousCredentials);
-    CreateAccessKeyRequest createAccessKeyRequest = new CreateAccessKeyRequest()
-      .withUserName(iamUserName)
-      .withRequestCredentialsProvider(previousCredentials);
+    CreateAccessKeyRequest createAccessKeyRequest = CreateAccessKeyRequest.builder()
+      .userName(iamUserName)
+      .overrideConfiguration(c -> c.credentialsProvider(previousCredentials))
+      .build();
+
     try {
       return myIam.createAccessKey(createAccessKeyRequest);
     } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {
@@ -152,10 +166,14 @@ public class AwsRotateKeyApi implements RotateKeyApi {
   }
 
   @NotNull
-  private String getIamUserName(@NotNull final AWSCredentialsProvider creds) {
-    GetUserRequest getUserRequest = new GetUserRequest()
-      .withRequestCredentialsProvider(creds);
-    return myIam.getUser(getUserRequest).getUser().getUserName();
+  private String getIamUserName(@NotNull final AwsCredentialsProvider creds) {
+    GetUserRequest getUserRequest = GetUserRequest.builder()
+      .overrideConfiguration(c -> c.credentialsProvider(creds))
+      .build();
+
+    return myIam.getUser(getUserRequest)
+      .user()
+      .userName();
   }
 
 
@@ -164,8 +182,8 @@ public class AwsRotateKeyApi implements RotateKeyApi {
                          @NotNull final SecurityContextEx securityContext,
                          @NotNull final ConfigActionFactory configActionFactory,
                          @NotNull final OAuthConnectionDescriptor awsConnectionDescriptor,
-                         @NotNull final AmazonIdentityManagement iam,
-                         @NotNull final AWSSecurityTokenService sts,
+                         @NotNull final IamClient iam,
+                         @NotNull final StsClient sts,
                          @NotNull final SProject project) {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     mySecurityContext = securityContext;
@@ -176,8 +194,8 @@ public class AwsRotateKeyApi implements RotateKeyApi {
     myProject = project;
     myRotateTimeoutSec = 1;
 
-    myPreviousCredentials = new AWSStaticCredentialsProvider(
-      new BasicAWSCredentials(
+    myPreviousCredentials = StaticCredentialsProvider.create(
+      AwsBasicCredentials.create(
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.ACCESS_KEY_ID_PARAM),
         awsConnectionDescriptor.getParameters().get(AwsAccessKeysParams.SECURE_SECRET_ACCESS_KEY_PARAM)
       )

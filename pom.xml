@@ -12,7 +12,7 @@
         <revision>${PluginVersion}</revision>
         <PluginVersion>${teamcity.version}</PluginVersion>
         <teamcity.version>${MAJOR_VERSION}-SNAPSHOT</teamcity.version>
-        <MAJOR_VERSION>2024.11</MAJOR_VERSION>
+        <MAJOR_VERSION>2025.11</MAJOR_VERSION>
         <local.repo.path>${TC_LOCAL_REPO}</local.repo.path>
         <TC_LOCAL_REPO>local-repo</TC_LOCAL_REPO>
         <maven.compiler.source>8</maven.compiler.source>
@@ -84,6 +84,47 @@
                 <version>${teamcity.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.33.13</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>sdk-core</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>utils</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>regions</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

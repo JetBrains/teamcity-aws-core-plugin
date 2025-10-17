@@ -1,9 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl.staticType;
 
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.model.Credentials;
-import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
-import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 import java.util.Date;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
@@ -17,6 +13,10 @@ import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.Credentials;
+import software.amazon.awssdk.services.sts.model.GetSessionTokenRequest;
+import software.amazon.awssdk.services.sts.model.GetSessionTokenResponse;
 
 public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
   private final SProjectFeatureDescriptor myAwsConnectionFeature;
@@ -34,7 +34,7 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
   @NotNull
   @Override
   public AwsCredentialsData getAwsCredentials() throws ConnectionCredentialsException {
-    Credentials credentials = requestSession().getCredentials();
+    Credentials credentials = requestSession().credentials();
     return AwsConnectionUtils.getDataFromCredentials(credentials);
   }
 
@@ -50,11 +50,10 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
     return null;
   }
 
-  private GetSessionTokenResult requestSession() throws ConnectionCredentialsException {
-    GetSessionTokenRequest getSessionTokenRequest = new GetSessionTokenRequest();
+  private GetSessionTokenResponse requestSession() throws ConnectionCredentialsException {
     Map<String, String> connectionProperties = myAwsConnectionFeature.getParameters();
 
-    AWSSecurityTokenService sts = myStsClientProvider
+    StsClient sts = myStsClientProvider
       .getClientWithCredentials(
         new AwsConnectionCredentials(
           myBasicCredentialsHolder.getAwsCredentials(),
@@ -64,7 +63,9 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
       );
 
     int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);
-    getSessionTokenRequest.withDurationSeconds(sessionDurationMinutes * 60);
+    GetSessionTokenRequest getSessionTokenRequest = GetSessionTokenRequest.builder()
+      .durationSeconds(sessionDurationMinutes * 60)
+      .build();
 
     return IOGuard.allowNetworkCall(() -> sts.getSessionToken(getSessionTokenRequest));
   }

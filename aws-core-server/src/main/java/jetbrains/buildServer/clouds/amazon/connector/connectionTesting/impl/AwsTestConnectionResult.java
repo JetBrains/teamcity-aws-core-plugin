@@ -1,15 +1,15 @@
 package jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl;
 
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
+import software.amazon.awssdk.services.sts.model.GetCallerIdentityResponse;
 
 public class AwsTestConnectionResult {
-  private final GetCallerIdentityResult myGetCallerIdentityResult;
+  private final GetCallerIdentityResponse myGetCallerIdentityResult;
 
-  public AwsTestConnectionResult(GetCallerIdentityResult getCallerIdentityResult) {
+  public AwsTestConnectionResult(GetCallerIdentityResponse getCallerIdentityResult) {
     myGetCallerIdentityResult = getCallerIdentityResult;
   }
 
-  public GetCallerIdentityResult getGetCallerIdentityResult() {
+  public GetCallerIdentityResponse getGetCallerIdentityResult() {
     return myGetCallerIdentityResult;
   }
 }

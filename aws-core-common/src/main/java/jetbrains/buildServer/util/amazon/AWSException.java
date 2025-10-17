@@ -2,13 +2,18 @@
 
 package jetbrains.buildServer.util.amazon;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import java.util.Map;
+import java.util.Objects;
+
 import jetbrains.buildServer.Used;
 import jetbrains.buildServer.util.CollectionsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.http.SdkHttpResponse;
 
 /**
  * @author vbedrosova
@@ -56,8 +61,8 @@ public class AWSException extends RuntimeException {
   @NotNull
   public static String getMessage(@NotNull Throwable t) {
     if (t instanceof AWSException) return t.getMessage();
-    if (t instanceof AmazonServiceException)  return "AWS error: " + removeTrailingDot(((AmazonServiceException) t).getErrorMessage());
-    if (t instanceof AmazonClientException) {
+    if (t instanceof SdkServiceException)  return "AWS error: " + removeTrailingDot(t.getMessage());
+    if (t instanceof SdkClientException) {
       final String message = t.getMessage();
       if (message.contains(NETWORK_PROBLEM_MESSAGE)) {
         return "Unable to access AWS. Check your network settings and try again.";
@@ -72,9 +77,20 @@ public class AWSException extends RuntimeException {
   @Nullable
   public static String getIdentity(@NotNull Throwable t) {
     if (t instanceof AWSException) return ((AWSException) t).getIdentity();
-    if (t instanceof AmazonServiceException) {
-      final AmazonServiceException ase = (AmazonServiceException) t;
-      return ase.getServiceName() + ase.getErrorType().name() + ase.getStatusCode() + ase.getErrorCode();
+    if (t instanceof AwsServiceException) {
+      final AwsErrorDetails aed = ((AwsServiceException) t).awsErrorDetails();
+
+      if (aed == null) {
+        return t.toString();
+      }
+
+      SdkHttpResponse httpResponse = aed.sdkHttpResponse();
+      String httpResponseDetails = httpResponse == null ? "" :
+        httpResponse.statusText()
+        .map(text -> text + httpResponse.statusCode())
+        .orElse(String.valueOf(httpResponse.statusCode()));
+
+      return aed.serviceName() + aed.errorCode() + httpResponseDetails;
     }
     return null;
   }
@@ -82,8 +98,8 @@ public class AWSException extends RuntimeException {
   @NotNull
   public static String getType(@NotNull Throwable t) {
     if (t instanceof  AWSException) return ((AWSException) t).getType();
-    if (t instanceof AmazonServiceException) return SERVICE_PROBLEM_TYPE;
-    if (t instanceof AmazonClientException) return CLIENT_PROBLEM_TYPE;
+    if (t instanceof SdkServiceException) return SERVICE_PROBLEM_TYPE;
+    if (t instanceof SdkClientException) return CLIENT_PROBLEM_TYPE;
     return EXCEPTION_BUILD_PROBLEM_TYPE;
   }
 
@@ -91,14 +107,9 @@ public class AWSException extends RuntimeException {
   @Nullable
   public static String getDetails(@NotNull Throwable t) {
     if (t instanceof AWSException) return ((AWSException) t).getDetails();
-    if (t instanceof AmazonServiceException) {
-      final AmazonServiceException ase = (AmazonServiceException) t;
-      return "\n" +
-        "Service:             " + ase.getServiceName() + "\n" +
-        "HTTP Status Code:    " + ase.getStatusCode() + "\n" +
-        "AWS Error Code:      " + ase.getErrorCode() + "\n" +
-        "Error Type:          " + ase.getErrorType() + "\n" +
-        "Request ID:          " + ase.getRequestId();
+    if (t instanceof AwsServiceException) {
+      final AwsServiceException ase = (AwsServiceException) t;
+      return ase.getMessage();
     }
     return null;
   }

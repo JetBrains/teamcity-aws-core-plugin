@@ -1,9 +1,10 @@
 package jetbrains.buildServer.clouds.amazon.ami.cleanup;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import jetbrains.buildServer.clouds.amazon.ami.AmiArtifact;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManager;
@@ -18,6 +19,14 @@ import jetbrains.buildServer.serverSide.cleanup.BuildsCleanupExtension;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.model.BlockDeviceMapping;
+import software.amazon.awssdk.services.ec2.model.DeleteSnapshotRequest;
+import software.amazon.awssdk.services.ec2.model.DeregisterImageRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeImagesRequest;
+import software.amazon.awssdk.services.ec2.model.EbsBlockDevice;
+import software.amazon.awssdk.services.ec2.model.Image;
 
 import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.AMI_CLEANUP_FEATURE_ENABLED;
 import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.ARTIFACT_TYPE;
@@ -79,7 +88,7 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
       if (buildType != null) {
         final List<AmiArtifact> remoteArtifacts = buildAmiInfo.get(build.getBuildId());
 
-        final HashMap<String, AmazonEC2> clientsCache = new HashMap<>();
+        final HashMap<String, Ec2Client> clientsCache = new HashMap<>();
 
         final Map<String, List<AmiArtifact>> artifactsByConnection = remoteArtifacts.stream().collect(Collectors.groupingBy(AmiArtifact::getConnectionId));
 
@@ -94,17 +103,23 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
                                 @NotNull SBuildType buildType,
                                 @NotNull String connectionId,
                                 @NotNull List<AmiArtifact> artifacts,
-                                @NotNull HashMap<String, AmazonEC2> clientsCache,
+                                @NotNull HashMap<String, Ec2Client> clientsCache,
                                 @NotNull BuildCleanupContext cleanupContext) {
-    final List<String> amiIds = artifacts.stream().map(a -> a.getAmiId()).collect(Collectors.toList());
+    final List<String> amiIds = artifacts.stream()
+      .map(AmiArtifact::getAmiId)
+      .collect(Collectors.toList());
 
-    final AmazonEC2 client = getEC2Client(build, buildType.getProject(), connectionId, artifacts, cleanupContext, clientsCache);
+    final Ec2Client client = getEC2Client(build, buildType.getProject(), connectionId, artifacts, cleanupContext, clientsCache);
 
     if (client != null) {
       List<Image> images = Collections.emptyList();
       try {
-        images = client.describeImages(new DescribeImagesRequest().withImageIds(amiIds)).getImages();
-      } catch (AmazonEC2Exception e) {
+        images = client.describeImages(
+            DescribeImagesRequest.builder()
+              .imageIds(amiIds)
+              .build())
+          .images();
+      } catch (SdkException e) {
         CLEANUP.warnAndDebugDetails(AMIS_INFO_ERROR, e);
         cleanupContext.onBuildCleanupError(this, build, AMIS_INFO_ERROR);
       }
@@ -115,12 +130,12 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
   }
 
   @Nullable
-  private AmazonEC2 getEC2Client(@NotNull SFinishedBuild build,
+  private Ec2Client getEC2Client(@NotNull SFinishedBuild build,
                                  @NotNull SProject project,
                                  @NotNull String connectionId,
                                  @NotNull List<AmiArtifact> artifacts,
                                  @NotNull BuildCleanupContext cleanupContext,
-                                 @NotNull HashMap<String, AmazonEC2> clientsCache) {
+                                 @NotNull HashMap<String, Ec2Client> clientsCache) {
 
     final Map<String, String> connectionAttributes = artifacts.isEmpty() ? Collections.emptyMap() : artifacts.get(0).getAttributes();
 
@@ -145,24 +160,28 @@ public class EC2AmiCleanupExtension implements BuildsCleanupExtension {
     });
   }
 
-  private void cleanupImage(@NotNull BuildCleanupContext cleanupContext, @NotNull SFinishedBuild build, @NotNull AmazonEC2 client, @NotNull Image image) {
+  private void cleanupImage(@NotNull BuildCleanupContext cleanupContext, @NotNull SFinishedBuild build, @NotNull Ec2Client client, @NotNull Image image) {
     try {
-      client.deregisterImage(new DeregisterImageRequest().withImageId(image.getImageId()));
-      final List<String> snapshots = image.getBlockDeviceMappings().stream()
-                                          .map(b -> b.getEbs())
-                                          .filter(Objects::nonNull).map(ebs -> ebs.getSnapshotId())
+      client.deregisterImage(DeregisterImageRequest.builder()
+        .imageId(image.imageId())
+        .build());
+      final List<String> snapshots = image.blockDeviceMappings().stream()
+                                          .map(BlockDeviceMapping::ebs)
+                                          .filter(Objects::nonNull).map(EbsBlockDevice::snapshotId)
                                           .collect(Collectors.toList());
       for (String snapshot : snapshots) {
         try {
-          client.deleteSnapshot(new DeleteSnapshotRequest().withSnapshotId(snapshot));
-        } catch (AmazonClientException e) {
-          final String message = String.format(SNAPSHOT_ERROR, snapshot, image.getImageId());
+          client.deleteSnapshot(DeleteSnapshotRequest.builder()
+            .snapshotId(snapshot)
+            .build());
+        } catch (SdkException e) {
+          final String message = String.format(SNAPSHOT_ERROR, snapshot, image.imageId());
           CLEANUP.warnAndDebugDetails(message, e);
           cleanupContext.onBuildCleanupError(this, build, message);
         }
       }
-    } catch (AmazonClientException e) {
-      final String message = String.format(AMI_ERROR, image.getImageId());
+    } catch (SdkException e) {
+      final String message = String.format(AMI_ERROR, image.imageId());
       CLEANUP.warnAndDebugDetails(message, e);
       cleanupContext.onBuildCleanupError(this, build, message);
     }

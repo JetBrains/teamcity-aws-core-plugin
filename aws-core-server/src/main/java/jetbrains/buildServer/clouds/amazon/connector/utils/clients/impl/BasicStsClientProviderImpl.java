@@ -1,38 +1,39 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.clients.impl;
 
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
-import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.TeamCityStsClientBuilder;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.awscore.defaultsmode.DefaultsMode;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.StsClientBuilder;
 
 public class BasicStsClientProviderImpl implements StsClientProvider {
 
   @NotNull
   @Override
-  public AWSSecurityTokenService getClientWithCredentials(@NotNull AwsConnectionCredentials awsConnectionCredentials, @Nullable Map<String, String> parameters)
+  public StsClient getClientWithCredentials(@NotNull AwsConnectionCredentials awsConnectionCredentials, @Nullable Map<String, String> parameters)
     throws ConnectionCredentialsException {
 
-    AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
-      .standard()
-      .withCredentials(awsConnectionCredentials.toAWSCredentialsProvider());
+    StsClientBuilder stsBuilder = StsClient.builder()
+      .defaultsMode(DefaultsMode.STANDARD)
+      .credentialsProvider(awsConnectionCredentials.toAWSCredentialsProvider());
     if (parameters != null) {
-      StsClientBuilder.addConfiguration(stsBuilder, parameters);
+      TeamCityStsClientBuilder.addConfiguration(stsBuilder, parameters);
     }
     return stsBuilder.build();
   }
 
   @NotNull
   @Override
-  public AWSSecurityTokenService getClient(@Nullable Map<String, String> parameters) {
-    AWSSecurityTokenServiceClientBuilder stsBuilder = AWSSecurityTokenServiceClientBuilder
-      .standard();
+  public StsClient getClient(@Nullable Map<String, String> parameters) {
+    StsClientBuilder stsBuilder = StsClient.builder()
+      .defaultsMode(DefaultsMode.STANDARD);
     if (parameters != null) {
-      StsClientBuilder.addConfiguration(stsBuilder, parameters);
+      TeamCityStsClientBuilder.addConfiguration(stsBuilder, parameters);
     }
     return stsBuilder.build();
   }

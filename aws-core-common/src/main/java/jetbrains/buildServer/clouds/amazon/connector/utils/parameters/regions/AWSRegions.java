@@ -1,11 +1,12 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import jetbrains.buildServer.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.RegionMetadata;
+import software.amazon.awssdk.regions.ServiceMetadata;
+import software.amazon.awssdk.regions.internal.MetadataLoader;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -106,13 +107,21 @@ public final class AWSRegions {
    */
   @NotNull
   private static TreeMap<String, String> getRegionsForService(@Nullable String servicePrefix) {
-    Map<String, String> allRegionsMap = Arrays.stream(Regions.values())
-      .collect(Collectors.toMap(Regions::getName, Regions::getDescription));
+    Map<String, String> allRegionsMap = Region.regions()
+      .stream()
+      .map(Region::metadata)
+      .collect(Collectors.toMap(RegionMetadata::id, RegionMetadata::description));
 
     TreeMap<String, String> map = new TreeMap<>(REGION_COMPARATOR);
-    final List<Region> regions = servicePrefix == null ? RegionUtils.getRegions() : RegionUtils.getRegionsForService(servicePrefix);
+    ServiceMetadata serviceMetadata = MetadataLoader.serviceMetadata(servicePrefix);
+
+    final List<Region> regions = serviceMetadata == null ?
+      servicePrefix == null ?
+        Region.regions() : Collections.emptyList()
+      : serviceMetadata.regions();
+
     for (Region region : regions) {
-      String name = region.getName();
+      String name = region.id();
       String value = allRegionsMap.get(name);
       if (value == null) {
         value = descriptionFromCode(name);
@@ -177,11 +186,10 @@ public final class AWSRegions {
 
   @NotNull
   public static Region getRegion(@NotNull String regionName) throws IllegalArgumentException {
-    try {
-      return RegionUtils.getRegion(regionName);
-    } catch (Exception e) {
-      // see below
+    if (getAllRegions().containsKey(regionName)) {
+      return Region.of(regionName);
     }
+
     throw new IllegalArgumentException("Unsupported region name " + regionName);
   }
 

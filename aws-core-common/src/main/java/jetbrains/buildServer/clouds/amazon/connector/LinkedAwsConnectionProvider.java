@@ -1,6 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnectionParameters;
 import jetbrains.buildServer.serverSide.BuildRunnerDescriptor;
@@ -12,6 +11,7 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ public interface LinkedAwsConnectionProvider {
   List<ConnectionCredentials> getConnectionCredentialsFromBuild(@NotNull final SBuild build) throws ConnectionCredentialsException;
 
   /**
-   * Returns {@link AWSCredentialsProvider} by {@link AwsConnectionParameters}. {@link AwsConnectionParameters} should contain
+   * Returns {@link AwsCredentialsProvider} by {@link AwsConnectionParameters}. {@link AwsConnectionParameters} should contain
    * at AWS Connection ID and project ID (external or internal) to establish a connection identity.
    * @param awsConnectionParameters
    * Holder containing necessary info to find the connection
@@ -86,7 +86,7 @@ public interface LinkedAwsConnectionProvider {
    * @see jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials
    */
   @NotNull
-  default AWSCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
+  default AwsCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
     throw new NotImplementedException();
   }
 }

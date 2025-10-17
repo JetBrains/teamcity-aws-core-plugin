@@ -1,7 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.ami.cleanup;
 
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +18,9 @@ import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.model.*;
 
 import static jetbrains.buildServer.clouds.amazon.ami.AmiConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,15 +46,25 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2ClientCreator clientCreator = Mockito.mock(EC2ClientCreator.class, Answers.RETURNS_DEEP_STUBS);
 
-    final AmazonEC2 ec2client = Mockito.mock(AmazonEC2.class, Answers.RETURNS_DEEP_STUBS);
+    final Ec2Client ec2client = Mockito.mock(Ec2Client.class, Answers.RETURNS_DEEP_STUBS);
     Mockito.when(clientCreator.createClient(any())).thenReturn(ec2client);
 
     final String snapshotId = "testSnapshot";
-    final Image image = new Image()
-      .withImageId(amiId)
-      .withBlockDeviceMappings(new BlockDeviceMapping().withEbs(new EbsBlockDevice().withSnapshotId(snapshotId)));
+    final Image image = Image.builder()
+      .imageId(amiId)
+      .blockDeviceMappings(
+        BlockDeviceMapping.builder()
+          .ebs(
+            EbsBlockDevice.builder()
+              .snapshotId(snapshotId)
+              .build()
+          )
+          .build()
+      )
+      .build();
 
-    when(ec2client.describeImages(any(DescribeImagesRequest.class))).thenReturn(new DescribeImagesResult().withImages(image));
+    when(ec2client.describeImages(any(DescribeImagesRequest.class)))
+      .thenReturn(DescribeImagesResponse.builder().images(image).build());
 
     final AwsConnectionsManager connectionsManager = Mockito.mock(AwsConnectionsManager.class);
     when(connectionsManager.getAwsConnection(any(), any(), any())).thenReturn(Mockito.mock(AwsConnectionBean.class));
@@ -65,8 +76,8 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
     EC2AmiCleanupExtension.prepareBuildsData(cleanupContext);
     EC2AmiCleanupExtension.cleanupBuildsData(cleanupContext);
 
-    Mockito.verify(ec2client, times(1)).deregisterImage(new DeregisterImageRequest().withImageId(amiId));
-    Mockito.verify(ec2client, times(1)).deleteSnapshot(new DeleteSnapshotRequest().withSnapshotId(snapshotId));
+    Mockito.verify(ec2client, times(1)).deregisterImage(DeregisterImageRequest.builder().imageId(amiId).build());
+    Mockito.verify(ec2client, times(1)).deleteSnapshot(DeleteSnapshotRequest.builder().snapshotId(snapshotId).build());
   }
 
   @Test
@@ -108,10 +119,10 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2ClientCreator clientCreator = Mockito.mock(EC2ClientCreator.class, Answers.RETURNS_DEEP_STUBS);
 
-    final AmazonEC2 ec2client = Mockito.mock(AmazonEC2.class, Answers.RETURNS_DEEP_STUBS);
+    final Ec2Client ec2client = Mockito.mock(Ec2Client.class, Answers.RETURNS_DEEP_STUBS);
     Mockito.when(clientCreator.createClient(any())).thenReturn(ec2client);
 
-    when(ec2client.describeImages(any(DescribeImagesRequest.class))).thenThrow(new AmazonEC2Exception("test error"));
+    when(ec2client.describeImages(any(DescribeImagesRequest.class))).thenThrow(AwsServiceException.create("test error", null));
 
     final AwsConnectionsManager connectionsManager = Mockito.mock(AwsConnectionsManager.class);
     when(connectionsManager.getAwsConnection(any(), any(), any())).thenReturn(Mockito.mock(AwsConnectionBean.class));
@@ -139,16 +150,27 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2ClientCreator clientCreator = Mockito.mock(EC2ClientCreator.class, Answers.RETURNS_DEEP_STUBS);
 
-    final AmazonEC2 ec2client = Mockito.mock(AmazonEC2.class, Answers.RETURNS_DEEP_STUBS);
+    final Ec2Client ec2client = Mockito.mock(Ec2Client.class, Answers.RETURNS_DEEP_STUBS);
     Mockito.when(clientCreator.createClient(any())).thenReturn(ec2client);
 
     final String snapshotId = "testSnapshot";
-    final Image image = new Image()
-      .withImageId(amiId)
-      .withBlockDeviceMappings(new BlockDeviceMapping().withEbs(new EbsBlockDevice().withSnapshotId(snapshotId)));
+    final Image image = Image.builder()
+      .imageId(amiId)
+      .blockDeviceMappings(
+        BlockDeviceMapping.builder()
+          .ebs(
+            EbsBlockDevice.builder()
+              .snapshotId(snapshotId)
+              .build()
+          )
+          .build()
+      )
+      .build();
 
-    when(ec2client.describeImages(any(DescribeImagesRequest.class))).thenReturn(new DescribeImagesResult().withImages(image));
-    when(ec2client.deregisterImage(any())).thenThrow(new AmazonEC2Exception("failed to remove image"));
+    when(ec2client.describeImages(any(DescribeImagesRequest.class)))
+      .thenReturn(DescribeImagesResponse.builder().images(image).build());
+    when(ec2client.deregisterImage(any(DeregisterImageRequest.class)))
+      .thenThrow(AwsServiceException.create("failed to remove image", null));
 
     final AwsConnectionsManager connectionsManager = Mockito.mock(AwsConnectionsManager.class);
     when(connectionsManager.getAwsConnection(any(), any(), any())).thenReturn(Mockito.mock(AwsConnectionBean.class));
@@ -176,16 +198,27 @@ public class EC2AmiCleanupExtensionTest extends BaseServerTestCase {
 
     final EC2ClientCreator clientCreator = Mockito.mock(EC2ClientCreator.class, Answers.RETURNS_DEEP_STUBS);
 
-    final AmazonEC2 ec2client = Mockito.mock(AmazonEC2.class, Answers.RETURNS_DEEP_STUBS);
+    final Ec2Client ec2client = Mockito.mock(Ec2Client.class, Answers.RETURNS_DEEP_STUBS);
     Mockito.when(clientCreator.createClient(any())).thenReturn(ec2client);
 
     final String snapshotId = "testSnapshot";
-    final Image image = new Image()
-      .withImageId(amiId)
-      .withBlockDeviceMappings(new BlockDeviceMapping().withEbs(new EbsBlockDevice().withSnapshotId(snapshotId)));
+    final Image image = Image.builder()
+      .imageId(amiId)
+      .blockDeviceMappings(
+        BlockDeviceMapping.builder()
+          .ebs(
+            EbsBlockDevice.builder()
+              .snapshotId(snapshotId)
+              .build()
+          )
+          .build()
+      )
+      .build();
 
-    when(ec2client.describeImages(any(DescribeImagesRequest.class))).thenReturn(new DescribeImagesResult().withImages(image));
-    when(ec2client.deleteSnapshot(any())).thenThrow(new AmazonEC2Exception("failed to remove image"));
+    when(ec2client.describeImages(any(DescribeImagesRequest.class)))
+      .thenReturn(DescribeImagesResponse.builder().images(image).build());
+    when(ec2client.deregisterImage(any(DeregisterImageRequest.class)))
+      .thenThrow(AwsServiceException.create("failed to remove image", null));
 
     final AwsConnectionsManager connectionsManager = Mockito.mock(AwsConnectionsManager.class);
     when(connectionsManager.getAwsConnection(any(), any(), any())).thenReturn(Mockito.mock(AwsConnectionBean.class));

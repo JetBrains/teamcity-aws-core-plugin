@@ -1,12 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
-import com.amazonaws.services.identitymanagement.model.DeleteAccessKeyRequest;
-import com.amazonaws.services.identitymanagement.model.LimitExceededException;
-import com.amazonaws.services.identitymanagement.model.NoSuchEntityException;
-import com.amazonaws.services.identitymanagement.model.ServiceFailureException;
 import com.intellij.openapi.util.Pair;
 import java.time.Duration;
 import java.time.ZoneId;
@@ -22,6 +15,13 @@ import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.services.iam.IamClient;
+import software.amazon.awssdk.services.iam.model.DeleteAccessKeyRequest;
+import software.amazon.awssdk.services.iam.model.LimitExceededException;
+import software.amazon.awssdk.services.iam.model.NoSuchEntityException;
+import software.amazon.awssdk.services.iam.model.ServiceFailureException;
 
 public class OldKeysCleaner {
 
@@ -108,9 +108,9 @@ public class OldKeysCleaner {
             throw new KeyRotationException("The connection with key " + ParamUtil.maskKey(currentAccessKeyId) + " does not have secret access key");
           }
 
-          AmazonIdentityManagement iam = iamClientBuilder.createIamClient(
+          IamClient iam = iamClientBuilder.createIamClient(
             connectionRegion,
-            new AWSStaticCredentialsProvider(new BasicAWSCredentials(currentAccessKeyId, secretAccessKey))
+            StaticCredentialsProvider.create(AwsBasicCredentials.create(currentAccessKeyId, secretAccessKey))
           );
 
           deletePreviousAccessKey(taskArgObject.oldAccessKeyId, iam);
@@ -134,10 +134,11 @@ public class OldKeysCleaner {
   }
 
   private static void deletePreviousAccessKey(@NotNull final String awsAccessKeyId,
-                                              @NotNull final AmazonIdentityManagement iam)
+                                              @NotNull final IamClient iam)
     throws KeyRotationException {
-    DeleteAccessKeyRequest deleteAccessKeyRequest = new DeleteAccessKeyRequest()
-      .withAccessKeyId(awsAccessKeyId);
+    DeleteAccessKeyRequest deleteAccessKeyRequest = DeleteAccessKeyRequest.builder()
+      .accessKeyId(awsAccessKeyId)
+      .build();
     try {
       IOGuard.allowNetworkCall(() -> iam.deleteAccessKey(deleteAccessKeyRequest));
     } catch (NoSuchEntityException | LimitExceededException | ServiceFailureException e) {

@@ -1,7 +1,5 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import software.amazon.awssdk.services.sts.model.GetCallerIdentityResponse;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
@@ -83,12 +82,14 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
     return new AwsConnectionTester() {
       @NotNull
       @Override
-      public AwsTestConnectionResult testConnection(@NotNull final ProjectFeatureDescriptorImpl connectionFeature) throws AmazonClientException {
+      public AwsTestConnectionResult testConnection(@NotNull final ProjectFeatureDescriptorImpl connectionFeature) {
         return new AwsTestConnectionResult(
-          new GetCallerIdentityResult()
-            .withAccount(testAccountId)
-            .withArn(testArn)
-            .withUserId(testUserId)
+          GetCallerIdentityResponse
+            .builder()
+            .account(testAccountId)
+            .arn(testArn)
+            .userId(testUserId)
+            .build()
         );
       }
 

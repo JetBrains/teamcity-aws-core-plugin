@@ -2,14 +2,11 @@
 
 package jetbrains.buildServer.util.amazon;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+
+import jetbrains.buildServer.clouds.amazon.connector.utils.clients.ClientConfigurationBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.parameters.ReferencesResolverUtil;
@@ -17,9 +14,19 @@ import jetbrains.buildServer.serverSide.TeamCityProperties;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
-import jetbrains.buildServer.version.ServerVersionHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.auth.credentials.*;
+import software.amazon.awssdk.awscore.defaultsmode.DefaultsMode;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.identity.spi.AwsSessionCredentialsIdentity;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider;
+import software.amazon.awssdk.services.sts.auth.StsGetSessionTokenCredentialsProvider;
+import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 
 import static jetbrains.buildServer.serverSide.TeamCityProperties.getInteger;
 import static jetbrains.buildServer.serverSide.TeamCityProperties.getPropertyOrNull;
@@ -173,30 +180,22 @@ public final class AWSCommonParams {
   }
 
   @NotNull
-  public static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params){
+  public static AwsCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params){
     return getCredentialsProvider(params, false);
   }
 
   @NotNull
-  private static AWSCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params,
+  private static AwsCredentialsProvider getCredentialsProvider(@NotNull final Map<String, String> params,
                                                                final boolean fixedCredentials){
     final String credentialsType = getCredentialsType(params);
 
     if (isAccessKeysOption(credentialsType) || fixedCredentials){
       if (isUseDefaultCredentialProviderChain(params)) {
-        return new DefaultAWSCredentialsProviderChain();
+        return DefaultCredentialsProvider.builder()
+          .build();
       }
-      return new AWSCredentialsProvider() {
-        @Override
-        public AWSCredentials getCredentials() {
-          return new BasicAWSCredentials(getAccessKeyId(params), getSecretAccessKey(params));
-        }
 
-        @Override
-        public void refresh() {
-          // do nothing
-        }
-      };
+      return () -> AwsBasicCredentials.create(getAccessKeyId(params), getSecretAccessKey(params));
     }
     if (isTempCredentialsOption(credentialsType)) {
       return createSessionCredentialsProvider(params);
@@ -205,14 +204,7 @@ public final class AWSCommonParams {
     // a workaround to not return a DefaultAWSCredentialsProviderChain (null)
     // I'm afraid throwing an exception here could result in undesired behaviour in different places
     //TODO: remove this as well (throw an exception instead)
-    return new AWSCredentialsProvider() {
-      @Override
-      public AWSCredentials getCredentials() {
-        return new BasicAWSCredentials("", "");
-      }
-      @Override
-      public void refresh() {}
-    };
+    return () -> AwsBasicCredentials.create("", "");
   }
 
   private static boolean isUseDefaultCredentialProviderChain(@NotNull Map<String, String> params) {
@@ -284,45 +276,16 @@ public final class AWSCommonParams {
   }
 
   @NotNull
-  static ClientConfiguration createClientConfiguration() {
-    return createClientConfigurationEx(null);
+  static SdkHttpClient.Builder<ApacheHttpClient.Builder> createClientBuilder() {
+    return createClientBuilderEx(null);
   }
 
-  public static ClientConfiguration createClientConfigurationEx(@Nullable String suffix){
-    if (StringUtil.isEmpty(suffix)){
-      suffix = "aws";
-    }
-    final ClientConfiguration config = new ClientConfiguration();
-
-    int connectionTimeout = TeamCityProperties.getInteger(String.format("teamcity.%s.timeout", suffix), DEFAULT_CONNECTION_TIMEOUT);
-    config.setConnectionTimeout(connectionTimeout);
-    config.setSocketTimeout(connectionTimeout);
-    // version copy-pasted from jetbrains.buildServer.updates.VersionChecker.retrieveUpdates()
-    config.setUserAgentPrefix("TeamCity Server " + ServerVersionHolder.getVersion().getDisplayVersion() + " (build " + ServerVersionHolder.getVersion().getBuildNumber() + ")");
-    config.setProtocol(Protocol.HTTPS);
-
-    final String PREFIX = "teamcity.http.proxy.";
-
-    config.setProxyHost(getPropertyEx(PREFIX + "host", suffix, "aws", config.getProxyHost()));
-    config.setProxyPort(getIntegerEx(PREFIX + "port", suffix, "aws", config.getProxyPort()));
-    config.setProxyDomain(getPropertyEx(PREFIX + "domain", suffix, "aws", config.getProxyDomain()));
-    config.setProxyUsername(getPropertyEx(PREFIX + "user", suffix, "aws", config.getProxyUsername()));
-    config.setProxyPassword(getPropertyEx(PREFIX + "password", suffix, "aws", config.getProxyPassword()));
-    config.setProxyWorkstation(getPropertyEx(PREFIX + "workstation", suffix, "aws", config.getProxyWorkstation()));
-    return config;
+  public static SdkHttpClient.Builder<ApacheHttpClient.Builder> createClientBuilderEx(@Nullable String suffix){
+    return ClientConfigurationBuilder.createClientBuilder(suffix);
   }
 
-  private static String getPropertyEx(@NotNull String baseName, @NotNull String suffix, @NotNull String defaultSuffix, @Nullable String defaultValue){
-    final String propertyOrNull = getPropertyOrNull(baseName + "." + suffix, getPropertyOrNull(baseName + "." + defaultSuffix));
-
-    return propertyOrNull == null ? defaultValue : propertyOrNull;
-  }
-
-  private static Integer getIntegerEx(@NotNull String baseName, @NotNull String suffix, @NotNull String defaultSuffix, int defaultValue){
-    final int intValue = getInteger(baseName + "."+ suffix, getInteger(baseName + "." + defaultSuffix));
-
-    return intValue == 0 ? defaultValue : intValue;
-
+  public static ClientOverrideConfiguration.Builder clientOverrideConfigurationBuilder() {
+    return ClientConfigurationBuilder.clientOverrideConfigurationBuilder();
   }
 
   public interface WithAWSClients<T, E extends Throwable> {
@@ -372,7 +335,7 @@ public final class AWSCommonParams {
     return awsClients;
   }
 
-  private static AWSSessionCredentialsProvider createSessionCredentialsProvider(Map<String, String> params) throws AWSException {
+  private static AwsCredentialsProvider createSessionCredentialsProvider(Map<String, String> params) throws AWSException {
     final String iamRoleARN = getIamRoleArnParam(params);
     final String externalID = getExternalId(params);
     final String sessionName = getStringOrDefault(params.get(TEMP_CREDENTIALS_SESSION_NAME_PARAM), TEMP_CREDENTIALS_SESSION_NAME_DEFAULT_PREFIX + new Date().getTime());
@@ -380,15 +343,25 @@ public final class AWSCommonParams {
 
     try {
       if (StringUtil.isEmptyOrSpaces(iamRoleARN)){
-        return new STSSessionCredentialsProvider(createSecurityTokenService(params));
+        return StsGetSessionTokenCredentialsProvider.builder()
+          .stsClient(createSecurityTokenService(params))
+          .build();
       } else {
-        STSAssumeRoleSessionCredentialsProvider.Builder builder = new STSAssumeRoleSessionCredentialsProvider
-          .Builder(iamRoleARN, sessionName)
-          .withRoleSessionDurationSeconds(sessionDuration)
-          .withStsClient(createSecurityTokenService(params));
+        AssumeRoleRequest.Builder reqBuilder = AssumeRoleRequest.builder()
+          .roleArn(iamRoleARN)
+          .roleSessionName(sessionName)
+          .durationSeconds(sessionDuration);
+
         if (StringUtil.isNotEmpty(externalID)) {
-          builder.withExternalId(externalID);
+          reqBuilder.externalId(externalID);
         }
+
+        AssumeRoleRequest assumeRoleRequest = reqBuilder.build();
+
+        StsAssumeRoleCredentialsProvider.Builder builder = StsAssumeRoleCredentialsProvider.builder()
+          .refreshRequest(assumeRoleRequest)
+          .stsClient(createSecurityTokenService(params));
+
         return builder.build();
       }
     } catch (Exception e) {
@@ -397,13 +370,14 @@ public final class AWSCommonParams {
   }
 
   @NotNull
-  private static AWSSecurityTokenService createSecurityTokenService(Map<String, String> params) {
+  private static StsClient createSecurityTokenService(Map<String, String> params) {
     final String region = getRegionName(params);
-    return AWSSecurityTokenServiceClientBuilder
-      .standard()
-      .withRegion(region)
-      .withClientConfiguration(createClientConfigurationEx("sts"))
-      .withCredentials(getCredentialsProvider(params, true))
+    return StsClient.builder()
+      .defaultsMode(DefaultsMode.STANDARD)
+      .region(Region.of(region))
+      .httpClientBuilder(createClientBuilderEx("sts"))
+      .overrideConfiguration(clientOverrideConfigurationBuilder().build())
+      .credentialsProvider(getCredentialsProvider(params, true))
       .build();
   }
 
@@ -450,32 +424,32 @@ public final class AWSCommonParams {
   }
 
   // must implement AWSSessionCredentials as AWS SDK may use "instanceof"
-  static abstract class LazyCredentials implements AWSSessionCredentials {
+  static abstract class LazyCredentials implements AwsSessionCredentialsIdentity, AwsCredentials {
     @Nullable
-    private AWSSessionCredentials myDelegate = null;
+    private AwsSessionCredentials myDelegate = null;
 
     @Override
-    public String getAWSAccessKeyId() {
-      return getDelegate().getAWSAccessKeyId();
+    public String accessKeyId() {
+      return getDelegate().accessKeyId();
     }
 
     @Override
-    public String getAWSSecretKey() {
-      return getDelegate().getAWSSecretKey();
+    public String secretAccessKey() {
+      return getDelegate().secretAccessKey();
     }
 
     @Override
-    public String getSessionToken() {
-      return getDelegate().getSessionToken();
+    public String sessionToken() {
+      return getDelegate().sessionToken();
     }
 
     @NotNull
-    private AWSSessionCredentials getDelegate() {
+    private AwsSessionCredentials getDelegate() {
       if (myDelegate == null) myDelegate = createCredentials();
       return myDelegate;
     }
 
     @NotNull
-    protected abstract AWSSessionCredentials createCredentials();
+    protected abstract AwsSessionCredentials createCredentials();
   }
 }

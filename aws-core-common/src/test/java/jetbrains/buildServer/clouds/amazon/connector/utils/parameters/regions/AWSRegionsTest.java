@@ -16,8 +16,8 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions;
 
-import com.amazonaws.services.ec2.AmazonEC2;
 import org.testng.annotations.Test;
+import software.amazon.awssdk.services.ec2.Ec2Client;
 
 import static org.junit.Assert.*;
 
@@ -110,7 +110,7 @@ public class AWSRegionsTest {
 
   @Test
   public void testGetAllRegions_withKnownService(){
-    assertNotEquals(0, AWSRegions.getAllRegions(AmazonEC2.ENDPOINT_PREFIX).size());
+    assertNotEquals(0, AWSRegions.getAllRegions(Ec2Client.SERVICE_NAME).size());
   }
 
   @Test

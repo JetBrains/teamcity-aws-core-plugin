@@ -2,8 +2,6 @@
 
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.amazonaws.AmazonServiceException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
@@ -17,6 +15,7 @@ import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.ModelAndView;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
 public class AwsRotateKeysController extends BaseAwsConnectionController {
   private final AwsKeyRotator myAwsKeyRotator;
@@ -63,9 +62,9 @@ public class AwsRotateKeysController extends BaseAwsConnectionController {
     Loggers.CLOUD.warnAndDebugDetails(actionDescription, exception);
 
     if (AwsExceptionUtils.isAmazonServiceException(exception)) {
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + ((AmazonServiceException)exception).getErrorMessage()));
+      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
     } else if(AwsExceptionUtils.isAmazonServiceException(exception.getCause())){
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + ((AmazonServiceException)exception.getCause()).getErrorMessage()));
+      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + (exception.getCause()).getMessage()));
     } else {
       errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
     }

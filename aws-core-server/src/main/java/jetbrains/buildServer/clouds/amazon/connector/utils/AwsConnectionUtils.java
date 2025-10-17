@@ -2,10 +2,10 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.utils;
 
-import com.amazonaws.services.securitytoken.model.Credentials;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.services.sts.model.Credentials;
 
 public class AwsConnectionUtils {
 
@@ -15,19 +15,19 @@ public class AwsConnectionUtils {
       @NotNull
       @Override
       public String getAccessKeyId() {
-        return credentials.getAccessKeyId();
+        return credentials.accessKeyId();
       }
 
       @NotNull
       @Override
       public String getSecretAccessKey() {
-        return credentials.getSecretAccessKey();
+        return credentials.secretAccessKey();
       }
 
       @Nullable
       @Override
       public String getSessionToken() {
-        return credentials.getSessionToken();
+        return credentials.sessionToken();
       }
     };
   }

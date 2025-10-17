@@ -1,6 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import com.amazonaws.auth.*;
 import java.util.HashMap;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
@@ -11,6 +10,7 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.auth.credentials.*;
 
 public class AwsConnectionCredentials implements ConnectionCredentials {
   @Nullable
@@ -42,7 +42,7 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
   }
 
   @NotNull
-  public AWSCredentialsProvider toAWSCredentialsProvider() throws ConnectionCredentialsException {
+  public AwsCredentialsProvider toAWSCredentialsProvider() throws ConnectionCredentialsException {
     if (myAccessKeyId == null || mySecretAccessKey == null) {
       throw new AwsConnectorException("Connection credentials were not provided");
     }
@@ -50,21 +50,21 @@ public class AwsConnectionCredentials implements ConnectionCredentials {
       throw new AwsConnectorException("Connection region was not provided");
     }
 
-    AWSCredentials credentials;
+    AwsCredentials credentials;
     if (mySessionToken == null) {
-      credentials = new BasicAWSCredentials(
+      credentials = AwsBasicCredentials.create(
         myAccessKeyId,
         mySecretAccessKey
       );
     } else {
-      credentials = new BasicSessionCredentials(
+      credentials = AwsSessionCredentials.create(
         myAccessKeyId,
         mySecretAccessKey,
         mySessionToken
       );
     }
 
-    return new AWSStaticCredentialsProvider(credentials);
+    return StaticCredentialsProvider.create(credentials);
   }
 
   @NotNull

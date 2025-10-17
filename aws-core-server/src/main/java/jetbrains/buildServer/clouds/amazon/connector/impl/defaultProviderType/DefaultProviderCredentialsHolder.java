@@ -2,9 +2,6 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSSessionCredentials;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import java.util.Date;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
@@ -12,6 +9,9 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 
 public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
 
@@ -24,25 +24,25 @@ public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
   @NotNull
   @Override
   public AwsCredentialsData getAwsCredentials() throws AwsConnectorException {
-    AWSCredentials credentials = constructNewDefaultProviderCredentials();
+    AwsCredentials credentials = constructNewDefaultProviderCredentials();
     return new AwsCredentialsData() {
       @NotNull
       @Override
       public String getAccessKeyId() {
-        return credentials.getAWSAccessKeyId();
+        return credentials.accessKeyId();
       }
 
       @NotNull
       @Override
       public String getSecretAccessKey() {
-        return credentials.getAWSSecretKey();
+        return credentials.secretAccessKey();
       }
 
       @Nullable
       @Override
       public String getSessionToken() {
-        if (credentials instanceof AWSSessionCredentials) {
-          return ((AWSSessionCredentials)credentials).getSessionToken();
+        if (credentials instanceof AwsSessionCredentials) {
+          return ((AwsSessionCredentials) credentials).sessionToken();
         } else {
           return null;
         }
@@ -61,10 +61,9 @@ public class DefaultProviderCredentialsHolder implements AwsCredentialsHolder {
     return null;
   }
 
-  private AWSCredentials constructNewDefaultProviderCredentials() throws AwsConnectorException {
-    try {
-      return new DefaultAWSCredentialsProviderChain().getCredentials();
-
+  private AwsCredentials constructNewDefaultProviderCredentials() throws AwsConnectorException {
+    try (DefaultCredentialsProvider dcp = DefaultCredentialsProvider.builder().build()) {
+      return dcp.resolveCredentials();
     } catch (Exception e) {
       String errorMsg = String.format(
         "Failed to use the DefaultAWSCredentialsProviderChain, Connection ID: %s, project ID: %s, reason %s",

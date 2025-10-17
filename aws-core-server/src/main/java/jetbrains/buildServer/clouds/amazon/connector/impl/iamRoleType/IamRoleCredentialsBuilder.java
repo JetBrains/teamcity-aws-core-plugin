@@ -2,7 +2,6 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType;
 
-import com.amazonaws.AmazonClientException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +21,7 @@ import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.core.exception.SdkException;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.*;
@@ -55,8 +55,8 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         myStsClientProvider,
         myAwsExternalIdsManager
       );
-    } catch (AmazonClientException ace) {
-      throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));
+    } catch (SdkException sce) {
+      throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(sce));
     }
   }
 

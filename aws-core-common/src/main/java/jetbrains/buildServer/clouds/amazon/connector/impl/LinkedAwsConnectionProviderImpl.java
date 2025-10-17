@@ -3,7 +3,6 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.errors.features.AwsBuildFeatureException;
@@ -30,6 +29,7 @@ import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCreden
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.connections.credentials.ProjectConnectionCredentialsManager;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CHOSEN_AWS_CONN_ID_PARAM;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
@@ -109,7 +109,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
   @NotNull
   @Override
-  public AWSCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
+  public AwsCredentialsProvider getAwsCredentialsProvider(@NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
     SProject project = getProjectFromAwsConnectionParameters(awsConnectionParameters);
     return getAwsCredentialsProvider(project, awsConnectionParameters);
   }
@@ -232,7 +232,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
   }
 
   @NotNull
-  private AWSCredentialsProvider getAwsCredentialsProvider(@NotNull final SProject project,
+  private AwsCredentialsProvider getAwsCredentialsProvider(@NotNull final SProject project,
                                                            @NotNull AwsConnectionParameters awsConnectionParameters) throws ConnectionCredentialsException {
     String connectionId = awsConnectionParameters.getAwsConnectionId();
 

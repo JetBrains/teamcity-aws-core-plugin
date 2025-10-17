@@ -1,6 +1,5 @@
 package jetbrains.buildServer.serverSide.oauth.aws.controllers;
 
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +28,7 @@ import org.jdom.Content;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.ModelAndView;
+import software.amazon.awssdk.services.sts.model.GetCallerIdentityResponse;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
 
@@ -85,8 +85,8 @@ public class AwsTestConnectionController extends BaseFormXmlController {
             internalProjectId
           )
         );
-        GetCallerIdentityResult getCallerIdentityResult = testConnectionResult.getGetCallerIdentityResult();
-        xmlResponse.addContent((Content)createCallerIdentityElement(getCallerIdentityResult));
+        GetCallerIdentityResponse getCallerIdentityResult = testConnectionResult.getGetCallerIdentityResult();
+        xmlResponse.addContent(createCallerIdentityElement(getCallerIdentityResult));
       } else {
         for (InvalidProperty invalidProp : invalidProperties) {
           errors.addError(invalidProp);
@@ -102,11 +102,11 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   }
 
   @NotNull
-  private Element createCallerIdentityElement(@NotNull final GetCallerIdentityResult getCallerIdentityResult) {
+  private Element createCallerIdentityElement(@NotNull final GetCallerIdentityResponse getCallerIdentityResult) {
     Element callerIdentityElement = new Element(AWS_CALLER_IDENTITY_ELEMENT);
-    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID, getCallerIdentityResult.getAccount());
-    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_USER_ID, getCallerIdentityResult.getUserId());
-    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_USER_ARN, getCallerIdentityResult.getArn());
+    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_ACCOUNT_ID, getCallerIdentityResult.account());
+    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_USER_ID, getCallerIdentityResult.userId());
+    callerIdentityElement.setAttribute(AWS_CALLER_IDENTITY_ATTR_USER_ARN, getCallerIdentityResult.arn());
     return callerIdentityElement;
   }
 

@@ -1,6 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
@@ -132,7 +132,7 @@ public class LinkedAwsConnectionProviderImplTest extends BaseServerTestCase {
     Mockito.when(connectionDescriptor.getId()).thenReturn(awsConnectionId);
 
     AwsConnectionCredentials connectionCredentials = Mockito.mock(AwsConnectionCredentials.class);
-    Mockito.when(connectionCredentials.toAWSCredentialsProvider()).thenReturn(Mockito.mock(AWSCredentialsProvider.class));
+    Mockito.when(connectionCredentials.toAWSCredentialsProvider()).thenReturn(Mockito.mock(AwsCredentialsProvider.class));
     Mockito.when(myProjectConnectionsManager.findConnectionById(Mockito.any(SProject.class), Mockito.anyString())).thenReturn(connectionDescriptor);
 
     Mockito.when(myProjectConnectionCredentialsManager.requestConnectionCredentials(Mockito.any(SProject.class), Mockito.anyString(), Mockito.anyMap()))

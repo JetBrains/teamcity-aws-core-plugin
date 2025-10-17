@@ -2,9 +2,9 @@
 
 package jetbrains.buildServer.util.amazon;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.RegionMetadata;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -18,7 +18,7 @@ public final class AWSRegions {
   private static final Map<String, String> REGION_NAMES_FOR_WEB;
 
   static {
-    REGION_NAMES_FOR_WEB = new LinkedHashMap<String, String>();
+    REGION_NAMES_FOR_WEB = new LinkedHashMap<>();
     REGION_NAMES_FOR_WEB.put("us-east-1", "US East (N. Virginia)");
     REGION_NAMES_FOR_WEB.put("us-east-2", "US East (Ohio)");
     REGION_NAMES_FOR_WEB.put("us-west-1", "US West (N. California)");
@@ -44,9 +44,14 @@ public final class AWSRegions {
     REGION_NAMES_FOR_WEB.put("cn-north-1", "China (Beijing)");
     REGION_NAMES_FOR_WEB.put("cn-northwest-1", "China (Ningxia)");
 
-    for (Regions region : Regions.values()) {
-      if (REGION_NAMES_FOR_WEB.containsKey(region.getName())) continue;
-      REGION_NAMES_FOR_WEB.put(region.getName(), region.getDescription());
+    for (Region region : Region.regions()) {
+      RegionMetadata regionMetadata = region.metadata();
+
+      if (REGION_NAMES_FOR_WEB.containsKey(region.id())) {
+        continue;
+      }
+
+      REGION_NAMES_FOR_WEB.put(regionMetadata.id(), regionMetadata.description());
     }
   }
 
@@ -65,11 +70,10 @@ public final class AWSRegions {
 
   @NotNull
   public static Region getRegion(@NotNull String regionName) throws IllegalArgumentException {
-    try {
-      return Region.getRegion(Regions.fromName(regionName));
-    } catch (Exception e) {
-      // see below
+    if (REGION_NAMES_FOR_WEB.containsKey(regionName)) {
+      return Region.of(regionName);
     }
+
     throw new IllegalArgumentException("Unsupported region name " + regionName);
   }
 }

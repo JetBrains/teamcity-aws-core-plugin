@@ -2,40 +2,40 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.utils;
 
-import com.amazonaws.AmazonServiceException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
 public final class AwsExceptionUtils {
   @Nullable
   public static String getAwsErrorMessage(@NotNull final Throwable exception){
     Throwable cause = exception.getCause();
 
-    try {
-      if (isAmazonServiceException(exception)) {
-        return String.format(
-          "Error type: <%s>, message: %s",
-          ((AmazonServiceException)exception).getErrorType(),
-          ((AmazonServiceException)exception).getErrorMessage()
-        );
-      } else if (cause != null && isAmazonServiceException(cause)) {
-        return String.format(
-          "Error type: <%s>, message: %s",
-          ((AmazonServiceException)cause).getErrorType(),
-          ((AmazonServiceException)cause).getErrorMessage()
-        );
-      } else {
-        return exception.getMessage();
+    if (isAmazonServiceException(exception)) {
+      AwsServiceException awsServiceException = (AwsServiceException) exception;
+      AwsErrorDetails details = awsServiceException.awsErrorDetails();
+
+      if (details == null) {
+        return exception.toString();
       }
 
-    } catch (ClassCastException classCastException) {
+      return awsServiceException.getMessage();
+    } else if (isAmazonServiceException(cause)) {
+      AwsServiceException awsServiceException = (AwsServiceException) cause;
+      AwsErrorDetails details = awsServiceException.awsErrorDetails();
+
+      if (details == null) {
+        return cause.toString();
+      }
+
+      return awsServiceException.getMessage();
+    } else {
       return exception.getMessage();
     }
   }
 
   public static boolean isAmazonServiceException(@Nullable final Throwable e){
-    if(e == null)
-      return false;
-    return AmazonServiceException.class.isAssignableFrom(e.getClass());
+    return e instanceof AwsServiceException;
   }
 }

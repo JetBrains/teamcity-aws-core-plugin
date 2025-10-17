@@ -1,6 +1,5 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.parameters;
 
-import com.amazonaws.arn.Arn;
 import java.util.Map;
 
 import java.util.regex.Pattern;
@@ -13,6 +12,8 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import software.amazon.awssdk.arns.Arn;
+import software.amazon.awssdk.arns.ArnResource;
 
 import static com.intellij.openapi.util.text.StringUtil.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeIamRoleParams.VALID_ROLE_SESSION_NAME_REGEX;
@@ -112,7 +113,11 @@ public class ParamUtil {
     }
     try {
       Arn resourceArn = Arn.fromString(resourceArnString);
-      return resourceArn.getResource().getResource();
+      ArnResource resource = resourceArn.resource();
+      String resourceId = resource.resource();
+      return resource.qualifier()
+        .map(qual -> resourceId + "/" + qual)
+        .orElse(resourceId);
     } catch (IllegalArgumentException e) {
       return "";
     }

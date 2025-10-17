@@ -2,8 +2,6 @@
 
 package jetbrains.buildServer.util.amazon.retry;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.retry.RetryUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import java.io.IOException;
 import java.net.SocketException;
@@ -16,6 +14,7 @@ import jetbrains.buildServer.util.retry.RetrierEventListener;
 import jetbrains.buildServer.util.retry.impl.AbortingListener;
 import jetbrains.buildServer.util.retry.impl.LoggingRetrierListener;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.core.exception.SdkClientException;
 
 /**
  * @author Dmitrii Bogdanov
@@ -34,12 +33,15 @@ public interface AmazonRetrier extends RetrierEventListener {
                           Thread.currentThread().interrupt();
                           return;
                         }
-                        if (e instanceof RecoverableException && ((RecoverableException)e).isRecoverable()) {
+
+                        if (e instanceof RecoverableException && ((RecoverableException) e).isRecoverable()) {
                           return;
                         }
-                        if (e instanceof SdkClientException && RetryUtils.isRetryableServiceException((SdkClientException)e)) {
+
+                        if (e instanceof SdkClientException && ((SdkClientException) e).retryable()) {
                           return;
                         }
+
                         super.onFailure(callable, retry, e);
                       }
                     });

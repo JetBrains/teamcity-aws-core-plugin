@@ -1,37 +1,43 @@
 package jetbrains.buildServer.clouds.amazon.connector.utils.clients;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.impl.dataBeans.AwsConnectionBean;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.regions.AWSRegions;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
-import jetbrains.buildServer.util.amazon.AWSCommonParams;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.awscore.defaultsmode.DefaultsMode;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.Ec2ClientBuilder;
 
 public class EC2ClientCreator {
 
   @NotNull
-  public AmazonEC2 createClient(@NotNull AwsConnectionBean connection) throws ConnectionCredentialsException {
+  public Ec2Client createClient(@NotNull AwsConnectionBean connection) throws ConnectionCredentialsException {
     final AwsCredentialsData credentialsData = connection.getAwsCredentialsHolder().getAwsCredentials();
-    final AmazonEC2ClientBuilder builder = AmazonEC2ClientBuilder.standard()
-                                                                 .withClientConfiguration(AWSCommonParams.createClientConfigurationEx("ec2Client_" + connection.getConnectionId()));
+    final Ec2ClientBuilder builder = Ec2Client.builder()
+      .defaultsMode(DefaultsMode.STANDARD)
+      .httpClientBuilder(ClientConfigurationBuilder.createClientBuilder("ec2Client_" + connection.getConnectionId()))
+      .overrideConfiguration(
+        ClientConfigurationBuilder.clientOverrideConfigurationBuilder()
+          .build());
 
     final String accessKeyId = credentialsData.getAccessKeyId();
     final String secretAccessKey = credentialsData.getSecretAccessKey();
     final String sessionToken = credentialsData.getSessionToken();
-    AWSCredentials credentials;
+    AwsCredentials credentials;
     if (sessionToken != null) {
-      credentials = new BasicSessionCredentials(accessKeyId, secretAccessKey, sessionToken);
+      credentials = AwsSessionCredentials.create(accessKeyId, secretAccessKey, sessionToken);
     } else {
-      credentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+      credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
     }
-    builder.withCredentials(new AWSStaticCredentialsProvider(credentials));
 
-    builder.withRegion(connection.getRegion());
+    builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
+
+    builder.region(AWSRegions.getRegion(connection.getRegion()));
 
     return builder.build();
   }

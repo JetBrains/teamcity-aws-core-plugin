@@ -2,11 +2,11 @@
 
 package jetbrains.buildServer.clouds.amazon.connector.utils.clients;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.services.iam.IamClient;
 
 public interface IamClientBuilder {
   @NotNull
-  AmazonIdentityManagement createIamClient(@NotNull final String connectionRegion, @NotNull final AWSCredentialsProvider credentials);
+  IamClient createIamClient(@NotNull final String connectionRegion, @NotNull final AwsCredentialsProvider credentials);
 }

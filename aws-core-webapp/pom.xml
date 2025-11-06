@@ -38,6 +38,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains.teamcity</groupId>
+      <artifactId>web-core</artifactId>
+      <version>${teamcity.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

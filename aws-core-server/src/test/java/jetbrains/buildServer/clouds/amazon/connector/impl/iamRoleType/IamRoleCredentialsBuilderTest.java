@@ -29,8 +29,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
-import static jetbrains.buildServer.testUtils.TestUtils.createConnectionDescriptor;
-import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
+import static jetbrains.buildServer.testUtils.TestUtils.*;
 import static org.mockito.Mockito.when;
 
 public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
@@ -102,7 +101,8 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
     new StaticCredentialsBuilder(
       getAwsConnectorFactory(),
       Mockito.mock(AwsConnectionCredentialsFactory.class),
-      getStsClientProvider(TEST_ACCESS_KEY_ID, TEST_SECRET_ACCESS_KEY, null)
+      getStsClientProvider(TEST_ACCESS_KEY_ID, TEST_SECRET_ACCESS_KEY, null),
+      getAwsCredentialsHolderCache()
     );
 
     new IamRoleCredentialsBuilder(
@@ -110,7 +110,8 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
       Mockito.mock(AwsConnectionCredentialsFactory.class),
       new LinkedAwsConnectionProviderImpl(myProjectManager, projectConnectionsManager, projectConnectionCredentialsManager),
       new AwsExternalIdsManagerImpl(myProjectManager),
-      getStsClientProvider(TEST_IAM_ROLE_SESSION_ACCESS_KEY_ID, TEST_IAM_ROLE_SESSION_SECRET_ACCESS_KEY, TEST_IAM_ROLE_SESSION_TOKEN)
+      getStsClientProvider(TEST_IAM_ROLE_SESSION_ACCESS_KEY_ID, TEST_IAM_ROLE_SESSION_SECRET_ACCESS_KEY, TEST_IAM_ROLE_SESSION_TOKEN),
+      getAwsCredentialsHolderCache()
     );
   }
 

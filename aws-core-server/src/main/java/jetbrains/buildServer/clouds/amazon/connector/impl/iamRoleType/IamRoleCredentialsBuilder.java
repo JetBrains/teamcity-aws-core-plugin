@@ -12,6 +12,7 @@ import jetbrains.buildServer.clouds.amazon.connector.LinkedAwsConnectionProvider
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsExternalIdsManager;
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAwsConnPropertiesProcessor;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
@@ -31,14 +32,17 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final LinkedAwsConnectionProvider myLinkedConnectionProvider;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
   private final StsClientProvider myStsClientProvider;
+  private final AwsCredentialsHolderCache myCache;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                    @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
                                    @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager,
-                                   @NotNull final StsClientProvider stsClientProvider) {
+                                   @NotNull final StsClientProvider stsClientProvider,
+                                   @NotNull AwsCredentialsHolderCache cache) {
     myLinkedConnectionProvider = linkedConnectionProvider;
     myStsClientProvider = stsClientProvider;
+    myCache = cache;
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
@@ -53,7 +57,8 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         featureDescriptor,
         myLinkedConnectionProvider,
         myStsClientProvider,
-        myAwsExternalIdsManager
+        myAwsExternalIdsManager,
+        myCache
       );
     } catch (SdkException sce) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(sce));

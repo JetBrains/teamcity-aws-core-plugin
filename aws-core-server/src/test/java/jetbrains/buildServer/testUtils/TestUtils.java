@@ -1,15 +1,20 @@
 package jetbrains.buildServer.testUtils;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import jetbrains.buildServer.ExtensionHolder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorImpl;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
+import jetbrains.buildServer.serverSide.BuildServerListener;
+import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.oauth.OAuthConstants;
+import jetbrains.buildServer.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.mockito.Mockito;
 import software.amazon.awssdk.services.sts.StsClient;
@@ -21,13 +26,14 @@ import static org.mockito.Mockito.when;
 public class TestUtils {
   public static StsClientProvider getStsClientProvider(String testAccessKeyId, String testSecretAccessKey, String testSessionToken) throws ConnectionCredentialsException {
     StsClient securityTokenService = Mockito.mock(StsClient.class);
+    Instant expirationInstant = Instant.now().plus(1, ChronoUnit.HOURS);
     when(securityTokenService.getSessionToken(any(GetSessionTokenRequest.class)))
       .thenReturn(GetSessionTokenResponse.builder().credentials(
         Credentials.builder()
           .accessKeyId(testAccessKeyId)
           .secretAccessKey(testSecretAccessKey)
           .sessionToken(testSessionToken)
-          .expiration(Instant.now())
+          .expiration(expirationInstant)
           .build())
         .build());
     when(securityTokenService.assumeRole(any(AssumeRoleRequest.class)))
@@ -37,7 +43,7 @@ public class TestUtils {
             .accessKeyId(testAccessKeyId)
             .secretAccessKey(testSecretAccessKey)
             .sessionToken(testSessionToken)
-            .expiration(Instant.now())
+            .expiration(expirationInstant)
             .build()
         )
         .build());
@@ -67,6 +73,10 @@ public class TestUtils {
       .thenReturn(securityTokenService);
 
     return stsClientProvider;
+  }
+
+  public static AwsCredentialsHolderCache getAwsCredentialsHolderCache() {
+    return new AwsCredentialsHolderCache(EventDispatcher.create(BuildServerListener.class), Mockito.mock(ProjectManager.class));
   }
 
   public static ConnectionDescriptor createConnectionDescriptor(String projectId, String connectionId, Map<String, String> params) {

@@ -7,9 +7,7 @@ import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.testUtils.AbstractAwsConnectionTest;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
@@ -23,6 +21,7 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.STS_ENDPOINT_DEFAULT;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.MAX_SESSION_DURATION;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsSessionCredentialsParams.SESSION_DURATION_PARAM;
+import static jetbrains.buildServer.testUtils.TestUtils.getAwsCredentialsHolderCache;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 
 public class StaticSessionCredentialsHolderTest extends AbstractAwsConnectionTest {
@@ -54,7 +53,8 @@ public class StaticSessionCredentialsHolderTest extends AbstractAwsConnectionTes
     new StaticCredentialsBuilder(
       getAwsConnectorFactory(),
       Mockito.mock(AwsConnectionCredentialsFactory.class),
-      getStsClientProvider(TEST_SESSION_ACCESS_KEY_ID, TEST_SESSION_SECRET_ACCESS_KEY, TEST_SESSION_TOKEN)
+      getStsClientProvider(TEST_SESSION_ACCESS_KEY_ID, TEST_SESSION_SECRET_ACCESS_KEY, TEST_SESSION_TOKEN),
+      getAwsCredentialsHolderCache()
     );
   }
 

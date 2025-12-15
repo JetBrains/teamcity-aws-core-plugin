@@ -5,7 +5,7 @@ import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectionCredentials;
-import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.serverSide.IOGuard;
@@ -16,26 +16,27 @@ import org.jetbrains.annotations.Nullable;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.Credentials;
 import software.amazon.awssdk.services.sts.model.GetSessionTokenRequest;
-import software.amazon.awssdk.services.sts.model.GetSessionTokenResponse;
 
 public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
   private final SProjectFeatureDescriptor myAwsConnectionFeature;
   private final AwsCredentialsHolder myBasicCredentialsHolder;
   private final StsClientProvider myStsClientProvider;
+  private final AwsCredentialsHolderCache myCache;
 
   public StaticSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor awsConnectionFeature,
                                         @NotNull final AwsCredentialsHolder basicCredentialsHolder,
-                                        @NotNull final StsClientProvider stsClientProvider) {
+                                        @NotNull final StsClientProvider stsClientProvider,
+                                        @NotNull AwsCredentialsHolderCache cache) {
     myAwsConnectionFeature = awsConnectionFeature;
     myBasicCredentialsHolder = basicCredentialsHolder;
     myStsClientProvider = stsClientProvider;
+    myCache = cache;
   }
 
   @NotNull
   @Override
   public AwsCredentialsData getAwsCredentials() throws ConnectionCredentialsException {
-    Credentials credentials = requestSession().credentials();
-    return AwsConnectionUtils.getDataFromCredentials(credentials);
+    return myCache.getAwsCredentials(myAwsConnectionFeature, this::requestSession);
   }
 
   @Override
@@ -50,8 +51,8 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
     return null;
   }
 
-  private GetSessionTokenResponse requestSession() throws ConnectionCredentialsException {
-    Map<String, String> connectionProperties = myAwsConnectionFeature.getParameters();
+  private Credentials requestSession() throws ConnectionCredentialsException {
+    final Map<String, String> connectionProperties = myAwsConnectionFeature.getParameters();
 
     StsClient sts = myStsClientProvider
       .getClientWithCredentials(
@@ -67,6 +68,6 @@ public class StaticSessionCredentialsHolder implements AwsCredentialsHolder {
       .durationSeconds(sessionDurationMinutes * 60)
       .build();
 
-    return IOGuard.allowNetworkCall(() -> sts.getSessionToken(getSessionTokenRequest));
+    return IOGuard.allowNetworkCall(() -> sts.getSessionToken(getSessionTokenRequest)).credentials();
   }
 }

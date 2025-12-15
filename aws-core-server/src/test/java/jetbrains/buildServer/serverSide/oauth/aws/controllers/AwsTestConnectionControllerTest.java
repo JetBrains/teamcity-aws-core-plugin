@@ -33,6 +33,7 @@ import software.amazon.awssdk.services.sts.model.GetCallerIdentityResponse;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.getAwsCredentialsHolderCache;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 import static org.mockito.Mockito.when;
 
@@ -60,7 +61,8 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
       new StaticCredentialsBuilder(
         myAwsConnectorFactory,
         Mockito.mock(AwsConnectionCredentialsFactory.class),
-        getStsClientProvider(testAccessKeyId, testSecretAccessKey, null)
+        getStsClientProvider(testAccessKeyId, testSecretAccessKey, null),
+        getAwsCredentialsHolderCache()
       );
     } catch (ConnectionCredentialsException e) {
       fail("Test failed: " + e.getMessage());

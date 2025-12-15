@@ -15,6 +15,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.CREDENTIALS_TYPE_PARAM;
+import static jetbrains.buildServer.testUtils.TestUtils.getAwsCredentialsHolderCache;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProviderWithNoKeys;
 
 public class AwsConnectorFactoryImplTest extends BaseTestCase {
@@ -55,7 +56,7 @@ public class AwsConnectorFactoryImplTest extends BaseTestCase {
 
   @Test(expectedExceptions = {IllegalStateException.class})
   public void givenAwsConnBuilderWithRegisteredFactory_whenTryingToRegisterTheSameType_thenThrowException() throws ConnectionCredentialsException {
-    new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), getStsClientProviderWithNoKeys());
-    new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), getStsClientProviderWithNoKeys());
+    new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), getStsClientProviderWithNoKeys(), getAwsCredentialsHolderCache());
+    new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), getStsClientProviderWithNoKeys(), getAwsCredentialsHolderCache());
   }
 }

@@ -54,6 +54,16 @@ public class AwsCredentialsHolderCacheTest extends BaseServerTestCase {
     Assert.assertEquals(myCounter.get(), 2);
   }
 
+
+  public void testCachedValueIsNotReturned_IfBufferExpires() throws ConnectionCredentialsException {
+    setInternalProperty(AwsCredentialsHolderCache.CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS, 2*60*60); //2 hours
+    // Will call twice to make sure cached value is not returned
+    cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);
+    cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);
+
+    Assert.assertEquals(myCounter.get(), 2);
+  }
+
   public void testCachedValueIsNotReturned_IfProjectFeatureChanged() throws ConnectionCredentialsException {
     // Will call twice to make sure cached value is not returned
     cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);

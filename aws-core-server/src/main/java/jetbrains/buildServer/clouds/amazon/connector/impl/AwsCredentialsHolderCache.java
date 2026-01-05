@@ -5,8 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.intellij.openapi.util.Pair;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.temporal.ChronoUnit;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
 import jetbrains.buildServer.serverSide.*;
@@ -19,6 +18,7 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 public class AwsCredentialsHolderCache {
 
   public static final String ENABLE_AWS_CREDENTIALS_CACHE = "teamcity.internal.aws.connection.credentialsCacheEnabled";
+  public static final String CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS = "teamcity.internal.aws.connection.credentialsCache.expirationBufferInSeconds";
   private final ProjectManager myProjectManager;
   private final Cache<Pair<String, String>, Credentials> myCredentialsCache = CacheBuilder.newBuilder()
     .expireAfterWrite(Duration.ofHours(12))
@@ -66,12 +66,19 @@ public class AwsCredentialsHolderCache {
   private Credentials getOrRequestCredentials(@NotNull SProjectFeatureDescriptor awsConnectionFeature, @NotNull RequestSessionFunction credentialsSupplier)
     throws ConnectionCredentialsException {
     final Credentials cachedCredentials = myCredentialsCache.getIfPresent(Pair.create(awsConnectionFeature.getProjectId(), awsConnectionFeature.getId()));
-    if (cachedCredentials != null && cachedCredentials.expiration().isAfter(Instant.now())) {
+    if (cachedCredentials != null && isExpired(cachedCredentials)) {
       return cachedCredentials;
     } else {
       final Credentials credentials = credentialsSupplier.get();
       myCredentialsCache.put(Pair.create(awsConnectionFeature.getProjectId(), awsConnectionFeature.getId()), credentials);
       return credentials;
     }
+  }
+
+  private boolean isExpired(Credentials cachedCredentials) {
+    // We add a configurable buffer amount to prevent passing credentials right about to expire
+    final Instant currentInstance = Instant.now().plus(TeamCityProperties.getInteger(CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS, 1), ChronoUnit.SECONDS);
+    return cachedCredentials.expiration().isAfter(
+      currentInstance);
   }
 }

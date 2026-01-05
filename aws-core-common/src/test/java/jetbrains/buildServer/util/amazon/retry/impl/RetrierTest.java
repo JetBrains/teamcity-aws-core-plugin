@@ -89,6 +89,34 @@ public class RetrierTest extends BaseTestCase {
   }
 
 
+  @Test
+  void testDefaultRetrierRetriesExpectedExceptionsFromMapperWhenTheyAreCause() {
+    final Retrier retrier = AmazonRetrier.defaultAwsRetrier(5, 0, Loggers.TEST).registerListener(myCounterListener);
+    final AtomicInteger counter = new AtomicInteger();
+
+    List<Object> someObjects = Collections.singletonList(new Object());
+    someObjects
+      .stream()
+      .map(
+        retrier.retryableMapper(
+          it -> {
+            if (counter.getAndIncrement() < 4) {
+              throw new RuntimeException(new RecoverableException("Got error") {
+                @Override
+                public boolean isRecoverable() {
+                  return true;
+                }
+              });
+            } else {
+              return null;
+            }
+          })
+      ).collect(Collectors.toList());
+    Assert.assertEquals(myCounterListener.getNumberOfRetries(), 4);
+    Assert.assertEquals(myCounterListener.getNumberOfFailures(), 4);
+  }
+
+
   /**
    * @author Dmitrii Bogdanov
    */

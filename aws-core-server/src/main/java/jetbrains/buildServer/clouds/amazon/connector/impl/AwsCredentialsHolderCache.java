@@ -66,7 +66,7 @@ public class AwsCredentialsHolderCache {
   private Credentials getOrRequestCredentials(@NotNull SProjectFeatureDescriptor awsConnectionFeature, @NotNull RequestSessionFunction credentialsSupplier)
     throws ConnectionCredentialsException {
     final Credentials cachedCredentials = myCredentialsCache.getIfPresent(Pair.create(awsConnectionFeature.getProjectId(), awsConnectionFeature.getId()));
-    if (cachedCredentials != null && isExpired(cachedCredentials)) {
+    if (cachedCredentials != null && isNotExpired(cachedCredentials)) {
       return cachedCredentials;
     } else {
       final Credentials credentials = credentialsSupplier.get();
@@ -75,7 +75,7 @@ public class AwsCredentialsHolderCache {
     }
   }
 
-  private boolean isExpired(Credentials cachedCredentials) {
+  private boolean isNotExpired(Credentials cachedCredentials) {
     // We add a configurable buffer amount to prevent passing credentials right about to expire
     final Instant currentInstance = Instant.now().plus(TeamCityProperties.getInteger(CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS, 1), ChronoUnit.SECONDS);
     return cachedCredentials.expiration().isAfter(

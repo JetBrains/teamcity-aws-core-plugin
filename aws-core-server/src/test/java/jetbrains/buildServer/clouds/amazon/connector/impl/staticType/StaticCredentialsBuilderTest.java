@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.getAwsCredentialsHolderCache;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 
 public class StaticCredentialsBuilderTest extends BaseTestCase {
@@ -161,6 +162,6 @@ public class StaticCredentialsBuilderTest extends BaseTestCase {
 
   @NotNull
   private StaticCredentialsBuilder createStaticCredentialsBuilder() {
-    return new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), myStsClientProvider);
+    return new StaticCredentialsBuilder(myAwsConnectorFactory, Mockito.mock(AwsConnectionCredentialsFactory.class), myStsClientProvider, getAwsCredentialsHolderCache());
   }
 }

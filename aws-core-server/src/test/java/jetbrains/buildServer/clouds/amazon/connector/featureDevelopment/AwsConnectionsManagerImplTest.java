@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams.*;
 import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants.*;
+import static jetbrains.buildServer.testUtils.TestUtils.getAwsCredentialsHolderCache;
 import static jetbrains.buildServer.testUtils.TestUtils.getStsClientProvider;
 
 public class AwsConnectionsManagerImplTest extends AbstractAwsConnectionTest {
@@ -62,7 +63,8 @@ public class AwsConnectionsManagerImplTest extends AbstractAwsConnectionTest {
         testSessionAccessKeyId,
         testSessionSecretAccessKey,
         testSessionToken
-      )
+      ),
+      getAwsCredentialsHolderCache()
     );
   }
 

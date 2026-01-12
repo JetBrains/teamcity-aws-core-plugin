@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.AwsConnectorFactory;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
+import jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.*;
@@ -20,10 +21,13 @@ import org.jetbrains.annotations.NotNull;
 public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
 
   private final StsClientProvider myStsClientProvider;
+  private final AwsCredentialsHolderCache myCache;
 
   public StaticCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                   @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
-                                  @NotNull final StsClientProvider stsClientProvider) {
+                                  @NotNull final StsClientProvider stsClientProvider,
+                                  @NotNull AwsCredentialsHolderCache cache) {
+    myCache = cache;
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
@@ -94,7 +98,8 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
     return new StaticSessionCredentialsHolder(
       featureDescriptor,
       getBasicCredentialsProvider(featureDescriptor),
-      myStsClientProvider
+      myStsClientProvider,
+      myCache
     );
   }
 

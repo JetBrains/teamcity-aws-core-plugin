@@ -76,7 +76,7 @@ public class TestUtils {
   }
 
   public static AwsCredentialsHolderCache getAwsCredentialsHolderCache() {
-    return new AwsCredentialsHolderCache(EventDispatcher.create(BuildServerListener.class), Mockito.mock(ProjectManager.class));
+    return new AwsCredentialsHolderCache(EventDispatcher.create(BuildServerListener.class));
   }
 
   public static ConnectionDescriptor createConnectionDescriptor(String projectId, String connectionId, Map<String, String> params) {

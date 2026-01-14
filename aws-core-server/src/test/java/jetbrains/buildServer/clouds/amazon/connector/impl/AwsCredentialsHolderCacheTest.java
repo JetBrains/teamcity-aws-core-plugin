@@ -26,7 +26,7 @@ public class AwsCredentialsHolderCacheTest extends BaseServerTestCase {
   @BeforeMethod
   public void setUp() throws Exception {
     super.setUp();
-    cache = new AwsCredentialsHolderCache(getEventDispatcher(), myProjectManager);
+    cache = new AwsCredentialsHolderCache(getEventDispatcher());
     myCredentials = Mockito.mock(Credentials.class);
     Mockito.when(myCredentials.expiration()).thenReturn(Instant.now().plus(1, ChronoUnit.HOURS));
     myFeatureDescriptor = TestUtils.createConnectionDescriptor(myProject.getProjectId(), "connectionId", Collections.emptyMap());

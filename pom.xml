@@ -29,7 +29,6 @@
     <modules>
         <module>aws-core-agent</module>
         <module>aws-core-server</module>
-        <module>aws-core-common</module>
         <module>aws-core-webapp</module>
     </modules>
 
@@ -71,11 +70,6 @@
             <dependency>
                 <groupId>org.jetbrains.teamcity.plugins</groupId>
                 <artifactId>aws-core-agent</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains.teamcity.plugins</groupId>
-                <artifactId>aws-core-common</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

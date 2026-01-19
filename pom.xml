@@ -29,7 +29,7 @@
     <modules>
         <module>aws-core-agent</module>
         <module>aws-core-server</module>
-        <module>aws-core-common</module>
+<!--        <module>aws-core-common</module>-->
         <module>aws-core-webapp</module>
     </modules>
 

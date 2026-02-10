@@ -21,6 +21,9 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
+import jetbrains.buildServer.serverSide.TeamCityProperties;
+import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentials;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,29 +33,41 @@ import static jetbrains.buildServer.clouds.amazon.connector.utils.parameters.Aws
 
 public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
 
+  public static final String IAM_ROLE_ALLOW_ACCESS_TO_PARENT_PROJECTS = "teamcity.internal.aws.connection.iamRole.allowAccessToParentProjects";
   private final SProjectFeatureDescriptor myIamRoleConnectionFeature;
   private final LinkedAwsConnectionProvider myLinkedConnectionProvider;
   private final StsClientProvider myStsClientProvider;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
+  @NotNull private final SecurityContextEx mySecurityContext;
 
   public IamRoleSessionCredentialsHolder(@NotNull final SProjectFeatureDescriptor iamRoleConnectionFeature,
                                          @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
                                          @NotNull final StsClientProvider stsClientProvider,
-                                         @NotNull final AwsExternalIdsManager awsExternalIdsManager) {
+                                         @NotNull final AwsExternalIdsManager awsExternalIdsManager,
+                                         @NotNull SecurityContextEx securityContext) {
     myIamRoleConnectionFeature = iamRoleConnectionFeature;
     myLinkedConnectionProvider = linkedConnectionProvider;
     myStsClientProvider = stsClientProvider;
     myAwsExternalIdsManager = awsExternalIdsManager;
+    mySecurityContext = securityContext;
   }
 
   @Nullable
   private String getAwsConnectionExternalId() {
     String externalId = null;
     try {
-      externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
-        myIamRoleConnectionFeature.getId(),
-        myIamRoleConnectionFeature.getProjectId()
-      );
+      if (TeamCityProperties.getBooleanOrTrue(IAM_ROLE_ALLOW_ACCESS_TO_PARENT_PROJECTS)) {
+        externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
+          myIamRoleConnectionFeature.getId(),
+          myIamRoleConnectionFeature.getProjectId()
+        );
+      } else {
+        externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
+          myIamRoleConnectionFeature.getId(),
+          myIamRoleConnectionFeature.getProjectId()
+        );
+      }
+
     } catch (AwsConnectorException e) {
       Loggers.CLOUD.warnAndDebugDetails(
         String.format(
@@ -86,13 +101,16 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
   }
 
   private AssumeRoleResult assumeIamRole() throws ConnectionCredentialsException {
-    AWSSecurityTokenService sts = myStsClientProvider
-      .getClientWithCredentials(
-        new AwsConnectionCredentials(
-          myLinkedConnectionProvider.getLinkedConnectionCredentials(myIamRoleConnectionFeature)
-        ),
-        myIamRoleConnectionFeature.getParameters()
-      );
+    // TW-98038 Credentials must be requested unchecked because we need to access the project of the connection
+    final ConnectionCredentials connectionCredentials;
+    if (TeamCityProperties.getBooleanOrTrue(IAM_ROLE_ALLOW_ACCESS_TO_PARENT_PROJECTS)) {
+      connectionCredentials = mySecurityContext.runAsSystemUnchecked(
+        () -> myLinkedConnectionProvider.getLinkedConnectionCredentials(myIamRoleConnectionFeature));
+    } else {
+      connectionCredentials = myLinkedConnectionProvider.getLinkedConnectionCredentials(myIamRoleConnectionFeature);
+    }
+
+    AWSSecurityTokenService sts = myStsClientProvider.getClientWithCredentials(new AwsConnectionCredentials(connectionCredentials), myIamRoleConnectionFeature.getParameters());
 
     Map<String, String> connectionProperties = myIamRoleConnectionFeature.getParameters();
     AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()

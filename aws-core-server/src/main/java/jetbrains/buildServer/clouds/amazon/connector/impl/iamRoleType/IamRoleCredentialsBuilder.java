@@ -21,6 +21,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpoin
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import org.jetbrains.annotations.NotNull;
 
 import static jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils.getAwsErrorMessage;
@@ -31,14 +32,17 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final LinkedAwsConnectionProvider myLinkedConnectionProvider;
   private final AwsExternalIdsManager myAwsExternalIdsManager;
   private final StsClientProvider myStsClientProvider;
+  @NotNull private final SecurityContextEx mySecurityContext;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                    @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
                                    @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager,
-                                   @NotNull final StsClientProvider stsClientProvider) {
+                                   @NotNull final StsClientProvider stsClientProvider,
+                                   @NotNull SecurityContextEx securityContext) {
     myLinkedConnectionProvider = linkedConnectionProvider;
     myStsClientProvider = stsClientProvider;
+    mySecurityContext = securityContext;
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
@@ -53,7 +57,8 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         featureDescriptor,
         myLinkedConnectionProvider,
         myStsClientProvider,
-        myAwsExternalIdsManager
+        myAwsExternalIdsManager,
+        mySecurityContext
       );
     } catch (AmazonClientException ace) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(ace));

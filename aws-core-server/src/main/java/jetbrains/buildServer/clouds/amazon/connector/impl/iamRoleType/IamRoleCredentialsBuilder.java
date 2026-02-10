@@ -21,6 +21,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpoin
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awssdk.core.exception.SdkException;
 
@@ -33,16 +34,19 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
   private final AwsExternalIdsManager myAwsExternalIdsManager;
   private final StsClientProvider myStsClientProvider;
   private final AwsCredentialsHolderCache myCache;
+  @NotNull private final SecurityContextEx mySecurityContext;
 
   public IamRoleCredentialsBuilder(@NotNull final AwsConnectorFactory awsConnectorFactory,
                                    @NotNull final AwsConnectionCredentialsFactory awsCredentialsFactory,
                                    @NotNull final LinkedAwsConnectionProvider linkedConnectionProvider,
                                    @NotNull final AwsExternalIdsManager awsExternalIdsManager,
                                    @NotNull final StsClientProvider stsClientProvider,
-                                   @NotNull AwsCredentialsHolderCache cache) {
+                                   @NotNull AwsCredentialsHolderCache cache,
+                                   @NotNull SecurityContextEx securityContext) {
     myLinkedConnectionProvider = linkedConnectionProvider;
     myStsClientProvider = stsClientProvider;
     myCache = cache;
+    mySecurityContext = securityContext;
     awsConnectorFactory.registerAwsCredentialsBuilder(this);
     awsCredentialsFactory.registerAwsCredentialsBuilder(this);
 
@@ -58,7 +62,8 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         myLinkedConnectionProvider,
         myStsClientProvider,
         myAwsExternalIdsManager,
-        myCache
+        myCache,
+        mySecurityContext
       );
     } catch (SdkException sce) {
       throw new AwsConnectorException("Failed to get the principal AWS connection to assume IAM Role: " + getAwsErrorMessage(sce));

@@ -14,6 +14,7 @@ import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAssumeI
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsConnectionCredentialsFactory;
@@ -43,6 +44,7 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
   private final String TEST_IAM_ROLE_SESSION_TOKEN = "TEST_TOKEN";
   private final String TEST_IAM_ROLE_ARN_PARAM = "arn:partition:service:region:account:resource";
   private SProject myProject;
+  private SecurityContextEx mySecurityContext;
 
   @BeforeMethod
   public void setup() throws Exception {
@@ -105,13 +107,15 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
       getAwsCredentialsHolderCache()
     );
 
+    mySecurityContext = Mockito.mock(SecurityContextEx.class);
     new IamRoleCredentialsBuilder(
       getAwsConnectorFactory(),
       Mockito.mock(AwsConnectionCredentialsFactory.class),
       new LinkedAwsConnectionProviderImpl(myProjectManager, projectConnectionsManager, projectConnectionCredentialsManager),
       new AwsExternalIdsManagerImpl(myProjectManager),
       getStsClientProvider(TEST_IAM_ROLE_SESSION_ACCESS_KEY_ID, TEST_IAM_ROLE_SESSION_SECRET_ACCESS_KEY, TEST_IAM_ROLE_SESSION_TOKEN),
-      getAwsCredentialsHolderCache()
+      getAwsCredentialsHolderCache(),
+      mySecurityContext
     );
   }
 
@@ -134,6 +138,26 @@ public class IamRoleCredentialsBuilderTest extends AbstractAwsConnectionTest {
   @Test
   public void givenAwsConnFactory_whenWithAllProperties_thenReturnIamRoleSessionAwsCredentials() {
     try {
+      //noinspection unchecked
+      when(mySecurityContext.runAsSystemUnchecked(Mockito.any(SecurityContextEx.RunAsActionWithResult.class)))
+        .thenAnswer((a) -> ((SecurityContextEx.RunAsActionWithResult<?>)a.getArguments()[0]).run());
+      SProjectFeatureDescriptor connectionFeature = myProject.findFeatureById(TEST_IAM_ROLE_AWS_CONN_ID);
+      assert connectionFeature != null;
+      AwsCredentialsHolder credentialsHolder = getAwsConnectorFactory()
+        .buildAwsCredentialsProvider(connectionFeature);
+      assertEquals(TEST_IAM_ROLE_SESSION_ACCESS_KEY_ID, credentialsHolder.getAwsCredentials().getAccessKeyId());
+      assertEquals(TEST_IAM_ROLE_SESSION_SECRET_ACCESS_KEY, credentialsHolder.getAwsCredentials().getSecretAccessKey());
+      assertEquals(TEST_IAM_ROLE_SESSION_TOKEN, credentialsHolder.getAwsCredentials().getSessionToken());
+
+    } catch (ConnectionCredentialsException awsConnectorException) {
+      fail("Could not construct the credentials provider: " + awsConnectorException.getMessage());
+    }
+  }
+
+  @Test
+  public void givenAwsConnFactory_whenWithAllProperties_thenReturnIamRoleSessionAwsCredentials_NotAllowAccessToParents() {
+    try {
+      setInternalProperty(IamRoleSessionCredentialsHolder.IAM_ROLE_ALLOW_ACCESS_TO_PARENT_PROJECTS, "false");
       SProjectFeatureDescriptor connectionFeature = myProject.findFeatureById(TEST_IAM_ROLE_AWS_CONN_ID);
       assert connectionFeature != null;
       AwsCredentialsHolder credentialsHolder = getAwsConnectorFactory()

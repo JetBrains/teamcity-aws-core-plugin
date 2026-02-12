@@ -48,6 +48,7 @@ const ApplicationContext = React.createContext<ApplicationContextType>({
     isDefaultCredProviderEnabled: false,
     rotateKeyControllerUrl: '',
     readOnly: false,
+    oldKeyPreserveTime: '',
   },
   isCreateMode: false,
   isEditMode: false,

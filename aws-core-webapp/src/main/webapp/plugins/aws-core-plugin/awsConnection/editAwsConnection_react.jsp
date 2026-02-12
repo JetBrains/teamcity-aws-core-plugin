@@ -13,6 +13,7 @@
 <%@ page import="jetbrains.buildServer.util.StringUtil" %>
 <%@ page import="jetbrains.buildServer.serverSide.crypt.RSACipher" %>
 <%@ page import="jetbrains.buildServer.serverSide.oauth.aws.controllers.SupportedProvidersController" %>
+<%@ page import="jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner" %>
 
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean" />
 <jsp:useBean id="oauthConnectionBean" scope="request" type="jetbrains.buildServer.serverSide.oauth.OAuthConnectionBean" />
@@ -45,6 +46,7 @@
 <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}" />
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
 <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}" />
+<c:set var="oldKeyPreserveTime" value="<%=OldKeysCleaner.getOldKeyPreserveTimeReadable()%>" />
 <c:set var="awsConnectionId" value="${propertiesBean.properties[principal_aws_connection_param]}" />
 <c:set var="canEditProject" value="${afn:permissionGrantedForProject(project, 'EDIT_PROJECT')}"/>
 <c:set var="projectIsReadOnly" value="${project.readOnly}"/>
@@ -108,6 +110,7 @@
       awsConnectionId: "<bs:forJs>${awsConnectionId}</bs:forJs>",
       rotateKeyControllerUrl: "<bs:forJs>${rotate_key_controller_url}</bs:forJs>",
       readOnly: "<bs:forJs>${projectIsReadOnly || !canEditProject}</bs:forJs>" === "true",
+      oldKeyPreserveTime: "<bs:forJs>${oldKeyPreserveTime}</bs:forJs>",
     };
 
     const loadJS = function (url, implementationCode, location) {

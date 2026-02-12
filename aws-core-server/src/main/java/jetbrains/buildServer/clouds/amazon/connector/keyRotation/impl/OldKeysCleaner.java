@@ -14,7 +14,9 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.iam.IamClient;
@@ -29,7 +31,7 @@ public class OldKeysCleaner {
   private static final String TASK_ARG_DIVIDER = "{}";
   public static final String OLD_KEY_PRESERVE_TIME_MIN_PROPERTY_NAME = "teamcity.internal.cloud.aws.keyRotation.old.key.preserve.time.min";
   public static final String OLD_KEY_PRESERVE_TIME_DAYS_PROPERTY_NAME = "teamcity.internal.cloud.aws.keyRotation.old.key.preserve.time.days";
-  public static final int OLD_KEY_PRESERVE_TIME_DEFAULT_DAYS = 1;
+  public static final int OLD_KEY_PRESERVE_TIME_DEFAULT_MINUTES = 5;
   private final MultiNodeTasks myMultiNodeTasks;
   private final ServerResponsibility myServerResponsibility;
   private final OAuthConnectionsManager myOAuthConnectionsManager;
@@ -47,7 +49,7 @@ public class OldKeysCleaner {
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
 
-    setOldKeyPreserveTime();
+    oldKeyPreserveTime = getTimeFromProperties();
 
     myMultiNodeTasks.subscribe(DELETE_OLD_AWS_KEY_TASK_TYPE, new MultiNodeTasks.TaskConsumer() {
       @Override
@@ -172,20 +174,25 @@ public class OldKeysCleaner {
   }
 
   @NotNull
+  @TestOnly
   public TemporalAmount getOldKeyPreserveTime() {
     return oldKeyPreserveTime;
   }
 
-  private void setOldKeyPreserveTime() {
+  private static Duration getTimeFromProperties() {
     int inMinutes = TeamCityProperties.getInteger(OLD_KEY_PRESERVE_TIME_MIN_PROPERTY_NAME);
     int inDays = TeamCityProperties.getInteger(OLD_KEY_PRESERVE_TIME_DAYS_PROPERTY_NAME);
     if (inMinutes == 0 && inDays == 0) {
-      oldKeyPreserveTime = Duration.ofDays(OLD_KEY_PRESERVE_TIME_DEFAULT_DAYS);
+      return Duration.ofMinutes(OLD_KEY_PRESERVE_TIME_DEFAULT_MINUTES);
     } else if (inMinutes == 0){
-      oldKeyPreserveTime = Duration.ofDays(inDays);
+      return Duration.ofDays(inDays);
     } else {
-      oldKeyPreserveTime = Duration.ofMinutes(inMinutes);
+      return Duration.ofMinutes(inMinutes);
     }
+  }
+
+  public static String getOldKeyPreserveTimeReadable() {
+    return DurationFormatUtils.formatDurationWords(getTimeFromProperties().toMillis(), true, true);
   }
 
   private static class DeleteKeyTaskArg {

@@ -6,6 +6,10 @@ import StsEndpoint from '../StsEndpoint';
 
 import { useApplicationContext } from '../../../../Contexts/ApplicationContext';
 
+import { RotateKeysEntityContext } from '../../../../Contexts/RotateKeysEntityContext';
+
+import RotateConfirmationDialog from '../../RotateConfirmationDialog';
+
 import UseSessionCredentials from './UseSessionCredentials';
 import AccessKeyId from './AccessKeyId';
 import SecretAccessKey from './SecretAccessKey';
@@ -15,7 +19,7 @@ export default function AccessKeysConnectionType() {
   const { config } = useApplicationContext();
   const rotateVisible = !!(config.accessKeyId && config.secretAccessKey);
   return (
-    <>
+    <RotateKeysEntityContext ConfirmationDialog={RotateConfirmationDialog}>
       <section>
         <SectionHeader>{'Access keys'}</SectionHeader>
         <AccessKeyId />
@@ -27,6 +31,6 @@ export default function AccessKeysConnectionType() {
         <UseSessionCredentials />
         <StsEndpoint />
       </section>
-    </>
+    </RotateKeysEntityContext>
   );
 }

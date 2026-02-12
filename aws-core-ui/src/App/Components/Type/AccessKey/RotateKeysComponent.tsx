@@ -25,17 +25,23 @@ import styles from '../../../styles.css';
 
 import { requestKeyRotation } from '../../../../Utilities/rotateKeys';
 import { useApplicationContext } from '../../../../Contexts/ApplicationContext';
+import { useRotateKeysDialog } from '../../../../Contexts/RotateKeysEntityContext';
 
 export default function RotateKeysComponent() {
   const { config, setConfig } = useApplicationContext();
   const [isLoading, setLoading] = useState(false);
   const [rotationStatus, setRotationStatus] = useState({} as RotationStatus);
+  const rotateKeysDialogContext = useRotateKeysDialog();
   const updateConfig = (key: string, secret: string) => {
     const newConfig = { ...config, accessKeyId: key, secretAccessKey: secret };
     setConfig(newConfig);
   };
 
-  const rotateKeys = () => {
+  const rotateKeys = async () => {
+    if (!(await rotateKeysDialogContext.showConfirmation()).isOk) {
+      return;
+    }
+
     setLoading(true);
     requestKeyRotation(config)
       .then((res) => {

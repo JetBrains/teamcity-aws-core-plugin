@@ -49,6 +49,7 @@ export interface Config {
   awsConnectionTypesFilter?: (type: string) => boolean;
   rotateKeyControllerUrl: string;
   readOnly: boolean;
+  oldKeyPreserveTime: string;
 }
 
 export enum FormFieldsNames {

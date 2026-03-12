@@ -6,6 +6,7 @@ import {
 
 import { post } from '../Utilities/fetchHelper';
 import { AvailableConnectionsData } from '../types';
+import { useApplicationContext } from '../Contexts/ApplicationContext';
 
 export default function useAwsConnections(data: AvailableConnectionsData) {
   const [error, setError] = React.useState<string | undefined>();
@@ -13,6 +14,7 @@ export default function useAwsConnections(data: AvailableConnectionsData) {
     Option[] | undefined
   >();
   const [isLoading, setIsLoading] = React.useState(true);
+  const { config } = useApplicationContext();
 
   const fetchAwsConnections = React.useCallback(async () => {
     const availableAwsConns = data.availableConnectionsControllerUrl;
@@ -31,8 +33,9 @@ export default function useAwsConnections(data: AvailableConnectionsData) {
           !data.awsConnectionTypesFilter ||
           data.awsConnectionTypesFilter(val[3])
       )
+      .filter((val) => val[0] !== config.connectionId)
       .map((val) => ({ key: val[0], label: val[1] } as Option));
-  }, [data]);
+  }, [data, config]);
 
   const reloadConnectionOptions = React.useCallback(() => {
     fetchAwsConnections()

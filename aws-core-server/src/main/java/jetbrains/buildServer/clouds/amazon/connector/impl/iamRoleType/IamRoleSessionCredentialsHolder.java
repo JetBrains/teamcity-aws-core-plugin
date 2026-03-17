@@ -57,10 +57,10 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
     String externalId = null;
     try {
       if (TeamCityProperties.getBooleanOrTrue(IAM_ROLE_ALLOW_ACCESS_TO_PARENT_PROJECTS)) {
-        externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
+        externalId = mySecurityContext.runAsSystemUnchecked(() -> myAwsExternalIdsManager.getAwsConnectionExternalId(
           myIamRoleConnectionFeature.getId(),
           myIamRoleConnectionFeature.getProjectId()
-        );
+        ));
       } else {
         externalId = myAwsExternalIdsManager.getAwsConnectionExternalId(
           myIamRoleConnectionFeature.getId(),

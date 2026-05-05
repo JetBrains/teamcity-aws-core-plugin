@@ -16,7 +16,6 @@ import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.iam.IamClient;
@@ -37,8 +36,6 @@ public class OldKeysCleaner {
   private final OAuthConnectionsManager myOAuthConnectionsManager;
   private final ProjectManager myProjectManager;
 
-  private TemporalAmount oldKeyPreserveTime;
-
   public OldKeysCleaner(@NotNull MultiNodeTasks multiNodeTasks,
                         @NotNull final ServerResponsibility serverResponsibility,
                         @NotNull final OAuthConnectionsManager oAuthConnectionsManager,
@@ -48,8 +45,6 @@ public class OldKeysCleaner {
     myServerResponsibility = serverResponsibility;
     myOAuthConnectionsManager = oAuthConnectionsManager;
     myProjectManager = projectManager;
-
-    oldKeyPreserveTime = getTimeFromProperties();
 
     myMultiNodeTasks.subscribe(DELETE_OLD_AWS_KEY_TASK_TYPE, new MultiNodeTasks.TaskConsumer() {
       @Override
@@ -174,9 +169,8 @@ public class OldKeysCleaner {
   }
 
   @NotNull
-  @TestOnly
   public TemporalAmount getOldKeyPreserveTime() {
-    return oldKeyPreserveTime;
+    return getTimeFromProperties();
   }
 
   private static Duration getTimeFromProperties() {

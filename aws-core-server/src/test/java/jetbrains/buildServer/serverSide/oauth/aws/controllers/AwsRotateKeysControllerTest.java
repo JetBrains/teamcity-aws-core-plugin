@@ -22,6 +22,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
 import software.amazon.awssdk.services.iam.IamClient;
 import software.amazon.awssdk.services.iam.model.*;
 import software.amazon.awssdk.services.sts.StsClient;
@@ -234,13 +235,13 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
   public void givenProjectAndConnection_whenAwsRotateRequestFailed_thenReturnError() throws Exception {
 
     when(iam.createAccessKey(any(CreateAccessKeyRequest.class)))
-      .thenThrow(LimitExceededException.builder().message("There are 2 access key already.").build());
+      .thenThrow(LimitExceededException.builder().awsErrorDetails(AwsErrorDetails.builder().build()).message("There are 2 access key already.").build());
 
     doPost("projectId", myProject.getExternalId(),
       "connectionId", TEST_CONN_FEATURE_ID);
 
     ActionErrors expectedErrors = new ActionErrors();
-    expectedErrors.addError(ROTATE_KEY_BTTN_ID, "Unable to rotate keys: There are 2 access key already.");
+    expectedErrors.addError(ROTATE_KEY_BTTN_ID, "Unable to rotate keys: AWS error: There are 2 access key already. (Service: null, Status Code: 0, Request ID: null)");
     assertEquals(OBJECT_MAPPER.writeValueAsString(expectedErrors), myResponse.getReturnedContent());
 
     OAuthConnectionDescriptor connection = myOAuthConnectionsManager.findConnectionById(myProject, TEST_CONN_FEATURE_ID);

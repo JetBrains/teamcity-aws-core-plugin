@@ -47,7 +47,6 @@ public class AwsConnectionsTestConnectionRequestPermissionsCheckerTest extends B
       myServer,
       myWebManager,
       Mockito.mock(AwsConnectionTester.class),
-      getWebFixture().getAuthorizationInterceptor(),
       myProjectManager,
       new AwsConnectionsRequestPermissionChecker()
       );

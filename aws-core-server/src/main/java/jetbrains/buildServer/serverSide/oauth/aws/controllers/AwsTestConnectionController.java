@@ -8,23 +8,18 @@ import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.AwsConnec
 import jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsTestConnectionResult;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.controllers.BaseFormXmlController;
 import jetbrains.buildServer.controllers.BasePropertiesBean;
 import jetbrains.buildServer.controllers.admin.projects.PluginPropertiesUtil;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.InvalidProperty;
-import jetbrains.buildServer.serverSide.ProjectManager;
-import jetbrains.buildServer.serverSide.SBuildServer;
-import jetbrains.buildServer.serverSide.SProject;
-import jetbrains.buildServer.serverSide.TeamCityProperties;
+import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.ProjectFeatureDescriptorImpl;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.serverSide.oauth.aws.controllers.auth.AwsConnectionsRequestPermissionChecker;
 import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.util.amazon.AWSException;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
-import org.jdom.Content;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.ModelAndView;
@@ -42,7 +37,6 @@ public class AwsTestConnectionController extends BaseFormXmlController {
   public AwsTestConnectionController(@NotNull final SBuildServer server,
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final AwsConnectionTester awsConnectionTester,
-                                     @NotNull final AuthorizationInterceptor authInterceptor,
                                      @NotNull final ProjectManager projectManager,
                                      @NotNull final AwsConnectionsRequestPermissionChecker permissionChecker) {
     super(server);
@@ -114,7 +108,7 @@ public class AwsTestConnectionController extends BaseFormXmlController {
     String actionDescription = "Unable to run AmazonSts.getCallerIdentity: ";
 
     if(AwsExceptionUtils.isAmazonServiceException(exception) || AwsExceptionUtils.isAmazonServiceException(exception.getCause())) {
-      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AwsExceptionUtils.getAwsErrorMessage(exception)));
+      errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + AWSException.getMessage(exception)));
       Loggers.CLOUD.debug(actionDescription, exception);
     } else if(exception instanceof ConnectionCredentialsException) {
       errors.addError(new InvalidProperty(CREDENTIALS_TYPE_PARAM, actionDescription + exception.getMessage()));

@@ -74,7 +74,6 @@ public class AwsTestConnectionControllerTest extends AbstractControllerTest {
       Mockito.mock(SBuildServer.class),
       Mockito.mock(WebControllerManager.class),
       createTester(),
-      Mockito.mock(AuthorizationInterceptor.class),
       Mockito.mock(ProjectManager.class),
       Mockito.mock(AwsConnectionsRequestPermissionChecker.class)
     );

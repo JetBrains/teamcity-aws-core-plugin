@@ -8,14 +8,18 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
-import jetbrains.buildServer.controllers.*;
+import jetbrains.buildServer.controllers.ActionErrors;
+import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.log.Loggers;
-import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.InvalidProperty;
+import jetbrains.buildServer.serverSide.ProjectManager;
+import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.util.amazon.AWSException;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.ModelAndView;
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
 public class AwsRotateKeysController extends BaseAwsConnectionController {
   private final AwsKeyRotator myAwsKeyRotator;
@@ -61,12 +65,10 @@ public class AwsRotateKeysController extends BaseAwsConnectionController {
     String actionDescription = "Unable to rotate keys: ";
     Loggers.CLOUD.warnAndDebugDetails(actionDescription, exception);
 
-    if (AwsExceptionUtils.isAmazonServiceException(exception)) {
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
-    } else if(AwsExceptionUtils.isAmazonServiceException(exception.getCause())){
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + (exception.getCause()).getMessage()));
-    } else {
-      errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + exception.getMessage()));
+    String details = exception.getMessage();
+    if (AwsExceptionUtils.isAmazonServiceException(exception) || AwsExceptionUtils.isAmazonServiceException(exception.getCause())) {
+      details = AWSException.getMessage(exception);
     }
+    errors.addError(new InvalidProperty(AwsAccessKeysParams.ROTATE_KEY_BTTN_ID, actionDescription + details));
   }
 }

@@ -16,11 +16,13 @@
             <groupId>org.jetbrains.teamcity</groupId>
             <artifactId>common-api</artifactId>
             <version>${teamcity.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.teamcity</groupId>
             <artifactId>agent-openapi</artifactId>
             <version>${teamcity.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.teamcity.plugins</groupId>

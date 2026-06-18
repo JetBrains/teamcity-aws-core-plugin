@@ -3,7 +3,10 @@ package jetbrains.buildServer.clouds.amazon.connector.impl;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
@@ -22,6 +25,7 @@ public class AwsCredentialsHolderCacheTest extends BaseServerTestCase {
   private Credentials myCredentials;
   private AtomicInteger myCounter;
   private RequestSessionFunction myMockSupplier;
+  private Map<String, String> myParams;
 
   @BeforeMethod
   public void setUp() throws Exception {
@@ -54,9 +58,22 @@ public class AwsCredentialsHolderCacheTest extends BaseServerTestCase {
     Assert.assertEquals(myCounter.get(), 2);
   }
 
+  public void testCachedValueIsNotReturned_IfRequestAsksForNoCache() throws ConnectionCredentialsException {
+    myFeatureDescriptor = TestUtils.createConnectionDescriptor(myProject.getProjectId(),
+                                                               "connectionId",
+                                                               Collections.singletonMap(AwsConnBuildFeatureParams.DISABLE_CACHE_PROPERTY, "true")
+    );
+
+    // Will call twice to make sure cached value is not returned
+    cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);
+    cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);
+
+    Assert.assertEquals(myCounter.get(), 2);
+  }
+
 
   public void testCachedValueIsNotReturned_IfBufferExpires() throws ConnectionCredentialsException {
-    setInternalProperty(AwsCredentialsHolderCache.CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS, 2*60*60); //2 hours
+    setInternalProperty(AwsCredentialsHolderCache.CREDENTIALS_CACHE_EXPIRATION_BUFFER_SECONDS, 2 * 60 * 60); //2 hours
     // Will call twice to make sure cached value is not returned
     cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);
     cache.getAwsCredentials(myFeatureDescriptor, myMockSupplier);

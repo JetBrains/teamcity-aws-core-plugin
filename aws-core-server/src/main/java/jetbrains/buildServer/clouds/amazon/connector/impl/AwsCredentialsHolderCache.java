@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsData;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsConnectionUtils;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsConnBuildFeatureParams;
 import jetbrains.buildServer.serverSide.*;
 import jetbrains.buildServer.serverSide.connections.credentials.ConnectionCredentialsException;
 import jetbrains.buildServer.util.EventDispatcher;
@@ -50,7 +51,8 @@ public class AwsCredentialsHolderCache {
   public AwsCredentialsData getAwsCredentials(@NotNull SProjectFeatureDescriptor awsConnectionFeature, @NotNull RequestSessionFunction credentialsSupplier)
     throws ConnectionCredentialsException {
     final Credentials credentials;
-    if (!TeamCityProperties.getBooleanOrTrue(ENABLE_AWS_CREDENTIALS_CACHE)) {
+    if (!TeamCityProperties.getBooleanOrTrue(ENABLE_AWS_CREDENTIALS_CACHE) ||
+        "true".equalsIgnoreCase(awsConnectionFeature.getParameters().get(AwsConnBuildFeatureParams.DISABLE_CACHE_PROPERTY))) {
       credentials = credentialsSupplier.get();
     } else {
       credentials = getOrRequestCredentials(awsConnectionFeature, credentialsSupplier);

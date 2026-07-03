@@ -1,0 +1,17 @@
+.idea
+**.iml
+.gradle
+**/build
+teamcity
+downloads
+target
+TeamCityDist
+teamcity_raw
+.DS_Store
+old
+.flattened-pom.xml
+local-aws-repo
+local-repo
+.mvn/maven.config
+aws-core-webapp/src/main/webapp/plugins/aws-core-plugin/bundle.js
+aws-core-webapp/appConfig-js-related-libraries.json

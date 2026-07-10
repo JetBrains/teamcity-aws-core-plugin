@@ -116,7 +116,7 @@
             <id>build-aws-core-ui</id>
             <activation>
                 <file>
-                    <missing>aws-core-webapp/src/main/webapp/plugins/aws-core-plugin/bundle.js</missing>
+                    <missing>src/main/webapp/plugins/aws-core-plugin/bundle.js</missing>
                 </file>
             </activation>
             <build>
@@ -148,7 +148,7 @@
                                     <goal>yarn</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>install --frozen-lockfile</arguments>
+                                    <arguments>install --frozen-lockfile --cache-folder ${project.build.directory}/frontend/yarn-cache</arguments>
                                 </configuration>
                             </execution>
                             <execution>

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
@@ -18,7 +17,6 @@ import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
-import jetbrains.buildServer.serverSide.impl.ProjectEx;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
@@ -81,24 +79,19 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
       }
 
       List<ConnectionDescriptor> awsConnections = myConnectionsManager.getAvailableConnectionsOfType(project, AwsConnectionProvider.TYPE);
-      final ProjectEx projectEx = (ProjectEx) project;
 
-      final boolean forBuildStepFeatureEnabled = projectEx.getBooleanInternalParameterOrTrue(ALLOWED_IN_BUILDS_FEATURE_FLAG);
       final boolean isForBuildStep = Boolean.parseBoolean(request.getParameter(ALLOWED_IN_BUILDS_REQUEST_PARAM));
-      if (forBuildStepFeatureEnabled && isForBuildStep) {
+      if (isForBuildStep) {
         awsConnections = awsConnections.stream().filter(conn -> {
           final String isAllowedInBuildSteps = conn.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
           return isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps);
         }).collect(Collectors.toList());
       }
 
-      final boolean childProjectsFeatureEnabled = projectEx.getBooleanInternalParameterOrTrue(ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG);
-
-      if (childProjectsFeatureEnabled) {
-        awsConnections = awsConnections.stream()
-                                       .filter(conn -> conn.getProjectId().equals(project.getProjectId()) || ParamUtil.isAllowedInSubProjects(conn.getParameters()))
-                                       .collect(Collectors.toList());
-      }
+      // Sub-projects filter: Take only connections from the same project of if they are allowed in sub-projects
+      awsConnections = awsConnections.stream()
+                                     .filter(conn -> conn.getProjectId().equals(project.getProjectId()) || ParamUtil.isAllowedInSubProjects(conn.getParameters()))
+                                     .collect(Collectors.toList());
 
       List<List<String>> readyAvailAwsConnProps = getAvailableAwsConnectionsParams(processAvailableAwsConnections(awsConnections, request));
 

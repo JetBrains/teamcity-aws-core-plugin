@@ -77,32 +77,22 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
       return null;
     }
 
-    final boolean subProjectsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_SUBPROJECTS_FEATURE_FLAG);
-    if (subProjectsFeatureEnabled) {
-      final List<SBuildFeatureDescriptor> filteredList = new ArrayList<SBuildFeatureDescriptor>();
-      for (SBuildFeatureDescriptor feature : awsConnectionsToExpose) {
-        final String connProjectId = getLinkedAwsConnection(feature.getParameters()).getProjectId();
-        if (connProjectId.equals(buildType.getProjectId()) || ParamUtil.isAllowedInSubProjects(feature.getParameters())) {
-          filteredList.add(feature);
-        }
-      }
-      awsConnectionsToExpose = filteredList;
-    }
+    SProject project = buildType.getProject();
+    final List<SBuildFeatureDescriptor> filteredList = new ArrayList<SBuildFeatureDescriptor>();
+    for (SBuildFeatureDescriptor feature : awsConnectionsToExpose) {
+      AwsConnectionDescriptor linkedAwsConnection = getLinkedAwsConnection(feature.getParameters());
 
-    final boolean buildStepsFeatureEnabled = ParamUtil.toBooleanOrTrue(buildType, AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_FEATURE_FLAG);
-
-    if (!buildStepsFeatureEnabled) {
-      return awsConnectionsToExpose.iterator().next();
-    }
-
-    for (SBuildFeatureDescriptor nextDescriptor : awsConnectionsToExpose) {
-      final String isAllowedInBuildSteps = nextDescriptor.getParameters().get(AwsCloudConnectorConstants.ALLOWED_IN_BUILDS_PARAM);
-      if (isAllowedInBuildSteps == null || Boolean.parseBoolean(isAllowedInBuildSteps)) {
-        return nextDescriptor;
+      if (ParamUtil.isAvailableForBuilds(linkedAwsConnection, project)) {
+        filteredList.add(feature);
       }
     }
+    awsConnectionsToExpose = filteredList;
 
-    throw new AwsBuildFeatureException("There are no AWS Connections that can be exposed");
+    if (awsConnectionsToExpose.isEmpty()) {
+      throw new AwsBuildFeatureException("There are no AWS Connections that can be exposed");
+    }
+
+    return awsConnectionsToExpose.iterator().next();
   }
 
 

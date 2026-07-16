@@ -40,8 +40,6 @@
 <c:set var="avail_connections_controller_url" value="${avail_connections_controller_url}" />
 <c:set var="avail_connections_rest_resource_name" value="${avail_connections_rest_resource_name}"/>
 <c:set var="awsConnIdRestParamForExternalIds" value="${aws_conn_id_rest_param}"/>
-<c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}" />
-<c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}" />
 <c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}" />
 <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}" />
 <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}" />
@@ -94,8 +92,8 @@
       stsEndpoint: "<bs:forJs>${stsEndpoint}</bs:forJs>",
       iamRoleArn: "<bs:forJs>${iamRoleArn}</bs:forJs>",
       iamRoleSessionName: "<bs:forJs>${iamRoleSessionName}</bs:forJs>",
-      buildStepsFeatureEnabled: "<bs:forJs>${buildStepsFeatureEnabled}</bs:forJs>" === "true",
-      subProjectsFeatureEnabled: "<bs:forJs>${subProjectsFeatureEnabled}</bs:forJs>" === "true",
+      buildStepsFeatureEnabled: true,
+      subProjectsFeatureEnabled: true,
       allowedInBuildsValue: "<bs:forJs>${allowedInBuildsValue}</bs:forJs>" === "true",
       allowedInSubProjectsValue: "<bs:forJs>${allowedInSubProjectsValue}</bs:forJs>" === "true",
       publicKey: "<bs:forJs>${publicKey}</bs:forJs>",

@@ -92,13 +92,7 @@
   </props:selectSectionPropertyContent>
 </props:selectSectionProperty>
 
-<c:set var="buildStepsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_builds_feature_enabled, true)}"/>
-<c:set var="subProjectsFeatureEnabled" value="${project.parameters.getOrDefault(allowed_in_subprojects_feature_enabled, true)}"/>
-
-<c:if test="${buildStepsFeatureEnabled || subProjectsFeatureEnabled}">
   <l:settingsGroup title="Security">
-
-    <c:if test="${buildStepsFeatureEnabled}">
 
       <c:set var="allowedInBuildsPropValue" value="${propertiesBean.properties[allowed_in_builds_param]}"/>
       <c:set var="allowedInBuildsValue" value="${empty connectionId ? 'false' : empty allowedInBuildsPropValue ? 'true' : allowedInBuildsPropValue}"/>
@@ -110,12 +104,10 @@
           <span class="error" id="error_${allowed_in_builds_param}"></span>
         </td>
       </tr>
-    </c:if>
 
     <c:set var="allowedInSubProjectsPropValue" value="${propertiesBean.properties[allowed_in_subprojects_param]}"/>
     <c:set var="allowedInSubProjectsValue" value="${empty connectionId ? 'false' : empty allowedInSubProjectsPropValue ? 'true' : allowedInSubProjectsPropValue}"/>
 
-    <c:if test="${subProjectsFeatureEnabled}">
       <tr>
         <th><label for="${allowed_in_subprojects_param}">${allowed_in_subprojects_label}: </label></th>
         <td>
@@ -124,9 +116,8 @@
           <span class="error" id="error_${allowed_in_subprojects_param}"></span>
         </td>
       </tr>
-    </c:if>
+
   </l:settingsGroup>
-</c:if>
 
 <script>
   BS.OAuthConnectionDialog.submitTestConnection = function () {

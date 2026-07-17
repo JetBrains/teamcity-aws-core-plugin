@@ -3,9 +3,12 @@
 package jetbrains.buildServer.clouds.amazon.connector.impl;
 
 import java.util.List;
+import java.util.Map;
 import jetbrains.buildServer.clouds.amazon.connector.common.AwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.AwsCredentialsHolder;
 import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorException;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
+import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.serverSide.IOGuard;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
@@ -40,4 +43,11 @@ public abstract class BaseAwsCredentialsBuilder implements AwsCredentialsBuilder
 
   @NotNull
   protected abstract AwsCredentialsHolder constructSpecificCredentialsProviderImpl(@NotNull final SProjectFeatureDescriptor featureDescriptor) throws AwsConnectorException;
+
+  protected void validateStsEndpoint(Map<String, String> properties, List<InvalidProperty> invalidProperties) {
+    if (!StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
+      invalidProperties.add(
+        new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
+    }
+  }
 }

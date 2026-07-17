@@ -16,9 +16,7 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.ChosenAw
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache;
 import jetbrains.buildServer.clouds.amazon.connector.impl.BaseAwsCredentialsBuilder;
 import jetbrains.buildServer.clouds.amazon.connector.utils.clients.StsClientProvider;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
-import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.StsEndpointParamValidator;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.SProjectFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SecurityContextEx;
@@ -88,10 +86,7 @@ public class IamRoleCredentialsBuilder extends BaseAwsCredentialsBuilder {
         new InvalidProperty(IAM_ROLE_SESSION_NAME_PARAM, "The Session Name is not valid, must satisfy regular expression pattern: " + VALID_ROLE_SESSION_NAME_REGEX));
     }
 
-    if (!StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
-      invalidProperties.add(
-        new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
-    }
+    validateStsEndpoint(properties, invalidProperties);
 
     return invalidProperties;
   }

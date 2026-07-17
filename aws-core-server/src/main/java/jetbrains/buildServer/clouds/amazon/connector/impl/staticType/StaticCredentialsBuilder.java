@@ -66,13 +66,16 @@ public class StaticCredentialsBuilder extends BaseAwsCredentialsBuilder {
       invalidProperties.add(new InvalidProperty(AwsSessionCredentialsParams.SESSION_DURATION_PARAM, "Session duration is not valid"));
     }
 
-    if (BooleanUtils.toBoolean(properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM)) &&
-        !StsEndpointParamValidator.isValidStsEndpoint(properties.get(AwsAccessKeysParams.STS_ENDPOINT_PARAM))) {
-      invalidProperties.add(
-        new InvalidProperty(AwsAccessKeysParams.STS_ENDPOINT_PARAM, "The STS endpoint is not a valid URL, please, provide a valid URL"));
-    }
+    validateStsEndpoint(properties, invalidProperties);
 
     return invalidProperties;
+  }
+
+  @Override
+  protected void validateStsEndpoint(Map<String, String> properties, List<InvalidProperty> invalidProperties) {
+    if (BooleanUtils.toBoolean(properties.get(AwsAccessKeysParams.SESSION_CREDENTIALS_PARAM))) {
+      super.validateStsEndpoint(properties, invalidProperties);
+    }
   }
 
   @Override

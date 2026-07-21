@@ -11,7 +11,6 @@
 <c:set var="useSessionCreds" value="${propertiesBean.properties[use_session_credentials_param]}"/>
 <c:set var="stsEndpoint" value="${propertiesBean.properties[sts_endpoint_param]}"/>
 <c:set var="credsType" value="${propertiesBean.properties[credentials_type_param]}"/>
-<c:set var="secretKey" value="${propertiesBean.properties[secure_secret_access_key_param]}"/>
 
 <c:set var="rotateKeyControllerUrl"><c:url value="${rotate_key_controller_url}"/></c:set>
 <c:set var="keyRotatedInfoId" value="info_${rotate_key_button_id}"/>
@@ -79,8 +78,6 @@
 
 
 <script>
-    var __secretKey = "<bs:forJs>${secretKey}</bs:forJs>";
-
     BS.OAuthConnectionDialog._errorIds = [
         '${rotate_key_button_id}'
     ];

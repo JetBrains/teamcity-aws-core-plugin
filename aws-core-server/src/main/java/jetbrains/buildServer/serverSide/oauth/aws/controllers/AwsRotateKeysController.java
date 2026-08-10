@@ -9,12 +9,12 @@ import jetbrains.buildServer.clouds.amazon.connector.keyRotation.AwsKeyRotator;
 import jetbrains.buildServer.clouds.amazon.connector.utils.AwsExceptionUtils;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsAccessKeysParams;
 import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.InvalidProperty;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.util.amazon.AWSException;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NotNull;
@@ -28,9 +28,9 @@ public class AwsRotateKeysController extends BaseAwsConnectionController {
   public AwsRotateKeysController(@NotNull final SBuildServer server,
                                  @NotNull final WebControllerManager webControllerManager,
                                  @NotNull final ProjectManager projectManager,
-                                 @NotNull final AuthorizationInterceptor authInterceptor,
+                                 @NotNull final SecurityContextEx securityContext,
                                  @NotNull final AwsKeyRotator awsKeyRotator) {
-    super(AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL, server, projectManager, webControllerManager, authInterceptor);
+    super(AwsAccessKeysParams.ROTATE_KEY_CONTROLLER_URL, server, projectManager, webControllerManager, securityContext);
     myAwsKeyRotator = awsKeyRotator;
     myProjectManager = projectManager;
   }
@@ -38,6 +38,7 @@ public class AwsRotateKeysController extends BaseAwsConnectionController {
   @Nullable
   @Override
   protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
+    checkPermissions(request);
     ActionErrors errors = new ActionErrors();
     try {
       final String projectId = request.getParameter("projectId");

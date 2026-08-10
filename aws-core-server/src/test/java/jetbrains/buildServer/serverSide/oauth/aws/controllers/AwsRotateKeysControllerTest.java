@@ -92,7 +92,7 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
       myServer,
       myWebManager,
       myProjectManager,
-      getWebFixture().getAuthorizationInterceptor(),
+      myFixture.getSecurityContext(),
       createKeyRotator()
     );
   }

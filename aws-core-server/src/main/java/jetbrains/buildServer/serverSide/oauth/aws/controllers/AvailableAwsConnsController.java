@@ -10,11 +10,11 @@ import jetbrains.buildServer.clouds.amazon.connector.errors.AwsConnectorExceptio
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.ParamUtil;
 import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
@@ -40,9 +40,9 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
                                      @NotNull final WebControllerManager webControllerManager,
                                      @NotNull final ProjectConnectionsManager connectionsManager,
                                      @NotNull final ProjectManager projectManager,
-                                     @NotNull final AuthorizationInterceptor authInterceptor,
+                                     @NotNull final SecurityContextEx securityContext,
                                      @NotNull final PluginDescriptor descriptor) {
-    super(PATH, server, projectManager, webControllerManager, authInterceptor);
+    super(PATH, server, projectManager, webControllerManager, securityContext);
     myConnectionsManager = connectionsManager;
     myProjectManager = projectManager;
     myDescriptor = descriptor;
@@ -64,6 +64,7 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
   @Nullable
   @Override
   protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
+    checkPermissions(request);
     Loggers.CLOUD.debug("Available AWS Connections have been requested for the project with id: " + request.getParameter("projectId"));
 
     final ActionErrors errors = new ActionErrors();
@@ -143,4 +144,3 @@ public class AvailableAwsConnsController extends BaseAwsConnectionController {
     return awsConnections;
   }
 }
-

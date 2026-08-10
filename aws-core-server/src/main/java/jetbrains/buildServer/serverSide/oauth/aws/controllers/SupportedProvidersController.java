@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
 import jetbrains.buildServer.serverSide.connections.ConnectionProvider;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
@@ -26,14 +26,15 @@ public class SupportedProvidersController extends BaseAwsConnectionController {
                                       @NotNull ProjectConnectionsManager connectionsManager,
                                       @NotNull ProjectManager projectManager,
                                       @NotNull WebControllerManager webControllerManager,
-                                      @NotNull AuthorizationInterceptor authInterceptor) {
-    super(CONTROLLER_PATH, server, projectManager, webControllerManager, authInterceptor);
+                                      @NotNull SecurityContextEx securityContext) {
+    super(CONTROLLER_PATH, server, projectManager, webControllerManager, securityContext);
     myConnectionsManager = connectionsManager;
   }
 
   @Nullable
   @Override
   protected ModelAndView doHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws Exception {
+    checkPermissions(request);
     if ("GET".equals(request.getMethod())) {
       doGet(response);
     } else {

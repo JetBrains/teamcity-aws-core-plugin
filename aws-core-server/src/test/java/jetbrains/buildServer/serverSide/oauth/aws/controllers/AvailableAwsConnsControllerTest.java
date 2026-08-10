@@ -14,8 +14,9 @@ import java.util.Map;
 
 import jetbrains.buildServer.clouds.amazon.connector.utils.parameters.AwsCloudConnectorConstants;
 import jetbrains.buildServer.controllers.ActionErrors;
-import jetbrains.buildServer.controllers.AuthorizationInterceptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
+import jetbrains.buildServer.serverSide.SecurityContextEx;
+import jetbrains.buildServer.serverSide.auth.AccessChecker;
 import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
 import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.impl.ProjectEx;
@@ -54,13 +55,15 @@ public class AvailableAwsConnsControllerTest extends AbstractControllerTest {
       .thenReturn(project);
 
     connectionsManager = Mockito.mock(ProjectConnectionsManager.class);
+    final SecurityContextEx securityContext = Mockito.mock(SecurityContextEx.class);
+    when(securityContext.getAccessChecker()).thenReturn(Mockito.mock(AccessChecker.class));
 
     availableAwsConnsController = new AvailableAwsConnsController(
       Mockito.mock(SBuildServer.class),
       Mockito.mock(WebControllerManager.class),
       connectionsManager,
       projectManager,
-      Mockito.spy(AuthorizationInterceptor.class),
+      securityContext,
       Mockito.mock(PluginDescriptor.class)
     );
 

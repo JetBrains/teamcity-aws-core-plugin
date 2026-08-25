@@ -189,7 +189,7 @@ public class AwsRotateKeysControllerTest extends BaseControllerTestCase<AwsRotat
         .get(SECURE_SECRET_ACCESS_KEY_PARAM)
     );
 
-    waitFor(() ->
+    waitForAssert(() ->
       myFixture.getMultiNodeTasks()
         .findFinishedTasks(Collections.singletonList(OldKeysCleaner.DELETE_OLD_AWS_KEY_TASK_TYPE), 10000)
         .size() == 1

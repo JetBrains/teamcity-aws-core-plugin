@@ -19,6 +19,9 @@ import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.SProject;
+import jetbrains.buildServer.serverSide.connections.ConnectionDescriptor;
+import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
+import jetbrains.buildServer.serverSide.oauth.aws.AwsConnectionProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,11 +29,14 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
 
   private final AwsConnectionsHolder myAwsConnectionsHolder;
   private final AwsConnectionDescriptorBuilder myAwsConnectionDescriptorBuilder;
+  private final ProjectConnectionsManager myProjectConnectionsManager;
 
   public AwsConnectionsManagerImpl(@NotNull final AwsConnectionsHolder awsConnectionsHolder,
-                                   @NotNull final AwsConnectionDescriptorBuilder awsConnectionDescriptorBuilder) {
+                                   @NotNull final AwsConnectionDescriptorBuilder awsConnectionDescriptorBuilder,
+                                   @NotNull final ProjectConnectionsManager projectConnectionsManager) {
     myAwsConnectionsHolder = awsConnectionsHolder;
     myAwsConnectionDescriptorBuilder = awsConnectionDescriptorBuilder;
+    myProjectConnectionsManager = projectConnectionsManager;
   }
 
   @NotNull
@@ -127,6 +133,16 @@ public class AwsConnectionsManagerImpl implements AwsConnectionsManager {
   @Override
   public AwsConnectionBean getAwsConnection(@NotNull SProject project, @NotNull String awsConnectionId, Map<String, String> connectionParameters) {
     try {
+      final ConnectionDescriptor scopedConnection = myProjectConnectionsManager.findConnectionById(project, awsConnectionId);
+      if (scopedConnection == null || !AwsConnectionProvider.TYPE.equals(scopedConnection.getConnectionProvider().getType())) {
+        Loggers.CLOUD.warn(String.format("Could not find AWS connection with ID '%s' in the scope of project '%s' or its parent projects.", awsConnectionId, project.getExternalId()));
+        return null;
+      }
+      if (!ParamUtil.isAvailableForBuilds(scopedConnection, project)) {
+        Loggers.CLOUD.warn(String.format("Could not use AWS connection with ID '%s' in Project with ID '%s': the connection is not available for builds.", awsConnectionId, project.getExternalId()));
+        return null;
+      }
+
       AwsConnectionDescriptor connectionDescriptor = myAwsConnectionsHolder.getAwsConnection(awsConnectionId);
       return myAwsConnectionDescriptorBuilder.awsConnBeanFromDescriptor(connectionDescriptor, connectionParameters);
     } catch (AwsConnectorException e) {

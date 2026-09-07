@@ -17,6 +17,7 @@ import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConne
 import jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManagerImpl;
 import jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl;
 import jetbrains.buildServer.serverSide.*;
+import jetbrains.buildServer.serverSide.connections.ProjectConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionDescriptor;
 import jetbrains.buildServer.serverSide.oauth.OAuthConnectionsManager;
 import jetbrains.buildServer.serverSide.oauth.OAuthProvider;
@@ -42,6 +43,7 @@ public abstract class AbstractAwsConnectionTest extends BaseTestCase {
   private final Map<String, OAuthConnectionDescriptor> mockedAwsConnectionsCollection = new HashMap<>();
   protected Map<String, String> myAwsDefaultConnectionProperties;
   protected OAuthConnectionsManager myOAuthConnectionsManager;
+  protected ProjectConnectionsManager myProjectConnectionsManager;
   protected ProjectManager myProjectManager;
   protected OAuthProvider myAwsOauthProvider;
   protected Map<String, String> myDataStorageValues;
@@ -121,7 +123,8 @@ public abstract class AbstractAwsConnectionTest extends BaseTestCase {
     if (myAwsConnectionsManager == null) {
       myAwsConnectionsManager = new AwsConnectionsManagerImpl(
         getAwsConnectionsHolder(),
-        getAwsConnectionDescriptorBuilder()
+        getAwsConnectionDescriptorBuilder(),
+        myProjectConnectionsManager
       );
     }
     return myAwsConnectionsManager;
@@ -219,6 +222,7 @@ public abstract class AbstractAwsConnectionTest extends BaseTestCase {
   private void initMainMocks() {
     initProjectManagerMock();
     initOauthConnManagerMock();
+    initProjectConnectionsManagerMock();
   }
 
   private void initProjectManagerMock() {
@@ -234,6 +238,13 @@ public abstract class AbstractAwsConnectionTest extends BaseTestCase {
     myOAuthConnectionsManager = Mockito.mock(OAuthConnectionsManager.class);
 
     when(myOAuthConnectionsManager.findConnectionById(any(), anyString()))
+      .thenAnswer(invocation -> mockedAwsConnectionsCollection.get(invocation.getArgument(1)));
+  }
+
+  private void initProjectConnectionsManagerMock() {
+    myProjectConnectionsManager = Mockito.mock(ProjectConnectionsManager.class);
+
+    when(myProjectConnectionsManager.findConnectionById(any(), anyString()))
       .thenAnswer(invocation -> mockedAwsConnectionsCollection.get(invocation.getArgument(1)));
   }
 }

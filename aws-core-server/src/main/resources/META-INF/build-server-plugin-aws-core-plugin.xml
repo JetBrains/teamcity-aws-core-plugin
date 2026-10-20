@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+       default-autowire="constructor">
+
+<!--    open-api beans-->
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.AwsConnectionsManagerImpl"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.connectionTesting.impl.AwsConnectionTesterImpl"/>
+<!--    ^-->
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.connectionId.AwsConnectionIdGenerator"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.backwardsCompat.AwsConnectorExtensionRegistar"/>
+
+<!--    core logic of aws connections-->
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsConnectorFactoryImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionDescriptorBuilderImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsEventsListener"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsConnectionsHolderImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.common.impl.AwsCredentialsRefresheringManager"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.featureDevelopment.credsToAgent.AwsConnectionParametersProvider"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.AwsCredentialsHolderCache"/>
+
+<!--    ^-->
+
+    <bean class="jetbrains.buildServer.serverSide.connections.aws.impl.AwsConnectionCredentialsFactoryImpl"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.staticType.StaticCredentialsBuilder"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.IamRoleCredentialsBuilder"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.defaultProviderType.DefaultProviderCredentialsBuilder"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.LinkedAwsConnectionProviderImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.impl.BasicStsClientProviderImpl"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.impl.iamRoleType.externalId.AwsExternalIdsManagerImpl"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsExternalIdsController"/>
+
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AvailableAwsConnsController"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsTestConnectionController"/>
+
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.AwsKeyRotatorImpl"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.keyRotation.impl.OldKeysCleaner"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.impl.IamClientBuilderImpl"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.AwsRotateKeysController"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.ami.cleanup.EC2AmiCleanupExtension"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.utils.clients.EC2ClientCreator"/>
+
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.health.DisabledAwsConnectionHealthReport"/>
+    <bean class="jetbrains.buildServer.clouds.amazon.connector.health.DisabledAwsConnectionHealthPage"/>
+    <bean class="jetbrains.buildServer.serverSide.connections.aws.AwsConnectionSettingsMapper"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.SupportedProvidersController"/>
+    <bean class="jetbrains.buildServer.serverSide.oauth.aws.controllers.auth.AwsConnectionsRequestPermissionChecker" />
+</beans>

@@ -34,6 +34,11 @@ public class InjectAwsCredentialsToTheBuildContext implements BuildStartContextP
     myLinkedAwsConnectionProvider = linkedAwsConnectionProvider;
   }
 
+  // TODO: TW-98735 this runs only at build start, and nothing lets a running build request new credentials.
+  //  Add a refresh endpoint that authenticates as the running build, checks that the per-step refresh build
+  //  parameter is enabled, and calls LinkedAwsConnectionProvider.getConnectionCredentialsFromBuild, which accepts
+  //  a running build and applies the same access checks as this method. AwsCredentialsInjector formats the
+  //  profile only for a BuildStartContext, in a private method, so format the refreshed profile in this plugin.
   @Override
   public void updateParameters(@NotNull BuildStartContext context) {
     Collection<SBuildFeatureDescriptor> awsCredentialsBuildFeatures = AwsConnToAgentBuildFeature.getAwsConnectionsToExpose(context.getBuild());

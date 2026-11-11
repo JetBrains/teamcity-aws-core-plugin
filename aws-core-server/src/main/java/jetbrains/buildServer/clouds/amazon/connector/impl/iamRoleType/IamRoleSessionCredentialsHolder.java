@@ -127,6 +127,8 @@ public class IamRoleSessionCredentialsHolder implements AwsCredentialsHolder {
                                                                    .roleArn(connectionProperties.get(IAM_ROLE_ARN_PARAM))
                                                                    .roleSessionName(connectionProperties.get(IAM_ROLE_SESSION_NAME_PARAM));
 
+    // TODO: TW-98735 AssumeRole called with role credentials is role chaining, which AWS caps at 1h. Warn or fail with a
+    //  clear message when the session duration is above 60 minutes, instead of surfacing the STS error.
     String sessionDurationParam = connectionProperties.get(AwsSessionCredentialsParams.SESSION_DURATION_PARAM);
     if (sessionDurationParam != null) {
       int sessionDurationMinutes = ParamUtil.getSessionDurationMinutes(connectionProperties);

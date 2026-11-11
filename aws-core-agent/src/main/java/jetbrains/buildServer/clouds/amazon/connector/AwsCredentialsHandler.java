@@ -35,6 +35,10 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
 
   @Override
   public void buildStarted(@NotNull AgentRunningBuild runningBuild) {
+    // TODO: TW-98735 when the per-step refresh build parameter is enabled, keep what a refresh request needs
+    //  (the connection and profile of each AWS Credentials feature), not only the encoded file content.
+    //  The parameter is cleared below, so the credentials received here are the only ones this build gets.
+    //  maskCredentialsSecrets runs only here: refreshed credentials need their secrets masked as well.
     String encodedCredentials = runningBuild.getSharedConfigParameters()
                                             .get(AwsConnBuildFeatureParams.AWS_INTERNAL_ENCODED_CREDENTIALS_CONTENT);
 
@@ -81,6 +85,13 @@ public class AwsCredentialsHandler extends AgentLifeCycleAdapter {
 
   @Override
   public void beforeRunnerStart(@NotNull BuildRunnerContext runner) {
+    // TODO: TW-98735 this runs before every step but writes the bytes received in buildStarted, so a build longer
+    //  than the session (1h for a chained IAM Role) fails. When the per-step refresh build parameter is enabled,
+    //  request fresh credentials from the server here before every step, add their secret key and session token
+    //  to the password replacer, and keep the existing credentials with a build log warning if the request fails.
+    //  Without the parameter, keep the current behavior so shorter builds make no extra STS calls.
+    //  A single step longer than the session still fails: that needs a mid-step refresh or a session that is
+    //  not chained.
     if (myCredentialsData == null) {
       return;
     }

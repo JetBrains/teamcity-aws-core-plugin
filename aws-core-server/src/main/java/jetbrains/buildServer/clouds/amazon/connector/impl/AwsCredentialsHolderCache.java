@@ -47,6 +47,10 @@ public class AwsCredentialsHolderCache {
   }
 
 
+  // TODO: TW-98735 a per-step refresh request must bypass this cache, or it returns the same session instead of a
+  //  new one. Check that the AWS Credentials build feature request sets DISABLE_CACHE_PROPERTY (TW-100758); if it
+  //  does, a refresh through the same call bypasses the cache with no change here.
+  //  The cache key (project, connection) also ignores the requested session duration.
   @NotNull
   public AwsCredentialsData getAwsCredentials(@NotNull SProjectFeatureDescriptor awsConnectionFeature, @NotNull RequestSessionFunction credentialsSupplier)
     throws ConnectionCredentialsException {
